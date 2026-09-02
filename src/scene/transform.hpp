@@ -14,5 +14,7 @@ namespace DE
         XMFLOAT3 pos;
         XMFLOAT3 rot;
         XMFLOAT3 scale;
+
+        Transform(XMFLOAT3 pos = {}, XMFLOAT3 rot = {}, XMFLOAT3 scale = {1.f, 1.f, 1.f}) : pos(pos), rot(rot), scale(scale) {}
     };
 }
