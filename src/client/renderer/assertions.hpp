@@ -3,15 +3,10 @@
 
 #pragma once
 
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <wrl/client.h>
-#include <cstdint>
-#include <string>
-#include <iostream>
+#include "common.hpp"
 
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "dxgi.lib")
+#include <iostream>
+#include <string_view>
 
 namespace DE
 {
@@ -24,7 +19,7 @@ namespace DE
     {
         if(FAILED(result))
         {
-            std::cout << msg << std::endl;
+            std::cerr << msg << std::endl;
             abort();
         }
     }
@@ -39,7 +34,7 @@ namespace DE
     {
         if(!comPtr)
         {
-            std::cout << msg << std::endl;
+            std::cerr << msg << std::endl;
             abort();
         }
     }
