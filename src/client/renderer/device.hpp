@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "dxc.hpp"
+#include "assertions.hpp"
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
@@ -34,7 +34,7 @@ namespace DE
             if (_DEBUG)
                 factoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 
-            dxc(CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&factory)), "Failed to create factory");
+            dxa(CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&factory)), "Failed to create factory");
 
             // Adapter
             for (UINT adapterIndex = 0; SUCCEEDED(factory->EnumAdapterByGpuPreference(adapterIndex, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter))); ++adapterIndex)
@@ -50,7 +50,7 @@ namespace DE
             }
 
             if (!adapter)
-                assertExists(adapter, "Failed to find suitable adapter");
+                ptra(adapter, "Failed to find suitable adapter");
         }
 
         ~Device()
