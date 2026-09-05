@@ -11,7 +11,8 @@ namespace DE
     class Client
     {
     public:
-    Client();
+        Client();
+
     private:
         Renderer renderer;
         Window window;

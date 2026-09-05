@@ -43,5 +43,7 @@ namespace DE
             adapter.Reset();
             factory.Reset();
         }
+
+        operator ID3D12Device5*() const { return device.Get(); }
     };
 }
