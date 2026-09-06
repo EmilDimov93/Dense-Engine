@@ -17,3 +17,5 @@
 
 template <typename T>
 using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+static constexpr uint32_t FRAMES_IN_FLIGHT = 2;
