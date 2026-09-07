@@ -38,4 +38,18 @@ namespace DE
             abort();
         }
     }
+
+    /**
+    * @brief Handle Assert - Prints message and aborts if HANDLE is nullptr
+    * @param handle HANDLE to evaluate
+    * @param msg Message to print on failure
+    */
+    inline void hndla(HANDLE handle, std::string_view msg)
+    {
+        if(handle == nullptr)
+        {
+            std::cerr << msg << std::endl;
+            abort();
+        }
+    }
 }
