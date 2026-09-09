@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "device.hpp"
-#include "commandContext.hpp"
+#include "abstractions/device.hpp"
+#include "abstractions/commandContext.hpp"
 
 #include "common.hpp"
 
