@@ -8,7 +8,7 @@
 
 #include "fence.hpp"
 
-namespace DE
+namespace DE::abstractions
 {
     struct CommandContext
     {

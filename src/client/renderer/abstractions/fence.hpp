@@ -6,7 +6,7 @@
 #include "../assertions.hpp"
 #include "../common.hpp"
 
-namespace DE
+namespace DE::abstractions
 {
     struct Fence
     {

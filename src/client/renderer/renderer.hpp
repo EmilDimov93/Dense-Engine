@@ -17,7 +17,7 @@ namespace DE
         ~Renderer();
 
     private:
-        Device device;
-        CommandContext commands;
+        abstractions::Device device;
+        abstractions::CommandContext commands;
     };
 }

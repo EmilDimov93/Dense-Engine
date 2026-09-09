@@ -1,0 +1,52 @@
+// Copyright 2026 Emil Dimov
+// Licensed under the Apache License, Version 2.0
+
+#pragma once
+
+#include "../assertions.hpp"
+#include "../common.hpp"
+
+namespace DE::abstractions
+{
+    struct SwapChain
+    {
+        ComPtr<IDXGISwapChain4> swapchain;
+        ComPtr<ID3D12Resource> backBuffers[FRAMES_IN_FLIGHT];
+        D3D12_CPU_DESCRIPTOR_HANDLE backBufferRtvHandles[FRAMES_IN_FLIGHT] = {};
+        UINT width = 0;
+        UINT height = 0;
+
+        SwapChain(IDXGIFactory6 *factory, ID3D12CommandQueue *graphicsQueue, HWND windowHandle, UINT width, UINT height)
+        {
+            DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
+            swapchainDesc.Width = width;
+            swapchainDesc.Height = height;
+            swapchainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            swapchainDesc.Stereo = FALSE;
+            swapchainDesc.SampleDesc = {1, 0};
+            swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+            swapchainDesc.BufferCount = FRAMES_IN_FLIGHT;
+            swapchainDesc.Scaling = DXGI_SCALING_NONE;
+            swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+            swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+            swapchainDesc.Flags = 0;
+
+            ComPtr<IDXGISwapChain1> swapchain1;
+            dxa(factory->CreateSwapChainForHwnd(graphicsQueue, windowHandle, &swapchainDesc, nullptr, nullptr, &swapchain1), "Failed to create swapchain");
+
+            dxa(factory->MakeWindowAssociation(windowHandle, DXGI_MWA_NO_ALT_ENTER), "Failed to make window association");
+            dxa(swapchain1.As(&swapchain), "Failed to copy swapchain");
+
+            this->width = width;
+            this->height = height;
+        }
+
+        ~SwapChain()
+        {
+            for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
+                backBuffers[bufferIndex].Reset();
+
+            swapchain.Reset();
+        }
+    };
+}
