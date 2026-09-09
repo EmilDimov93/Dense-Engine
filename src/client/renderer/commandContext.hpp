@@ -6,6 +6,8 @@
 #include "assertions.hpp"
 #include "common.hpp"
 
+#include "fence.hpp"
+
 namespace DE
 {
     struct CommandContext
@@ -14,10 +16,9 @@ namespace DE
         ComPtr<ID3D12CommandAllocator> allocators[FRAMES_IN_FLIGHT] = {};
         ComPtr<ID3D12GraphicsCommandList4> list = nullptr;
 
-        ComPtr<ID3D12Fence1> fence = nullptr;
-        HANDLE fenceEvent = nullptr;
+        Fence fence;
 
-        CommandContext(ID3D12Device5 *device)
+        explicit CommandContext(ID3D12Device5 *device) : fence(device)
         {
             D3D12_COMMAND_QUEUE_DESC queueDesc
             {
@@ -33,17 +34,6 @@ namespace DE
                 dxa(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocators[frameIndex])), "Failed to create command allocator");
 
             dxa(device->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&list)), "Failed to create command list");
-
-            dxa(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create fence");
-
-            fenceEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-            hndla(fenceEvent, "Failed to create fence event");
-        }
-
-        ~CommandContext()
-        {
-            if(fenceEvent)
-                CloseHandle(fenceEvent);
         }
     };
 }
