@@ -8,6 +8,7 @@
 #include <wrl/client.h>
 
 #include <cstdint>
+#include <array>
 
 #ifdef _DEBUG
     inline constexpr bool DEBUG_MODE = true;
@@ -19,3 +20,6 @@ template <typename T>
 using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 static constexpr uint32_t FRAMES_IN_FLIGHT = 2;
+
+template <typename T>
+using PerFrame = std::array<T, FRAMES_IN_FLIGHT>;

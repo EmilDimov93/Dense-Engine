@@ -11,8 +11,8 @@ namespace DE::abstractions
     struct SwapChain
     {
         ComPtr<IDXGISwapChain4> swapchain;
-        ComPtr<ID3D12Resource> backBuffers[FRAMES_IN_FLIGHT];
-        D3D12_CPU_DESCRIPTOR_HANDLE backBufferRtvHandles[FRAMES_IN_FLIGHT] = {};
+        PerFrame<ComPtr<ID3D12Resource>> backBuffers;
+        PerFrame<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferRtvHandles;
         UINT width = 0;
         UINT height = 0;
 

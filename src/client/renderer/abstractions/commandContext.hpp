@@ -13,7 +13,7 @@ namespace DE::abstractions
     struct CommandContext
     {
         ComPtr<ID3D12CommandQueue> queue = nullptr;
-        ComPtr<ID3D12CommandAllocator> allocators[FRAMES_IN_FLIGHT] = {};
+        PerFrame<ComPtr<ID3D12CommandAllocator>> allocators;
         ComPtr<ID3D12GraphicsCommandList4> list = nullptr;
 
         Fence fence;
