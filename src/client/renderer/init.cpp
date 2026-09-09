@@ -7,7 +7,7 @@
 
 namespace DE
 {
-    Renderer::Renderer()
+    Renderer::Renderer() : commands(device)
     {
     }
 

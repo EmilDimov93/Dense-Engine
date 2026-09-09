@@ -4,6 +4,7 @@
 #pragma once
 
 #include "device.hpp"
+#include "commandContext.hpp"
 
 #include "common.hpp"
 
@@ -17,5 +18,6 @@ namespace DE
 
     private:
         Device device;
+        CommandContext commands;
     };
 }

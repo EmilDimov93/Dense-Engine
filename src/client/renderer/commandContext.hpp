@@ -42,6 +42,8 @@ namespace DE
 
         ~CommandContext()
         {
+            if(fenceEvent)
+                CloseHandle(fenceEvent);
         }
     };
 }
