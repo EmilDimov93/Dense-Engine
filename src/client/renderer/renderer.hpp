@@ -5,6 +5,7 @@
 
 #include "abstractions/device.hpp"
 #include "abstractions/commandContext.hpp"
+#include "abstractions/swapChain.hpp"
 
 #include "common.hpp"
 
@@ -13,11 +14,12 @@ namespace DE
     class Renderer
     {
     public:
-        Renderer();
+        Renderer(HWND window, XMUINT2 windowSize);
         ~Renderer();
 
     private:
         abstractions::Device device;
         abstractions::CommandContext commands;
+        abstractions::SwapChain swapChain;
     };
 }

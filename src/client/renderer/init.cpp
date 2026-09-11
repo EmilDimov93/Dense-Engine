@@ -7,7 +7,7 @@
 
 namespace DE
 {
-    Renderer::Renderer() : commands(device)
+    Renderer::Renderer(HWND window, XMUINT2 windowSize) : commands(device), swapChain(device.factory.Get(), commands.queue.Get(), window, windowSize.x, windowSize.y)
     {
     }
 

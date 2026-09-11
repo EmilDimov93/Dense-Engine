@@ -7,8 +7,7 @@ namespace DE
 {
     static const wchar_t *const WINDOW_CLASS_NAME = L"DenseWindowClass";
 
-    Window::Window(const wchar_t *title, int width, int height)
-        : instanceHandle(GetModuleHandleW(nullptr))
+    Window::Window(const wchar_t *title, int width, int height) : width(width), height(height), instanceHandle(GetModuleHandleW(nullptr))
     {
         WNDCLASSEXW windowClass = {};
         windowClass.cbSize = sizeof(windowClass);
@@ -41,9 +40,6 @@ namespace DE
             shouldClose = true;
             return;
         }
-
-        this->width = width;
-        this->height = height;
 
         ShowWindow(windowHandle, SW_SHOW);
     }

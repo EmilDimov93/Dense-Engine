@@ -5,5 +5,13 @@
 
 namespace DE
 {
-    Client::Client() : window(L"Dense Engine", 500, 500) {}
+    Client::Client() : window(L"Dense Engine", 500, 500), renderer(window.GetHandle(), XMUINT2(500, 500)) {}
+
+    void Client::run()
+    {
+        while(window.ProcessMessages())
+        {
+            
+        }
+    }
 }

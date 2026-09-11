@@ -6,4 +6,6 @@
 int main()
 {
     DE::Client client;
+
+    client.run();
 }

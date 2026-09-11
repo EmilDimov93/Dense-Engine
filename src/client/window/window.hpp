@@ -16,8 +16,8 @@ namespace DE
         bool ProcessMessages();
 
         HWND GetHandle() const { return windowHandle; }
-        UINT GetClientWidth() const { return width; }
-        UINT GetClientHeight() const { return height; }
+        UINT GetWidth() const { return width; }
+        UINT GetHeight() const { return height; }
 
     private:
         static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);

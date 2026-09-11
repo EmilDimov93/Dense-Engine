@@ -13,8 +13,10 @@ namespace DE
     public:
         Client();
 
+        void run();
+
     private:
-        Renderer renderer;
         Window window;
+        Renderer renderer;
     };
 }

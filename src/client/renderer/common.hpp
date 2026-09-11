@@ -7,6 +7,9 @@
 #include <dxgi1_6.h>
 #include <wrl/client.h>
 
+#include <DirectXMath.h>
+using namespace DirectX;
+
 #include <cstdint>
 #include <array>
 
