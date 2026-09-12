@@ -18,7 +18,13 @@ namespace DE::abstractions
         {
             UINT factoryFlags = 0;
             if (DEBUG_MODE)
+            {
                 factoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+
+                ComPtr<ID3D12Debug> debugController;
+                if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+                    debugController->EnableDebugLayer();
+            }
 
             dxa(CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&factory)), "Failed to create factory");
 
@@ -30,7 +36,11 @@ namespace DE::abstractions
                 if (adapterDesc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
                     continue;
 
-                if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&device))))
+                if (FAILED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&device))))
+                    continue;
+
+                D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5{};
+                if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options5, sizeof(options5))) && options5.RaytracingTier >= D3D12_RAYTRACING_TIER_1_0)
                     break;
             }
 
@@ -44,6 +54,6 @@ namespace DE::abstractions
             factory.Reset();
         }
 
-        operator ID3D12Device5*() const { return device.Get(); }
+        operator ID3D12Device5 *() const { return device.Get(); }
     };
 }
