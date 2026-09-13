@@ -52,7 +52,7 @@ namespace DE
         UnregisterClassW(WINDOW_CLASS_NAME, instanceHandle);
     }
 
-    bool Window::ProcessMessages()
+    bool Window::tick()
     {
         MSG message = {};
         while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))

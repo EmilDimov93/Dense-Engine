@@ -13,11 +13,11 @@ namespace DE
         Window(const wchar_t *title, int width, int height);
         ~Window();
 
-        bool ProcessMessages();
+        bool tick();
 
-        HWND GetHandle() const { return windowHandle; }
-        UINT GetWidth() const { return width; }
-        UINT GetHeight() const { return height; }
+        HWND getHandle() const { return windowHandle; }
+        UINT getWidth() const { return width; }
+        UINT getHeight() const { return height; }
 
     private:
         static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
