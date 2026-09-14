@@ -1,4 +1,3 @@
 .vscode/
 build/
 run.ps1
-CMakeLists.txt
