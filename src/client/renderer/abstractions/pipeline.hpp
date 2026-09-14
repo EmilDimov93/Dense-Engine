@@ -14,15 +14,13 @@ namespace DE::abstractions
 {
     struct Pipeline
     {
-        static constexpr const char *SHADER_PATH = "../shader.hlsl";
-
         ComPtr<ID3D12RootSignature> globalRootSignature;
         ComPtr<ID3D12StateObject> stateObject;
         ComPtr<ID3D12Resource> shaderTable;
 
-        Pipeline(ID3D12Device5 *device)
+        Pipeline(ID3D12Device5 *device, const char *shaderFilePath)
         {
-            std::ifstream file(SHADER_PATH, std::ios::binary | std::ios::ate);
+            std::ifstream file(shaderFilePath, std::ios::binary | std::ios::ate);
             if (!file)
             {
                 std::cerr << "Failed to open shader file" << std::endl;

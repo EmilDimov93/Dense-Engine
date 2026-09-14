@@ -6,6 +6,7 @@
 #include "abstractions/device.hpp"
 #include "abstractions/commandContext.hpp"
 #include "abstractions/swapChain.hpp"
+#include "abstractions/pipeline.hpp"
 
 #include "common.hpp"
 
@@ -21,5 +22,6 @@ namespace DE
         abstractions::Device device;
         abstractions::CommandContext commands;
         abstractions::SwapChain swapChain;
+        abstractions::Pipeline pipeline;
     };
 }
