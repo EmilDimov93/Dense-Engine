@@ -122,5 +122,9 @@ namespace DE::abstractions
             std::memcpy(mapped + 2 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, props->GetShaderIdentifier(L"HitGroup"), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
             shaderTable->Unmap(0, nullptr);
         }
+
+        D3D12_GPU_VIRTUAL_ADDRESS Raygen() const { return shaderTable->GetGPUVirtualAddress(); }
+        D3D12_GPU_VIRTUAL_ADDRESS Miss() const { return shaderTable->GetGPUVirtualAddress() + D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }
+        D3D12_GPU_VIRTUAL_ADDRESS HitGroup() const { return shaderTable->GetGPUVirtualAddress() + 2 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }
     };
 }
