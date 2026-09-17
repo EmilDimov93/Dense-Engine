@@ -12,6 +12,7 @@ namespace DE::abstractions
     {
         ComPtr<ID3D12Fence> fence = nullptr;
         HANDLE fenceEvent = nullptr;
+        UINT64 signaledValue = 0;
 
         explicit Fence(ID3D12Device5 *device)
         {
@@ -25,6 +26,20 @@ namespace DE::abstractions
         {
             if(fenceEvent)
                 CloseHandle(fenceEvent);
+        }
+
+        void signal(ID3D12CommandQueue *queue)
+        {
+            dxa(queue->Signal(fence.Get(), ++signaledValue), "Failed to signal fence");
+        }
+
+        void wait()
+        {
+            if (fence->GetCompletedValue() >= signaledValue)
+                return;
+
+            dxa(fence->SetEventOnCompletion(signaledValue, fenceEvent), "Failed to set fence event");
+            WaitForSingleObject(fenceEvent, INFINITE);
         }
     };
 }
