@@ -37,6 +37,9 @@ namespace DE::abstractions
             dxa(factory->MakeWindowAssociation(windowHandle, DXGI_MWA_NO_ALT_ENTER), "Failed to make window association");
             dxa(swapchain1.As(&swapchain), "Failed to copy swapchain");
 
+            for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
+                dxa(swapchain->GetBuffer(bufferIndex, IID_PPV_ARGS(&backBuffers[bufferIndex])), "Failed to get swapchain buffer");
+
             this->width = width;
             this->height = height;
         }
