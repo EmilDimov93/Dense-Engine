@@ -12,7 +12,6 @@ namespace DE::abstractions
     {
         ComPtr<IDXGISwapChain4> swapchain;
         PerFrame<ComPtr<ID3D12Resource>> backBuffers;
-        PerFrame<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferRtvHandles;
         UINT width = 0;
         UINT height = 0;
 
