@@ -16,9 +16,9 @@ namespace DE::abstractions
         PerFrame<ComPtr<ID3D12CommandAllocator>> allocators;
         ComPtr<ID3D12GraphicsCommandList4> list = nullptr;
 
-        Fence fence;
+        PerFrame<Fence> fences;
 
-        explicit CommandContext(ID3D12Device5 *device) : fence(device)
+        explicit CommandContext(ID3D12Device5 *device) : fences{Fence(device), Fence(device)}
         {
             D3D12_COMMAND_QUEUE_DESC queueDesc
             {
