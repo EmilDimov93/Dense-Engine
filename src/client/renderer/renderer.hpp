@@ -18,6 +18,8 @@ namespace DE
         Renderer(HWND window, XMUINT2 windowSize);
         ~Renderer();
 
+        void tick();
+
     private:
         abstractions::Device device;
         abstractions::CommandContext commands;
