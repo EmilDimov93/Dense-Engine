@@ -12,6 +12,7 @@ using namespace DirectX;
 
 #include <cstdint>
 #include <array>
+#include <vector>
 
 namespace DE
 {

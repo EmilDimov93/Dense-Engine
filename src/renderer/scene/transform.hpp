@@ -3,9 +3,7 @@
 
 #pragma once
 
-#include <DirectXMath.h>
-
-using namespace DirectX;
+#include "../common.hpp"
 
 namespace DE
 {

@@ -3,10 +3,7 @@
 
 #pragma once
 
-#include <d3d12.h>
-#include <wrl/client.h>
-
-#include <vector>
+#include "../common.hpp"
 
 #include "vertex.hpp"
 
@@ -23,9 +20,9 @@ namespace DE
     class Mesh
     {
     public:
-        Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer;
-        Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer;
-        Microsoft::WRL::ComPtr<ID3D12Resource> blasBuffer;
-        Microsoft::WRL::ComPtr<ID3D12Resource> blasScratchBuffer;
+        ComPtr<ID3D12Resource> vertexBuffer;
+        ComPtr<ID3D12Resource> indexBuffer;
+        ComPtr<ID3D12Resource> blasBuffer;
+        ComPtr<ID3D12Resource> blasScratchBuffer;
     };
 }
