@@ -8,11 +8,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(ENGINE_SOURCES
     example/example.cpp
 
-    src/client/client.cpp
+    src/client.cpp
 
-    src/client/renderer/init.cpp
+    src/renderer/init.cpp
+    src/renderer/runtime.cpp
 
-    src/client/window/window.cpp
+    src/window/window.cpp
 )
 
 add_executable(DenseEngine ${ENGINE_SOURCES})
@@ -48,6 +49,6 @@ find_program(DXC_EXECUTABLE dxc REQUIRED)
 add_custom_command(
     TARGET DenseEngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:DenseEngine>/shaders
-    COMMAND ${DXC_EXECUTABLE} -T lib_6_3 -Fo $<TARGET_FILE_DIR:DenseEngine>/shaders/shader.cso ${CMAKE_SOURCE_DIR}/src/client/renderer/shader.hlsl
+    COMMAND ${DXC_EXECUTABLE} -T lib_6_3 -Fo $<TARGET_FILE_DIR:DenseEngine>/shaders/shader.cso ${CMAKE_SOURCE_DIR}/src/renderer/shader.hlsl
     COMMENT "Compiling raytracing shaders"
 )

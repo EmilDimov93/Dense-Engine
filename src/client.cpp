@@ -5,13 +5,11 @@
 
 namespace DE
 {
-    Client::Client() : window(L"Dense Engine", 500, 500), renderer(window.getHandle(), XMUINT2(500, 500)) {}
+    Client::Client() : window(L"Dense Engine", 500u, 500u), renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight())) {}
 
     void Client::run()
     {
         while(window.tick())
-        {
-            
-        }
+            renderer.tick();
     }
 }

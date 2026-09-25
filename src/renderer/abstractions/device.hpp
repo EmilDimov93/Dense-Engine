@@ -5,6 +5,8 @@
 
 #include "../common.hpp"
 
+#include "../assertions.hpp"
+
 namespace DE::abstractions
 {
     struct Device

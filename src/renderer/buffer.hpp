@@ -3,34 +3,12 @@
 
 #pragma once
 
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <wrl/client.h>
-
-#include <DirectXMath.h>
-using namespace DirectX;
-
-#include <cstdint>
-#include <array>
+#include "common.hpp"
 
 #include "assertions.hpp"
 
 namespace DE
 {
-#ifdef _DEBUG
-    inline constexpr bool DEBUG_MODE = true;
-#else
-    inline constexpr bool DEBUG_MODE = false;
-#endif
-
-    template <typename T>
-    using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-    static constexpr uint32_t FRAMES_IN_FLIGHT = 2;
-
-    template <typename T>
-    using PerFrame = std::array<T, FRAMES_IN_FLIGHT>;
-
     inline ComPtr<ID3D12Resource> createBuffer(ID3D12Device5 *device, UINT64 size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE)
     {
         D3D12_HEAP_PROPERTIES heapProps{.Type = heapType};

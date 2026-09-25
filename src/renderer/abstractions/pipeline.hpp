@@ -5,6 +5,8 @@
 
 #include "../common.hpp"
 
+#include "../assertions.hpp"
+
 #include <cstring>
 #include <fstream>
 #include <vector>

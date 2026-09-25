@@ -5,6 +5,8 @@
 
 #include "../common.hpp"
 
+#include "../assertions.hpp"
+
 #include "fence.hpp"
 
 namespace DE::abstractions
