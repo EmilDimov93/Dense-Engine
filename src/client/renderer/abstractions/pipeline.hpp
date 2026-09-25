@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "../assertions.hpp"
 #include "../common.hpp"
 
 #include <cstring>
