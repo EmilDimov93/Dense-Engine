@@ -12,10 +12,10 @@
 namespace DE
 {
     /**
-     * @brief Crash - Prints message and aborts
+     * @brief Fatal - Prints message and aborts
      * @param msg Message to print
      */
-    [[noreturn]] inline void crash(std::string_view msg)
+    [[noreturn]] inline void fatal(std::string_view msg)
     {
         std::cerr << msg << std::endl;
 
@@ -45,7 +45,7 @@ namespace DE
     {
         if (FAILED(result))
         {
-            crash(std::format("{} (HRESULT 0x{:08X})", msg, static_cast<uint32_t>(result)));
+            fatal(std::format("{} (HRESULT 0x{:08X})", msg, static_cast<uint32_t>(result)));
         }
     }
 
@@ -55,11 +55,11 @@ namespace DE
      * @param msg Message to print on failure
      */
     template <typename T>
-    inline void ptra(const ComPtr<T> &comPtr, std::string_view msg)
+    void ptra(const ComPtr<T> &comPtr, std::string_view msg)
     {
         if (!comPtr)
         {
-            crash(msg);
+            fatal(msg);
         }
     }
 
@@ -68,11 +68,11 @@ namespace DE
      * @param handle HANDLE to evaluate
      * @param msg Message to print on failure
      */
-    void hndla(HANDLE handle, std::string_view msg)
+    inline void hndla(HANDLE handle, std::string_view msg)
     {
         if (handle == nullptr || handle == INVALID_HANDLE_VALUE)
         {
-            crash(msg);
+            fatal(msg);
         }
     }
 }

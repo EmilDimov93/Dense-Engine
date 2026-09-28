@@ -14,6 +14,7 @@ namespace DE
 {
     class ModelInstance
     {
+    public:
         Handle modelHandle;
         Transform transform;
     };
