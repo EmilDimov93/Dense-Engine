@@ -8,7 +8,7 @@
 #include "model.hpp"
 #include "transform.hpp"
 
-using Handle = uint32_t;
+#include "handle.hpp"
 
 namespace DE
 {

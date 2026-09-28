@@ -8,13 +8,17 @@
 #include "model.hpp"
 #include "modelInstance.hpp"
 
+#include <unordered_map>
+#include <string>
+
 namespace DE
 {
     class Scene
     {
     public:
     private:
-        std::vector<Model> models;
+        std::unordered_map<Handle, Model> models;
         std::vector<ModelInstance> modelInstances;
+        HandleGenerator handleGenerator;
     };
 }

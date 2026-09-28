@@ -5,6 +5,8 @@
 
 #include "model.hpp"
 
+#include <string>
+
 namespace DE
 {
     struct MeshUploadData
