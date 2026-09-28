@@ -7,49 +7,72 @@
 
 #include <iostream>
 #include <string_view>
+#include <format>
 
 namespace DE
 {
     /**
-    * @brief DirectX Assert - Prints message and aborts if DirectX function fails
-    * @param result HRESULT to evaluate
-    * @param msg Message to print on failure
-    */
+     * @brief Crash - Prints message and aborts
+     * @param msg Message to print
+     */
+    [[noreturn]] inline void crash(std::string_view msg)
+    {
+        std::cerr << msg << std::endl;
+
+#ifdef _MSC_VER
+        if (IsDebuggerPresent())
+            __debugbreak();
+#endif
+
+        abort();
+    }
+
+    /**
+     * @brief Warning - Prints warning message
+     * @param msg Message to print
+     */
+    inline void warn(std::string_view msg)
+    {
+        std::cerr << msg << std::endl;
+    }
+
+    /**
+     * @brief DirectX Assert - Prints message and aborts if DirectX function fails
+     * @param result HRESULT to evaluate
+     * @param msg Message to print on failure
+     */
     inline void dxa(HRESULT result, std::string_view msg)
     {
-        if(FAILED(result))
+        if (FAILED(result))
         {
-            std::cerr << msg << std::endl;
-            abort();
+            crash(std::format("{} (HRESULT 0x{:08X})", msg, static_cast<uint32_t>(result)));
         }
     }
 
     /**
-    * @brief Pointer Assert - Prints message and aborts if ComPtr is nullptr
-    * @param comPtr ComPtr to evaluate
-    * @param msg Message to print on failure
-    */
-    template<typename T>
+     * @brief Pointer Assert - Prints message and aborts if ComPtr is nullptr
+     * @param comPtr ComPtr to evaluate
+     * @param msg Message to print on failure
+     */
+    template <typename T>
     inline void ptra(const ComPtr<T> &comPtr, std::string_view msg)
     {
-        if(!comPtr)
+        if (!comPtr)
         {
-            std::cerr << msg << std::endl;
-            abort();
+            crash(msg);
         }
     }
 
     /**
-    * @brief Handle Assert - Prints message and aborts if HANDLE is nullptr
-    * @param handle HANDLE to evaluate
-    * @param msg Message to print on failure
-    */
-    inline void hndla(HANDLE handle, std::string_view msg)
+     * @brief Handle Assert - Prints message and aborts if HANDLE is nullptr
+     * @param handle HANDLE to evaluate
+     * @param msg Message to print on failure
+     */
+    void hndla(HANDLE handle, std::string_view msg)
     {
-        if(handle == nullptr)
+        if (handle == nullptr || handle == INVALID_HANDLE_VALUE)
         {
-            std::cerr << msg << std::endl;
-            abort();
+            crash(msg);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace DE
     template <typename T>
     using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-    static constexpr uint32_t FRAMES_IN_FLIGHT = 2;
+    inline constexpr uint32_t FRAMES_IN_FLIGHT = 2;
 
     template <typename T>
     using PerFrame = std::array<T, FRAMES_IN_FLIGHT>;
