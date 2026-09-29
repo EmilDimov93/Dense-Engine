@@ -16,6 +16,8 @@ namespace DE
     class Scene
     {
     public:
+        Handle addModel(const std::string &filePath);
+        Handle addModelInstance();
     private:
         std::unordered_map<Handle, Model> models;
         std::vector<ModelInstance> modelInstances;
