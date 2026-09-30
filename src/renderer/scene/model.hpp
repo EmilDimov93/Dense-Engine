@@ -10,6 +10,12 @@
 
 namespace DE
 {
+    struct ModelUploadData
+    {
+        std::vector<MeshUploadData> meshes;
+        std::vector<Material> materials;
+    };
+
     class Model
     {
     public:

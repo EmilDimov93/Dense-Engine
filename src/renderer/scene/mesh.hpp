@@ -9,12 +9,26 @@
 
 namespace DE
 {
+    struct MeshUploadData
+    {
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
+
+        uint32_t materialIndex;
+    };
+
     class Mesh
     {
     public:
         ComPtr<ID3D12Resource> vertexBuffer;
+        uint32_t vertexCount;
         ComPtr<ID3D12Resource> indexBuffer;
+        uint32_t indexCount;
         ComPtr<ID3D12Resource> blasBuffer;
         ComPtr<ID3D12Resource> blasScratchBuffer;
+
+        uint32_t materialIndex;
+
+        Mesh(const MeshUploadData &meshUploadData, ID3D12Device5* device, ID3D12GraphicsCommandList4* commandList);
     };
 }
