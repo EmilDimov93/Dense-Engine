@@ -5,7 +5,7 @@
 
 namespace DE
 {
-    using Handle = uint32_t;
+    using Handle = uint64_t;
 
     class HandleGenerator
     {

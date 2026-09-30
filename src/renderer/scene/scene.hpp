@@ -16,6 +16,8 @@ namespace DE
     class Scene
     {
     public:
+        Scene(ID3D12Device5* device, ID3D12GraphicsCommandList4* commandList) : device(device), commandList(commandList) {}
+
         Handle addModel(const std::string &filePath);
         Handle addModelInstance(Handle modelHandle, Transform transform);
     private:
@@ -23,5 +25,8 @@ namespace DE
         std::unordered_map<Handle, ModelInstance> modelInstances;
         
         HandleGenerator handleGenerator;
+
+        ID3D12Device5* device;
+        ID3D12GraphicsCommandList4* commandList;
     };
 }

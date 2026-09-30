@@ -11,11 +11,17 @@ namespace DE
     {
         ModelUploadData modelUploadData = loadModel(filePath);
 
-        Model model; // = uploadModel(modelUploadData);
+        Model model;
+
+        model.meshes.reserve(modelUploadData.meshes.size());
+        for(const MeshUploadData &meshUpload : modelUploadData.meshes)
+            model.meshes.emplace_back(meshUpload, device, commandList);
+
+        model.materials = std::move(modelUploadData.materials);
 
         Handle handle = handleGenerator.generateHandle();
 
-        models.emplace(handle, model);
+        models.emplace(handle, std::move(model));
 
         return handle;
     }
