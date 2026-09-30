@@ -5,8 +5,6 @@
 
 #include "../common.hpp"
 
-#include "mesh.hpp"
-
 namespace DE
 {
     struct Material
@@ -16,11 +14,11 @@ namespace DE
         float roughness{1};
 
         std::vector<uint8_t> texture;
-        XMUINT2 textureSize;
+        XMUINT2 textureSize{0, 0};
 
         bool hasTexture()
         {
-            return texture.empty();
+            return !texture.empty();
         }
     };
 }
