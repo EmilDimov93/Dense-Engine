@@ -17,5 +17,7 @@ namespace DE
     public:
         Handle modelHandle;
         Transform transform;
+
+        ModelInstance(Handle modelHandle, Transform transform) : modelHandle(modelHandle), transform(transform) {}
     };
 }

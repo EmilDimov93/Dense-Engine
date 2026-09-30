@@ -20,8 +20,12 @@ namespace DE
         return handle;
     }
 
-    Handle Scene::addModelInstance()
+    Handle Scene::addModelInstance(Handle modelHandle, Transform transform)
     {
-        return Handle();
+        Handle handle = handleGenerator.generateHandle();
+
+        modelInstances.emplace(handle, ModelInstance(modelHandle, transform));
+
+        return handle;
     }
 }

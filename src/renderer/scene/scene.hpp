@@ -17,10 +17,11 @@ namespace DE
     {
     public:
         Handle addModel(const std::string &filePath);
-        Handle addModelInstance();
+        Handle addModelInstance(Handle modelHandle, Transform transform);
     private:
         std::unordered_map<Handle, Model> models;
-        std::vector<ModelInstance> modelInstances;
+        std::unordered_map<Handle, ModelInstance> modelInstances;
+        
         HandleGenerator handleGenerator;
     };
 }
