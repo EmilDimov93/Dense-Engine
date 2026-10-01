@@ -16,7 +16,7 @@ namespace DE
             fatal("Invalid mesh upload data");
 
         {
-            uint32_t size = sizeof(Vertex) * meshUploadData.vertices.size();
+            size_t size = sizeof(Vertex) * meshUploadData.vertices.size();
             vertexBuffer = createBuffer(device, size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
 
             void *mappedData = nullptr;
@@ -29,7 +29,7 @@ namespace DE
         }
 
         {
-            uint32_t size = sizeof(uint32_t) * meshUploadData.indices.size();
+            size_t size = sizeof(uint32_t) * meshUploadData.indices.size();
             indexBuffer = createBuffer(device, size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
 
             void *mappedData = nullptr;
@@ -64,11 +64,6 @@ namespace DE
         device->GetRaytracingAccelerationStructurePrebuildInfo(&blasInputs, &blasPrebuildInfo);
         if (blasPrebuildInfo.ResultDataMaxSizeInBytes == 0)
             fatal("BLAS prebuild info returned zero size");
-
-        auto alignUp = [](uint64_t sizeBytes, uint64_t alignmentBytes) -> uint64_t
-        {
-            return (sizeBytes + alignmentBytes - 1) & ~(alignmentBytes - 1);
-        };
 
         const uint64_t blasSizeBytes = alignUp(blasPrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT);
         const uint64_t blasScratchSizeBytes = alignUp(blasPrebuildInfo.ScratchDataSizeInBytes, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT);

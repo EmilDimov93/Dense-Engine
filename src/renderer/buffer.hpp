@@ -9,6 +9,11 @@
 
 namespace DE
 {
+    uint64_t alignUp(uint64_t sizeBytes, uint64_t alignmentBytes)
+    {
+        return (sizeBytes + alignmentBytes - 1) & ~(alignmentBytes - 1);
+    }
+
     inline ComPtr<ID3D12Resource> createBuffer(ID3D12Device5 *device, UINT64 size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE)
     {
         D3D12_HEAP_PROPERTIES heapProps{.Type = heapType};
