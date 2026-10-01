@@ -5,6 +5,11 @@
 
 #include "modelLoader.hpp"
 
+#include "../buffer.hpp"
+#include "../assertions.hpp"
+
+#include <cstring>
+
 namespace DE
 {
     Handle Scene::addModel(const std::string &filePath)

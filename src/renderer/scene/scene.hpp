@@ -20,9 +20,16 @@ namespace DE
 
         Handle addModel(const std::string &filePath);
         Handle addModelInstance(Handle modelHandle, Transform transform);
+
+        void buildTLAS();
+        D3D12_GPU_VIRTUAL_ADDRESS getTLASAddress() const { return tlasBuffer->GetGPUVirtualAddress(); }
     private:
         std::unordered_map<Handle, Model> models;
         std::unordered_map<Handle, ModelInstance> modelInstances;
+
+        ComPtr<ID3D12Resource> instanceBuffer;
+        ComPtr<ID3D12Resource> tlasBuffer;
+        ComPtr<ID3D12Resource> tlasScratchBuffer;
         
         HandleGenerator handleGenerator;
 

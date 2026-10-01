@@ -9,7 +9,7 @@
 
 namespace DE
 {
-    uint64_t alignUp(uint64_t sizeBytes, uint64_t alignmentBytes)
+    inline uint64_t alignUp(uint64_t sizeBytes, uint64_t alignmentBytes)
     {
         return (sizeBytes + alignmentBytes - 1) & ~(alignmentBytes - 1);
     }

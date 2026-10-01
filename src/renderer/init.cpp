@@ -15,7 +15,9 @@ namespace DE
         dxa(uploadCommandAllocator->Reset(), "Failed to reset command allocator");
         dxa(commands.list->Reset(uploadCommandAllocator, nullptr), "Failed to reset command list");
 
-        scene.addModel("../../example/assets/cube.obj");
+        Handle cube = scene.addModel("../../example/assets/cube.obj");
+        scene.addModelInstance(cube, Transform({0.f, 0.f, 3.f}, {0.5f, 0.5f, 0.f}));
+        scene.buildTLAS();
 
         dxa(commands.list->Close(), "Failed to close command list");
 
