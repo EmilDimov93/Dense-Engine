@@ -7,6 +7,7 @@
 #include "abstractions/commandContext.hpp"
 #include "abstractions/swapChain.hpp"
 #include "abstractions/pipeline.hpp"
+#include "abstractions/renderTarget.hpp"
 
 #include "scene/scene.hpp"
 
@@ -27,6 +28,7 @@ namespace DE
         abstractions::CommandContext commands;
         abstractions::SwapChain swapChain;
         abstractions::Pipeline pipeline;
+        abstractions::RenderTarget renderTarget;
 
         Scene scene;
     };

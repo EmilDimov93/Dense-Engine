@@ -9,7 +9,7 @@
 #include <source_location>
 namespace DE
 {
-    Renderer::Renderer(HWND window, XMUINT2 windowSize) : commands(device), swapChain(device.factory.Get(), commands.queue.Get(), window, windowSize.x, windowSize.y), pipeline(device, "shaders/shader.cso"), scene(device, commands.list.Get())
+    Renderer::Renderer(HWND window, XMUINT2 windowSize) : commands(device), swapChain(device.factory.Get(), commands.queue.Get(), window, windowSize.x, windowSize.y), pipeline(device, "shaders/shader.cso"), scene(device, commands.list.Get()), renderTarget(device, windowSize.x, windowSize.y)
     {
         ID3D12CommandAllocator *uploadCommandAllocator = commands.allocators[0].Get();
         dxa(uploadCommandAllocator->Reset(), "Failed to reset command allocator");
@@ -30,5 +30,10 @@ namespace DE
 
     Renderer::~Renderer()
     {
+        for (abstractions::Fence &fence : commands.fences)
+        {
+            fence.signal(commands.queue.Get());
+            fence.wait();
+        }
     }
 }

@@ -9,6 +9,73 @@ namespace DE
 {
     void Renderer::tick()
     {
-        
+        const UINT frameIndex = swapChain.swapchain->GetCurrentBackBufferIndex();
+
+        commands.fences[frameIndex].wait(); 
+
+        ID3D12CommandAllocator *allocator = commands.allocators[frameIndex].Get();
+        dxa(allocator->Reset(), "Failed to reset command allocator");
+        dxa(commands.list->Reset(allocator, nullptr), "Failed to reset command list");
+
+        ID3D12Resource *backBuffer = swapChain.backBuffers[frameIndex].Get();
+        ID3D12Resource *output = renderTarget.texture.Get();
+
+        auto transition = [](ID3D12Resource *resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) -> D3D12_RESOURCE_BARRIER
+        {
+            D3D12_RESOURCE_BARRIER barrier{};
+            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+            barrier.Transition.pResource = resource;
+            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+            barrier.Transition.StateBefore = before;
+            barrier.Transition.StateAfter = after;
+            return barrier;
+        };
+
+        ID3D12DescriptorHeap *descriptorHeaps[] = {renderTarget.descriptorHeap.Get()};
+        commands.list->SetDescriptorHeaps(static_cast<UINT>(std::size(descriptorHeaps)), descriptorHeaps);
+
+        commands.list->SetComputeRootSignature(pipeline.globalRootSignature.Get());
+        commands.list->SetComputeRootShaderResourceView(0, scene.getTLASAddress());
+        commands.list->SetComputeRootDescriptorTable(1, renderTarget.descriptorHeap->GetGPUDescriptorHandleForHeapStart());
+        commands.list->SetPipelineState1(pipeline.stateObject.Get());
+
+        const UINT64 shaderRecordSize = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
+
+        D3D12_DISPATCH_RAYS_DESC dispatchDesc{};
+        dispatchDesc.RayGenerationShaderRecord.StartAddress = pipeline.Raygen();
+        dispatchDesc.RayGenerationShaderRecord.SizeInBytes = shaderRecordSize;
+        dispatchDesc.MissShaderTable.StartAddress = pipeline.Miss();
+        dispatchDesc.MissShaderTable.SizeInBytes = shaderRecordSize;
+        dispatchDesc.MissShaderTable.StrideInBytes = shaderRecordSize;
+        dispatchDesc.HitGroupTable.StartAddress = pipeline.HitGroup();
+        dispatchDesc.HitGroupTable.SizeInBytes = shaderRecordSize;
+        dispatchDesc.HitGroupTable.StrideInBytes = shaderRecordSize;
+        dispatchDesc.Width = swapChain.width;
+        dispatchDesc.Height = swapChain.height;
+        dispatchDesc.Depth = 1;
+
+        commands.list->DispatchRays(&dispatchDesc);
+
+        const D3D12_RESOURCE_BARRIER toCopyBarriers[] = {
+            transition(output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),
+            transition(backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST)};
+        commands.list->ResourceBarrier(static_cast<UINT>(std::size(toCopyBarriers)), toCopyBarriers);
+
+        commands.list->CopyResource(backBuffer, output);
+
+        const D3D12_RESOURCE_BARRIER toPresentBarriers[] = {
+            transition(output, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
+            transition(backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT)};
+        commands.list->ResourceBarrier(static_cast<UINT>(std::size(toPresentBarriers)), toPresentBarriers);
+
+        dxa(commands.list->Close(), "Failed to close command list");
+
+        ID3D12CommandList *commandListsToExecute[] = {commands.list.Get()};
+        commands.queue->ExecuteCommandLists(static_cast<UINT>(std::size(commandListsToExecute)), commandListsToExecute);
+
+        dxa(swapChain.swapchain->Present(1, 0), "Failed to present");
+
+        commands.fences[frameIndex].signal(commands.queue.Get());
     }
 }
