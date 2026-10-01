@@ -8,6 +8,8 @@
 #include "abstractions/swapChain.hpp"
 #include "abstractions/pipeline.hpp"
 
+#include "scene/scene.hpp"
+
 #include "common.hpp"
 
 namespace DE
@@ -25,5 +27,7 @@ namespace DE
         abstractions::CommandContext commands;
         abstractions::SwapChain swapChain;
         abstractions::Pipeline pipeline;
+
+        Scene scene;
     };
 }
