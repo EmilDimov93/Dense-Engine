@@ -2,5 +2,6 @@
 build/
 logo/
 run.ps1
+lines.ps1
 conventions.md
 desktop.ini
