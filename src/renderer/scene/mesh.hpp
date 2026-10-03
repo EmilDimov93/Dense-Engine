@@ -7,6 +7,8 @@
 
 #include "vertex.hpp"
 
+#include "../abstractions/accelerationStructure.hpp"
+
 namespace DE
 {
     struct MeshUploadData
@@ -24,8 +26,8 @@ namespace DE
         uint32_t vertexCount;
         ComPtr<ID3D12Resource> indexBuffer;
         uint32_t indexCount;
-        ComPtr<ID3D12Resource> blasBuffer;
-        ComPtr<ID3D12Resource> blasScratchBuffer;
+        
+        abstractions::AccelerationStructure blas;
 
         uint32_t materialIndex;
 

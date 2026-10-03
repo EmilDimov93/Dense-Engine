@@ -68,19 +68,6 @@ namespace DE
         const uint64_t blasSizeBytes = alignUp(blasPrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT);
         const uint64_t blasScratchSizeBytes = alignUp(blasPrebuildInfo.ScratchDataSizeInBytes, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT);
 
-        blasScratchBuffer = createBuffer(device, blasScratchSizeBytes, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-        blasBuffer = createBuffer(device, blasSizeBytes, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-
-        D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC blasBuildDesc{};
-        blasBuildDesc.Inputs = blasInputs;
-        blasBuildDesc.ScratchAccelerationStructureData = blasScratchBuffer->GetGPUVirtualAddress();
-        blasBuildDesc.DestAccelerationStructureData = blasBuffer->GetGPUVirtualAddress();
-
-        commandList->BuildRaytracingAccelerationStructure(&blasBuildDesc, 0, nullptr);
-
-        D3D12_RESOURCE_BARRIER blasUavBarrier{};
-        blasUavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-        blasUavBarrier.UAV.pResource = blasBuffer.Get();
-        commandList->ResourceBarrier(1, &blasUavBarrier);
+        blas.build(device, commandList, blasInputs);
     }
 }

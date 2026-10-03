@@ -35,7 +35,7 @@ namespace DE
                 instanceDesc.InstanceMask = 0xFF;
                 instanceDesc.InstanceContributionToHitGroupIndex = 0;
                 instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
-                instanceDesc.AccelerationStructure = mesh.blasBuffer->GetGPUVirtualAddress();
+                instanceDesc.AccelerationStructure = mesh.blas.getAddress();
 
                 instanceDescs.push_back(instanceDesc);
             }
@@ -64,27 +64,6 @@ namespace DE
         tlasInputs.NumDescs = static_cast<UINT>(instanceDescs.size());
         tlasInputs.InstanceDescs = instanceBuffer->GetGPUVirtualAddress();
 
-        D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO tlasPrebuildInfo{};
-        device->GetRaytracingAccelerationStructurePrebuildInfo(&tlasInputs, &tlasPrebuildInfo);
-        if (tlasPrebuildInfo.ResultDataMaxSizeInBytes == 0)
-            fatal("TLAS prebuild info returned zero size");
-
-        const uint64_t tlasSizeBytes = alignUp(tlasPrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT);
-        const uint64_t tlasScratchSizeBytes = alignUp(tlasPrebuildInfo.ScratchDataSizeInBytes, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT);
-
-        tlasScratchBuffer = createBuffer(device, tlasScratchSizeBytes, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-        tlasBuffer = createBuffer(device, tlasSizeBytes, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-
-        D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC tlasBuildDesc{};
-        tlasBuildDesc.Inputs = tlasInputs;
-        tlasBuildDesc.ScratchAccelerationStructureData = tlasScratchBuffer->GetGPUVirtualAddress();
-        tlasBuildDesc.DestAccelerationStructureData = tlasBuffer->GetGPUVirtualAddress();
-
-        commandList->BuildRaytracingAccelerationStructure(&tlasBuildDesc, 0, nullptr);
-
-        D3D12_RESOURCE_BARRIER tlasUavBarrier{};
-        tlasUavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-        tlasUavBarrier.UAV.pResource = tlasBuffer.Get();
-        commandList->ResourceBarrier(1, &tlasUavBarrier);
+        tlas.build(device, commandList, tlasInputs);
     }
 }
