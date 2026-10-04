@@ -12,7 +12,7 @@ namespace DE
         WNDCLASSEXW windowClass = {};
         windowClass.cbSize = sizeof(windowClass);
         windowClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-        windowClass.lpfnWndProc = &Window::WindowProc;
+        windowClass.lpfnWndProc = &Window::windowProc;
         windowClass.hInstance = instanceHandle;
         windowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
         windowClass.lpszClassName = WINDOW_CLASS_NAME;
@@ -67,7 +67,7 @@ namespace DE
         return !shouldClose;
     }
 
-    LRESULT CALLBACK Window::WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+    LRESULT CALLBACK Window::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         if (message == WM_NCCREATE)
         {
@@ -78,12 +78,12 @@ namespace DE
 
         Window *window = reinterpret_cast<Window *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
         if (window != nullptr)
-            return window->HandleMessage(hwnd, message, wParam, lParam);
+            return window->handleMessage(hwnd, message, wParam, lParam);
 
         return DefWindowProcW(hwnd, message, wParam, lParam);
     }
 
-    LRESULT Window::HandleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+    LRESULT Window::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         switch (message)
         {

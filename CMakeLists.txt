@@ -54,6 +54,6 @@ find_program(DXC_EXECUTABLE dxc REQUIRED)
 add_custom_command(
     TARGET DenseEngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:DenseEngine>/shaders
-    COMMAND ${DXC_EXECUTABLE} -T lib_6_3 -Fo $<TARGET_FILE_DIR:DenseEngine>/shaders/shader.cso ${CMAKE_SOURCE_DIR}/src/renderer/shader.hlsl
+    COMMAND ${DXC_EXECUTABLE} -T lib_6_3 -Fo $<TARGET_FILE_DIR:DenseEngine>/shaders/shader.cso ${CMAKE_SOURCE_DIR}/src/renderer/shaders/shader.hlsl
     COMMENT "Compiling raytracing shaders"
 )

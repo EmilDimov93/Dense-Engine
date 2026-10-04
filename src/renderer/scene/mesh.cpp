@@ -65,9 +65,6 @@ namespace DE
         if (blasPrebuildInfo.ResultDataMaxSizeInBytes == 0)
             fatal("BLAS prebuild info returned zero size");
 
-        const uint64_t blasSizeBytes = alignUp(blasPrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT);
-        const uint64_t blasScratchSizeBytes = alignUp(blasPrebuildInfo.ScratchDataSizeInBytes, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT);
-
         blas.build(device, commandList, blasInputs);
     }
 }

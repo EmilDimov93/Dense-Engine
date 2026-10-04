@@ -20,8 +20,8 @@ namespace DE
         UINT getHeight() const { return height; }
 
     private:
-        static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-        LRESULT HandleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+        static LRESULT CALLBACK windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+        LRESULT handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
         HINSTANCE instanceHandle = nullptr;
         HWND windowHandle = nullptr;
