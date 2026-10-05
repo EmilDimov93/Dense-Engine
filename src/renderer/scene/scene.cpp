@@ -19,10 +19,12 @@ namespace DE
         Model model;
 
         model.meshes.reserve(modelUploadData.meshes.size());
-        for(const MeshUploadData &meshUpload : modelUploadData.meshes)
+        for (const MeshUploadData &meshUpload : modelUploadData.meshes)
             model.meshes.emplace_back(meshUpload, device, commandList);
 
-        model.materials = std::move(modelUploadData.materials);
+        model.materials.reserve(modelUploadData.materials.size());
+        for (const MaterialUploadData &materialUpload : modelUploadData.materials)
+            model.materials.emplace_back(materialUpload.diffuse, materialUpload.metallic, materialUpload.roughness, -1);
 
         Handle handle = handleGenerator.generateHandle();
 
@@ -44,15 +46,12 @@ namespace DE
 
     void Scene::flattenMaterials()
     {
-        std::vector<GPUMaterial> materials;
+        std::vector<Material> materials;
 
-        for(auto &[handle, model] : models)
+        for (auto &[handle, model] : models)
         {
             modelMaterialArrayOffsets[handle] = static_cast<uint32_t>(materials.size());
-            for(const Material &material : model.materials)
-            {
-                materials.emplace_back(material.diffuse, material.metallic, material.roughness, -1);
-            }
+            materials.insert(materials.end(), model.materials.begin(), model.materials.end());
         }
 
         {

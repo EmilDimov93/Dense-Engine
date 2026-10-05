@@ -51,7 +51,7 @@ namespace DE
                 return;
             }
 
-            Material *currentMaterial = nullptr;
+            MaterialUploadData *currentMaterial = nullptr;
             std::string line;
             while (std::getline(mtl, line))
             {
@@ -117,7 +117,7 @@ namespace DE
                 if (defaultMaterialIndex == UINT32_MAX)
                 {
                     defaultMaterialIndex = static_cast<uint32_t>(result.materials.size());
-                    result.materials.push_back(Material());
+                    result.materials.push_back(MaterialUploadData());
                 }
                 currentMaterialIndex = defaultMaterialIndex;
             }

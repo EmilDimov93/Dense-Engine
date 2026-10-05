@@ -7,7 +7,7 @@
 
 namespace DE
 {
-    struct Material
+    struct MaterialUploadData
     {
         XMFLOAT4 diffuse{1.f, 1.f, 1.f, 1.f};
         float metallic{0};
@@ -16,9 +16,17 @@ namespace DE
         std::vector<uint8_t> texture;
         XMUINT2 textureSize{0, 0};
 
-        bool hasTexture()
+        [[nodiscard]] bool hasTexture() const
         {
             return !texture.empty();
         }
+    };
+
+    struct Material
+    {
+        XMFLOAT4 diffuse;
+        float metallic;
+        float roughness;
+        int32_t textureIndex;
     };
 }

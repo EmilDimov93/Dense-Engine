@@ -13,14 +13,6 @@
 
 namespace DE
 {
-    struct GPUMaterial
-    {
-        XMFLOAT4 diffuse;
-        float metallic;
-        float roughness;
-        int32_t textureIndex;
-    };
-
     class Scene
     {
     public:
