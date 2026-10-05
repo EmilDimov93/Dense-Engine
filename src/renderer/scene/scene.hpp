@@ -25,6 +25,7 @@ namespace DE
         D3D12_GPU_VIRTUAL_ADDRESS getTLASAddress() const { return tlas.getAddress(); }
 
         void flattenMaterials();
+        D3D12_GPU_VIRTUAL_ADDRESS getMaterialsAddress() const { return materialBuffer->GetGPUVirtualAddress(); }
 
     private:
         std::unordered_map<Handle, Model> models;

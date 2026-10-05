@@ -38,6 +38,7 @@ namespace DE
         commands.list->SetComputeRootSignature(pipeline.globalRootSignature.Get());
         commands.list->SetComputeRootShaderResourceView(0, scene.getTLASAddress());
         commands.list->SetComputeRootDescriptorTable(1, renderTarget.descriptorHeap->GetGPUDescriptorHandleForHeapStart());
+        commands.list->SetComputeRootShaderResourceView(2, scene.getMaterialsAddress());
         commands.list->SetPipelineState1(pipeline.stateObject.Get());
 
         const UINT64 shaderRecordSize = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;

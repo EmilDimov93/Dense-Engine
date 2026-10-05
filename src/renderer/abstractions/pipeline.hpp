@@ -38,16 +38,19 @@ namespace DE::abstractions
                 .RegisterSpace = 0,
                 .OffsetInDescriptorsFromTableStart = 0};
 
-            D3D12_ROOT_PARAMETER rootParams[2] = {};
+            D3D12_ROOT_PARAMETER rootParams[3] = {};
             rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
             rootParams[0].Descriptor = {0, 0};
             rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
             rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
             rootParams[1].DescriptorTable = {1, &uavRange};
             rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+            rootParams[2].Descriptor = {1, 0};
+            rootParams[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
             D3D12_ROOT_SIGNATURE_DESC rootSigDesc{
-                .NumParameters = 2,
+                .NumParameters = 3,
                 .pParameters = rootParams,
                 .NumStaticSamplers = 0,
                 .pStaticSamplers = nullptr,
