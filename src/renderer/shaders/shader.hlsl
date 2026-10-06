@@ -4,6 +4,15 @@
 RaytracingAccelerationStructure Scene : register(t0);
 RWTexture2D<float4> Output : register(u0);
 
+struct Material
+{
+    float4 diffuse;
+    float metallic;
+    float roughness;
+    int textureIndex;
+};
+StructuredBuffer<Material> Materials : register(t1);
+
 struct RayPayload
 {
     float3 color;
@@ -39,5 +48,6 @@ void Miss(inout RayPayload payload)
 [shader("closesthit")]
 void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes attribs)
 {
-    payload.color = float3(1.0f - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+    Material material = Materials[InstanceID()];
+    payload.color = material.diffuse.rgb;
 }

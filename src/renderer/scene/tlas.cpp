@@ -18,6 +18,8 @@ namespace DE
         {
             const ModelInstance &instance = entry.second;
 
+            const uint32_t materialOffset = modelMaterialArrayOffsets.at(instance.modelHandle);
+
             auto modelIt = models.find(instance.modelHandle);
             if (modelIt == models.end())
                 fatal("Model instance references unknown model");
@@ -31,7 +33,7 @@ namespace DE
             {
                 D3D12_RAYTRACING_INSTANCE_DESC instanceDesc{};
                 XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4 *>(instanceDesc.Transform), world);
-                instanceDesc.InstanceID = static_cast<UINT>(instanceDescs.size());
+                instanceDesc.InstanceID = materialOffset + mesh.materialIndex;
                 instanceDesc.InstanceMask = 0xFF;
                 instanceDesc.InstanceContributionToHitGroupIndex = 0;
                 instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
