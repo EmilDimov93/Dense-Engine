@@ -1,8 +1,9 @@
 // Copyright 2026 Emil Dimov
 // Licensed under the Apache License, Version 2.0
 
-RaytracingAccelerationStructure Scene : register(t0);
 RWTexture2D<float4> Output : register(u0);
+
+RaytracingAccelerationStructure Scene : register(t0);
 
 struct Material
 {

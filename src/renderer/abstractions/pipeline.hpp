@@ -13,6 +13,14 @@
 
 namespace DE::abstractions
 {
+    enum RootParams
+    {
+        OutputTexture = 0,
+        TLAS = 1,
+        MaterialBuffer = 2,
+        Count
+    };
+
     struct Pipeline
     {
         ComPtr<ID3D12RootSignature> globalRootSignature;
@@ -38,19 +46,19 @@ namespace DE::abstractions
                 .RegisterSpace = 0,
                 .OffsetInDescriptorsFromTableStart = 0};
 
-            D3D12_ROOT_PARAMETER rootParams[3] = {};
-            rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-            rootParams[0].Descriptor = {0, 0};
-            rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-            rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-            rootParams[1].DescriptorTable = {1, &uavRange};
-            rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-            rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-            rootParams[2].Descriptor = {1, 0};
-            rootParams[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            D3D12_ROOT_PARAMETER rootParams[RootParams::Count] = {};
+            rootParams[RootParams::OutputTexture].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+            rootParams[RootParams::OutputTexture].DescriptorTable = {1, &uavRange};
+            rootParams[RootParams::OutputTexture].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[RootParams::TLAS].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+            rootParams[RootParams::TLAS].Descriptor = {0, 0};
+            rootParams[RootParams::TLAS].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[RootParams::MaterialBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+            rootParams[RootParams::MaterialBuffer].Descriptor = {1, 0};
+            rootParams[RootParams::MaterialBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
             D3D12_ROOT_SIGNATURE_DESC rootSigDesc{
-                .NumParameters = 3,
+                .NumParameters = RootParams::Count,
                 .pParameters = rootParams,
                 .NumStaticSamplers = 0,
                 .pStaticSamplers = nullptr,
