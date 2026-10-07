@@ -11,11 +11,7 @@ namespace DE
     {
         const UINT frameIndex = swapChain.swapchain->GetCurrentBackBufferIndex();
 
-        commands.fences[frameIndex].wait(); 
-
-        ID3D12CommandAllocator *allocator = commands.allocators[frameIndex].Get();
-        dxa(allocator->Reset(), "Failed to reset command allocator");
-        dxa(commands.list->Reset(allocator, nullptr), "Failed to reset command list");
+        commands.begin(frameIndex);
 
         ID3D12Resource *backBuffer = swapChain.backBuffers[frameIndex].Get();
         ID3D12Resource *output = renderTarget.texture.Get();
@@ -70,13 +66,8 @@ namespace DE
             transition(backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT)};
         commands.list->ResourceBarrier(static_cast<UINT>(std::size(toPresentBarriers)), toPresentBarriers);
 
-        dxa(commands.list->Close(), "Failed to close command list");
-
-        ID3D12CommandList *commandListsToExecute[] = {commands.list.Get()};
-        commands.queue->ExecuteCommandLists(static_cast<UINT>(std::size(commandListsToExecute)), commandListsToExecute);
+        commands.execute(frameIndex);
 
         dxa(swapChain.swapchain->Present(1, 0), "Failed to present");
-
-        commands.fences[frameIndex].signal(commands.queue.Get());
     }
 }

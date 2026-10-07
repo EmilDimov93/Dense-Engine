@@ -21,13 +21,11 @@ namespace DE::abstractions
 
         explicit CommandContext(ID3D12Device5 *device) : fences{Fence(device), Fence(device)}
         {
-            D3D12_COMMAND_QUEUE_DESC queueDesc
-            {
+            D3D12_COMMAND_QUEUE_DESC queueDesc{
                 .Type = D3D12_COMMAND_LIST_TYPE_DIRECT,
                 .Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
                 .Flags = D3D12_COMMAND_QUEUE_FLAG_NONE,
-                .NodeMask = 0
-            };
+                .NodeMask = 0};
 
             dxa(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&queue)), "Failed to create command queue");
 
@@ -35,6 +33,25 @@ namespace DE::abstractions
                 dxa(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocators[frameIndex])), "Failed to create command allocator");
 
             dxa(device->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&list)), "Failed to create command list");
+        }
+
+        void begin(uint32_t frameIndex)
+        {
+            fences[frameIndex].wait();
+
+            ID3D12CommandAllocator *allocator = allocators[frameIndex].Get();
+            dxa(allocator->Reset(), "Failed to reset command allocator");
+            dxa(list->Reset(allocator, nullptr), "Failed to reset command list");
+        }
+
+        void execute(uint32_t frameIndex)
+        {
+            dxa(list->Close(), "Failed to close command list");
+
+            ID3D12CommandList *commandListsToExecute[] = {list.Get()};
+            queue->ExecuteCommandLists(static_cast<UINT>(std::size(commandListsToExecute)), commandListsToExecute);
+
+            fences[frameIndex].signal(queue.Get());
         }
     };
 }
