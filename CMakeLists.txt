@@ -13,10 +13,10 @@ set(ENGINE_SOURCES
     src/renderer/init.cpp
     src/renderer/runtime.cpp
 
-    src/renderer/scene/scene.cpp
-    src/renderer/scene/tlas.cpp
-    src/renderer/scene/mesh.cpp
-    src/renderer/scene/modelLoader.cpp
+    src/scene/scene.cpp
+    src/scene/tlas.cpp
+    src/scene/mesh.cpp
+    src/scene/modelLoader.cpp
 
     src/window/window.cpp
 )

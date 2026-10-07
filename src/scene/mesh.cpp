@@ -3,8 +3,8 @@
 
 #include "mesh.hpp"
 
-#include "../buffer.hpp"
-#include "../assertions.hpp"
+#include "../renderer/buffer.hpp"
+#include "../renderer/assertions.hpp"
 
 namespace DE
 {

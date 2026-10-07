@@ -3,7 +3,7 @@
 
 #include "modelLoader.hpp"
 
-#include "../assertions.hpp"
+#include "../renderer/assertions.hpp"
 
 #include <fstream>
 #include <filesystem>
@@ -11,7 +11,7 @@
 #include <unordered_map>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "../../../ext/stb_image/stb_image.h"
+#include "../../ext/stb_image/stb_image.h"
 
 namespace DE
 {

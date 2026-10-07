@@ -9,7 +9,7 @@
 #include "abstractions/pipeline.hpp"
 #include "abstractions/renderTarget.hpp"
 
-#include "scene/scene.hpp"
+#include "../scene/scene.hpp"
 
 #include "common.hpp"
 

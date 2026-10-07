@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../common.hpp"
+#include "../renderer/common.hpp"
 
 #include "model.hpp"
 #include "modelInstance.hpp"

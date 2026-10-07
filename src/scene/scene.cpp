@@ -5,8 +5,8 @@
 
 #include "modelLoader.hpp"
 
-#include "../buffer.hpp"
-#include "../assertions.hpp"
+#include "../renderer/buffer.hpp"
+#include "../renderer/assertions.hpp"
 
 #include <cstring>
 
@@ -37,6 +37,8 @@ namespace DE
 
     Handle Scene::addModelInstance(Handle modelHandle, Transform transform)
     {
+        hasNewInstance = true;
+
         Handle handle = handleGenerator.generateHandle();
 
         modelInstances.emplace(handle, ModelInstance(modelHandle, transform));

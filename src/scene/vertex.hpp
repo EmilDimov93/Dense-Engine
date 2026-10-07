@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../common.hpp"
+#include "../renderer/common.hpp"
 
 namespace DE
 {

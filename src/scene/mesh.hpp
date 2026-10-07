@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "../common.hpp"
+#include "../renderer/common.hpp"
 
 #include "vertex.hpp"
 
-#include "../abstractions/accelerationStructure.hpp"
+#include "../renderer/abstractions/accelerationStructure.hpp"
 
 namespace DE
 {
