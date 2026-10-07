@@ -18,8 +18,7 @@ namespace DE
         Handle cube = scene.addModel("../../example/assets/cube.obj");
         scene.addModelInstance(cube, Transform({0.f, 0.f, 3.f}, {0.5f, 0.5f, 0.f}));
 
-        scene.flattenMaterials();
-        scene.buildTLAS();
+        scene.upload();
 
         dxa(commands.list->Close(), "Failed to close command list");
 

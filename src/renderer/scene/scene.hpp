@@ -21,11 +21,9 @@ namespace DE
         Handle addModel(const std::string &filePath);
         Handle addModelInstance(Handle modelHandle, Transform transform);
 
-        void buildTLAS();
-        D3D12_GPU_VIRTUAL_ADDRESS getTLASAddress() const { return tlas.getAddress(); }
-
-        void flattenMaterials();
+        void upload();
         D3D12_GPU_VIRTUAL_ADDRESS getMaterialsAddress() const { return materialBuffer->GetGPUVirtualAddress(); }
+        D3D12_GPU_VIRTUAL_ADDRESS getTLASAddress() const { return tlas.getAddress(); }
 
     private:
         std::unordered_map<Handle, Model> models;
@@ -43,5 +41,8 @@ namespace DE
 
         ID3D12Device5 *device;
         ID3D12GraphicsCommandList4 *commandList;
+
+        void uploadMaterials();
+        void buildTLAS();
     };
 }

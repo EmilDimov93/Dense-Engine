@@ -44,7 +44,13 @@ namespace DE
         return handle;
     }
 
-    void Scene::flattenMaterials()
+    void Scene::upload()
+    {
+        uploadMaterials();
+        buildTLAS();
+    }
+
+    void Scene::uploadMaterials()
     {
         std::vector<Material> materials;
 
