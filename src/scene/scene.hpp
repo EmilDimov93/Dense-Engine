@@ -5,6 +5,8 @@
 
 #include "../renderer/common.hpp"
 
+#include "../sceneDescription.hpp"
+
 #include "model.hpp"
 #include "modelInstance.hpp"
 
@@ -18,10 +20,7 @@ namespace DE
     public:
         Scene(ID3D12Device5 *device, ID3D12GraphicsCommandList4 *commandList) : device(device), commandList(commandList) {}
 
-        Handle addModel(const std::string &filePath);
-        Handle addModelInstance(Handle modelHandle, Transform transform);
-
-        void upload();
+        void upload(const SceneDescription &sceneDescription);
         D3D12_GPU_VIRTUAL_ADDRESS getMaterialsAddress() const { return materialBuffer->GetGPUVirtualAddress(); }
         D3D12_GPU_VIRTUAL_ADDRESS getTLASAddress() const { return tlas.getAddress(); }
 

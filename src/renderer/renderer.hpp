@@ -23,6 +23,8 @@ namespace DE
 
         void tick();
 
+        void uploadScene(const SceneDescription &sceneDescription);
+
     private:
         abstractions::Device device;
         abstractions::CommandContext commands;

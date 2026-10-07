@@ -5,6 +5,7 @@
 
 #include "renderer/renderer.hpp"
 #include "window/window.hpp"
+#include "sceneDescription.hpp"
 
 namespace DE
 {
@@ -15,8 +16,16 @@ namespace DE
 
         void run();
 
+        Handle addModel(const std::string &filePath);
+        Handle addModelInstance(Handle modelHandle, Transform transform);
+
     private:
         Window window;
         Renderer renderer;
+
+        SceneDescription sceneDescription;
+        bool hasSceneChanged = true;
+
+        HandleGenerator handleGenerator;
     };
 }

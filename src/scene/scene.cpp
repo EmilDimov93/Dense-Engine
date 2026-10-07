@@ -12,42 +12,37 @@
 
 namespace DE
 {
-    Handle Scene::addModel(const std::string &filePath)
+    void Scene::upload(const SceneDescription &sceneDescription)
     {
-        ModelUploadData modelUploadData = loadModel(filePath);
+        for (const ModelDescription &modelDescription : sceneDescription.modelDescriptions)
+            if (models.find(modelDescription.handle) == models.end())
+            {
+                ModelUploadData modelUploadData = loadModel(modelDescription.filePath);
 
-        Model model;
+                Model model;
 
-        model.meshes.reserve(modelUploadData.meshes.size());
-        for (const MeshUploadData &meshUpload : modelUploadData.meshes)
-            model.meshes.emplace_back(meshUpload, device, commandList);
+                model.meshes.reserve(modelUploadData.meshes.size());
+                for (const MeshUploadData &meshUpload : modelUploadData.meshes)
+                    model.meshes.emplace_back(meshUpload, device, commandList);
 
-        model.materials.reserve(modelUploadData.materials.size());
-        for (const MaterialUploadData &materialUpload : modelUploadData.materials)
-            model.materials.emplace_back(materialUpload.diffuse, materialUpload.metallic, materialUpload.roughness, -1);
+                model.materials.reserve(modelUploadData.materials.size());
+                for (const MaterialUploadData &materialUpload : modelUploadData.materials)
+                    model.materials.emplace_back(materialUpload.diffuse, materialUpload.metallic, materialUpload.roughness, -1);
 
-        Handle handle = handleGenerator.generateHandle();
+                models.emplace(modelDescription.handle, std::move(model));
 
-        models.emplace(handle, std::move(model));
+                modelMaterialArrayOffsets.emplace(modelDescription.handle, 0);
+            }
 
-        modelMaterialArrayOffsets.emplace(handle, 0);
+        for (const ModelInstanceDescription &modelInstanceDescription : sceneDescription.modelInstanceDescriptions)
+        {
+            auto found = modelInstances.find(modelInstanceDescription.handle);
+            if (found == modelInstances.end())
+                modelInstances.emplace(modelInstanceDescription.handle, ModelInstance(modelInstanceDescription.modelHandle, modelInstanceDescription.transform));
+            else
+                found->second.transform = modelInstanceDescription.transform;
+        }
 
-        return handle;
-    }
-
-    Handle Scene::addModelInstance(Handle modelHandle, Transform transform)
-    {
-        hasNewInstance = true;
-
-        Handle handle = handleGenerator.generateHandle();
-
-        modelInstances.emplace(handle, ModelInstance(modelHandle, transform));
-
-        return handle;
-    }
-
-    void Scene::upload()
-    {
         uploadMaterials();
         buildTLAS();
     }

@@ -70,4 +70,17 @@ namespace DE
 
         dxa(swapChain.swapchain->Present(1, 0), "Failed to present");
     }
+
+    void Renderer::uploadScene(const SceneDescription &sceneDescription)
+    {
+        for (abstractions::Fence &fence : commands.fences)
+            fence.wait();
+
+        commands.begin(0);
+
+        scene.upload(sceneDescription);
+        
+        commands.execute(0);
+        commands.fences[0].wait();
+    }
 }

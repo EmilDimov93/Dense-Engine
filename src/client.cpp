@@ -9,7 +9,36 @@ namespace DE
 
     void Client::run()
     {
-        while(window.tick())
+        while (window.tick())
+        {
+            if(hasSceneChanged)
+            {
+                renderer.uploadScene(sceneDescription);
+
+                hasSceneChanged = false;
+            }
+
             renderer.tick();
+        }
+    }
+
+    Handle Client::addModel(const std::string &filePath)
+    {
+        Handle handle = handleGenerator.generateHandle();
+
+        sceneDescription.modelDescriptions.emplace_back(handle, filePath);
+
+        return handle;
+    }
+
+    Handle Client::addModelInstance(Handle modelHandle, Transform transform)
+    {
+        hasSceneChanged = true;
+
+        Handle handle = handleGenerator.generateHandle();
+
+        sceneDescription.modelInstanceDescriptions.emplace_back(handle, modelHandle, transform);
+
+        return handle;
     }
 }
