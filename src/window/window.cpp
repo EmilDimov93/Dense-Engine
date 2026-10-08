@@ -95,6 +95,19 @@ namespace DE
             windowHandle = nullptr;
             PostQuitMessage(0);
             return 0;
+        case WM_SIZE:
+            isMinimized = (wParam == SIZE_MINIMIZED);
+            if (isMinimized)
+                return 0;
+            const UINT newWidth = LOWORD(lParam);
+            const UINT newHeight = HIWORD(lParam);
+            if (newWidth != width || newHeight != height)
+            {
+                width = newWidth;
+                height = newHeight;
+                wasResized = true;
+            }
+            return 0;
         }
 
         return DefWindowProcW(hwnd, message, wParam, lParam);

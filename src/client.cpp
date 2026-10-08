@@ -11,7 +11,10 @@ namespace DE
     {
         while (window.tick())
         {
-            if(hasSceneChanged)
+            if(window.getMinimized())
+                continue;
+
+            if (hasSceneChanged)
             {
                 renderer.uploadScene(sceneDescription);
 

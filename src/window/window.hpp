@@ -18,6 +18,7 @@ namespace DE
         HWND getHandle() const { return windowHandle; }
         UINT getWidth() const { return width; }
         UINT getHeight() const { return height; }
+        bool getMinimized() const { return isMinimized; }
 
     private:
         static LRESULT CALLBACK windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -29,5 +30,8 @@ namespace DE
 
         UINT width;
         UINT height;
+
+        bool wasResized = false;
+        bool isMinimized = false;
     };
 }
