@@ -5,7 +5,10 @@
 
 namespace DE
 {
-    Client::Client() : window(L"Dense Engine", 500u, 500u), renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight())) {}
+    Client::Client() : window(L"Dense Engine", 500u, 500u), renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight()))
+    {
+        renderer.setViewport({100, 100}, {200, 200});
+    }
 
     void Client::run()
     {

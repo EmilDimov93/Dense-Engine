@@ -48,8 +48,8 @@ namespace DE
         dispatchDesc.HitGroupTable.StartAddress = pipeline.HitGroup();
         dispatchDesc.HitGroupTable.SizeInBytes = shaderRecordSize;
         dispatchDesc.HitGroupTable.StrideInBytes = shaderRecordSize;
-        dispatchDesc.Width = swapChain.width;
-        dispatchDesc.Height = swapChain.height;
+        dispatchDesc.Width = viewportSize.x;
+        dispatchDesc.Height = viewportSize.y;
         dispatchDesc.Depth = 1;
 
         commands.list->DispatchRays(&dispatchDesc);
@@ -59,7 +59,25 @@ namespace DE
             transition(backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST)};
         commands.list->ResourceBarrier(static_cast<UINT>(std::size(toCopyBarriers)), toCopyBarriers);
 
-        commands.list->CopyResource(backBuffer, output);
+        D3D12_TEXTURE_COPY_LOCATION dst{};
+        dst.pResource = backBuffer;
+        dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+        dst.SubresourceIndex = 0;
+
+        D3D12_TEXTURE_COPY_LOCATION src{};
+        src.pResource = output;
+        src.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+        src.SubresourceIndex = 0;
+
+        if (viewportStart.x < swapChain.width && viewportStart.y < swapChain.height)
+        {
+            D3D12_BOX srcBox{};
+            srcBox.right = min(viewportSize.x, swapChain.width - viewportStart.x);
+            srcBox.bottom = min(viewportSize.y, swapChain.height - viewportStart.y);
+            srcBox.back = 1;
+
+            commands.list->CopyTextureRegion(&dst, viewportStart.x, viewportStart.y, 0, &src, &srcBox);
+        }
 
         const D3D12_RESOURCE_BARRIER toPresentBarriers[] = {
             transition(output, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
@@ -86,13 +104,26 @@ namespace DE
 
     void Renderer::resize(UINT width, UINT height)
     {
-        if(width == swapChain.width && height == swapChain.height)
+        if (width == swapChain.width && height == swapChain.height)
             return;
 
         for (abstractions::Fence &fence : commands.fences)
             fence.wait();
 
         swapChain.resize(width, height);
-        renderTarget = abstractions::RenderTarget(device, width, height);
+    }
+
+    void Renderer::setViewport(XMUINT2 start, XMUINT2 size)
+    {
+        if (size.x == viewportSize.x && size.y == viewportSize.y)
+            return;
+
+        viewportStart = start;
+
+        for (abstractions::Fence &fence : commands.fences)
+            fence.wait();
+
+        viewportSize = size;
+        renderTarget = abstractions::RenderTarget(device, size.x, size.y);
     }
 }

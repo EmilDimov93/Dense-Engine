@@ -27,12 +27,17 @@ namespace DE
 
         void resize(UINT width, UINT height);
 
+        void setViewport(XMUINT2 start, XMUINT2 size);
+
     private:
         abstractions::Device device;
         abstractions::CommandContext commands;
         abstractions::SwapChain swapChain;
         abstractions::Pipeline pipeline;
         abstractions::RenderTarget renderTarget;
+
+        XMUINT2 viewportStart;
+        XMUINT2 viewportSize;
 
         Scene scene;
     };
