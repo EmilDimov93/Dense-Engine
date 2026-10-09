@@ -26,6 +26,11 @@ void RayGen()
     uint2 dims = DispatchRaysDimensions().xy;
 
     float2 ndc = (float2(pixel) + 0.5f) / float2(dims) * 2.0f - 1.0f;
+    const float fovY = radians(60.0f);
+    const float tanHalfFov = tan(fovY / 2.f);
+
+    ndc.x *= float(dims.x) / float(dims.y);
+    ndc *= tanHalfFov;
     ndc.y = -ndc.y;
 
     RayDesc ray;
