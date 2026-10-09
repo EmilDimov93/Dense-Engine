@@ -105,7 +105,6 @@ namespace DE
             {
                 width = newWidth;
                 height = newHeight;
-                wasResized = true;
             }
             return 0;
         }

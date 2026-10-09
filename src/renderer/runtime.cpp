@@ -79,8 +79,20 @@ namespace DE
         commands.begin(0);
 
         scene.upload(sceneDescription);
-        
+
         commands.execute(0);
         commands.fences[0].wait();
+    }
+
+    void Renderer::resize(UINT width, UINT height)
+    {
+        if(width == swapChain.width && height == swapChain.height)
+            return;
+
+        for (abstractions::Fence &fence : commands.fences)
+            fence.wait();
+
+        swapChain.resize(width, height);
+        renderTarget = abstractions::RenderTarget(device, width, height);
     }
 }

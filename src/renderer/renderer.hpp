@@ -25,6 +25,8 @@ namespace DE
 
         void uploadScene(const SceneDescription &sceneDescription);
 
+        void resize(UINT width, UINT height);
+
     private:
         abstractions::Device device;
         abstractions::CommandContext commands;

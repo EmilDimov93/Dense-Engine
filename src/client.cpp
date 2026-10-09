@@ -11,8 +11,10 @@ namespace DE
     {
         while (window.tick())
         {
-            if(window.getMinimized())
+            if (window.getMinimized())
                 continue;
+
+            renderer.resize(window.getWidth(), window.getHeight());
 
             if (hasSceneChanged)
             {
