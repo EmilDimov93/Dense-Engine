@@ -43,7 +43,7 @@ namespace DE
         dispatchDesc.RayGenerationShaderRecord.StartAddress = pipeline.Raygen();
         dispatchDesc.RayGenerationShaderRecord.SizeInBytes = shaderRecordSize;
         dispatchDesc.MissShaderTable.StartAddress = pipeline.Miss();
-        dispatchDesc.MissShaderTable.SizeInBytes = shaderRecordSize;
+        dispatchDesc.MissShaderTable.SizeInBytes = 2 * shaderRecordSize;
         dispatchDesc.MissShaderTable.StrideInBytes = shaderRecordSize;
         dispatchDesc.HitGroupTable.StartAddress = pipeline.HitGroup();
         dispatchDesc.HitGroupTable.SizeInBytes = shaderRecordSize;
@@ -72,8 +72,8 @@ namespace DE
         if (viewportStart.x < swapChain.width && viewportStart.y < swapChain.height)
         {
             D3D12_BOX srcBox{};
-            srcBox.right = min(viewportSize.x, swapChain.width - viewportStart.x);
-            srcBox.bottom = min(viewportSize.y, swapChain.height - viewportStart.y);
+            srcBox.right = std::min(viewportSize.x, swapChain.width - viewportStart.x);
+            srcBox.bottom = std::min(viewportSize.y, swapChain.height - viewportStart.y);
             srcBox.back = 1;
 
             commands.list->CopyTextureRegion(&dst, viewportStart.x, viewportStart.y, 0, &src, &srcBox);

@@ -19,6 +19,11 @@ struct RayPayload
     float3 color;
 };
 
+struct ShadowPayload
+{
+    float visibility;
+};
+
 [shader("raygeneration")]
 void RayGen()
 {
@@ -51,9 +56,28 @@ void Miss(inout RayPayload payload)
     payload.color = float3(0.05f, 0.05f, 0.08f);
 }
 
+[shader("miss")]
+void ShadowMiss(inout ShadowPayload payload)
+{
+    payload.visibility = 1.0f;
+}
+
 [shader("closesthit")]
 void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes attribs)
 {
     Material material = Materials[InstanceID()];
-    payload.color = material.diffuse.rgb;
+
+    const float3 lightDir = normalize(float3(0.f, 1.f, 0.f));
+    float3 hitPos = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
+
+    RayDesc shadowRay;
+    shadowRay.Origin = hitPos - WorldRayDirection() * 0.001f;
+    shadowRay.Direction = lightDir;
+    shadowRay.TMin = 0.001f;
+    shadowRay.TMax = 1000.0f;
+
+    ShadowPayload shadow = { 0.0f };
+    TraceRay(Scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, shadowRay, shadow);
+
+    payload.color = material.diffuse.rgb * lerp(0.2f, 1.0f, shadow.visibility);
 }

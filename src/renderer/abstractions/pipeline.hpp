@@ -85,7 +85,7 @@ namespace DE::abstractions
 
             D3D12_GLOBAL_ROOT_SIGNATURE globalSig{globalRootSignature.Get()};
 
-            D3D12_RAYTRACING_PIPELINE_CONFIG pipelineConfig{.MaxTraceRecursionDepth = 1};
+            D3D12_RAYTRACING_PIPELINE_CONFIG pipelineConfig{.MaxTraceRecursionDepth = 2};
 
             const D3D12_STATE_SUBOBJECT subobjects[] =
                 {
@@ -111,7 +111,7 @@ namespace DE::abstractions
                 D3D12_RESOURCE_DESC bufferDesc{
                     .Dimension = D3D12_RESOURCE_DIMENSION_BUFFER,
                     .Alignment = 0,
-                    .Width = 3 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT,
+                    .Width = 4 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT,
                     .Height = 1,
                     .DepthOrArraySize = 1,
                     .MipLevels = 1,
@@ -129,12 +129,14 @@ namespace DE::abstractions
             dxa(shaderTable->Map(0, nullptr, reinterpret_cast<void **>(&mapped)), "Failed to map shader table");
             std::memcpy(mapped + 0 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, props->GetShaderIdentifier(L"RayGen"), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
             std::memcpy(mapped + 1 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, props->GetShaderIdentifier(L"Miss"), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-            std::memcpy(mapped + 2 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, props->GetShaderIdentifier(L"HitGroup"), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+            std::memcpy(mapped + 2 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, props->GetShaderIdentifier(L"ShadowMiss"), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+            std::memcpy(mapped + 3 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, props->GetShaderIdentifier(L"HitGroup"), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
             shaderTable->Unmap(0, nullptr);
         }
 
         D3D12_GPU_VIRTUAL_ADDRESS Raygen() const { return shaderTable->GetGPUVirtualAddress(); }
         D3D12_GPU_VIRTUAL_ADDRESS Miss() const { return shaderTable->GetGPUVirtualAddress() + D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }
-        D3D12_GPU_VIRTUAL_ADDRESS HitGroup() const { return shaderTable->GetGPUVirtualAddress() + 2 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }
+        D3D12_GPU_VIRTUAL_ADDRESS ShadowMiss() const { return shaderTable->GetGPUVirtualAddress() + 2 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }
+        D3D12_GPU_VIRTUAL_ADDRESS HitGroup() const { return shaderTable->GetGPUVirtualAddress() + 3 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }
     };
 }
