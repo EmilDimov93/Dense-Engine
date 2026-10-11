@@ -36,8 +36,6 @@ namespace DE
 
         abstractions::AccelerationStructure tlas;
 
-        HandleGenerator handleGenerator;
-
         ID3D12Device5 *device;
         ID3D12GraphicsCommandList4 *commandList;
 

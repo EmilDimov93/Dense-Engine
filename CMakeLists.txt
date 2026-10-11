@@ -21,6 +21,17 @@ set(ENGINE_SOURCES
     src/window/window.cpp
 )
 
+add_library(imgui STATIC
+    ext/imgui/imgui.cpp
+    ext/imgui/imgui_demo.cpp
+    ext/imgui/imgui_draw.cpp
+    ext/imgui/imgui_tables.cpp
+    ext/imgui/imgui_widgets.cpp
+    ext/imgui/backends/imgui_impl_win32.cpp
+    ext/imgui/backends/imgui_impl_dx12.cpp
+)
+target_include_directories(imgui PUBLIC ext/imgui)
+
 add_executable(DenseEngine ${ENGINE_SOURCES})
 
 target_include_directories(DenseEngine PRIVATE src)
@@ -44,6 +55,7 @@ set_target_properties(DenseEngine PROPERTIES
 )
 
 target_link_libraries(DenseEngine PRIVATE
+    imgui
     d3d12
     dxgi
     dxguid
