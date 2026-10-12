@@ -49,9 +49,9 @@ namespace DE
                 hasSceneChanged = false;
             }
 
-            ui.tick(makeViewportRect().start.x, sceneDescription);
+            ui.tick(makeViewportRect().start.x, sceneDescription, settings);
 
-            renderer.tick(ui);
+            renderer.tick(ui, settings);
         }
     }
 

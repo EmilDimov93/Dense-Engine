@@ -13,6 +13,8 @@
 
 #include "../rect.hpp"
 
+#include "../settings.hpp"
+
 #include "common.hpp"
 
 namespace DE
@@ -25,7 +27,7 @@ namespace DE
         Renderer(HWND window, XMUINT2 windowSize);
         ~Renderer();
 
-        void tick(UI &ui);
+        void tick(const UI &ui, const Settings &settings);
 
         void waitForGpu();
 

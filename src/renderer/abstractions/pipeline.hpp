@@ -18,6 +18,7 @@ namespace DE::abstractions
         OutputTexture = 0,
         TLAS = 1,
         MaterialBuffer = 2,
+        Settings = 3,
         Count
     };
 
@@ -56,13 +57,14 @@ namespace DE::abstractions
             rootParams[RootParams::MaterialBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
             rootParams[RootParams::MaterialBuffer].Descriptor = {1, 0};
             rootParams[RootParams::MaterialBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[RootParams::Settings].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+            rootParams[RootParams::Settings].Constants = {
+                .ShaderRegister = 0,
+                .RegisterSpace = 0,
+                .Num32BitValues = 2
+            };
 
-            D3D12_ROOT_SIGNATURE_DESC rootSigDesc{
-                .NumParameters = RootParams::Count,
-                .pParameters = rootParams,
-                .NumStaticSamplers = 0,
-                .pStaticSamplers = nullptr,
-                .Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE};
+            D3D12_ROOT_SIGNATURE_DESC rootSigDesc{.NumParameters = RootParams::Count, .pParameters = rootParams, .NumStaticSamplers = 0, .pStaticSamplers = nullptr, .Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE};
 
             ComPtr<ID3DBlob> serialized, error;
             dxa(D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1, &serialized, &error), "Failed to serialize root signature");
@@ -80,8 +82,7 @@ namespace DE::abstractions
 
             D3D12_RAYTRACING_SHADER_CONFIG shaderConfig{
                 .MaxPayloadSizeInBytes = 3 * sizeof(float),
-                .MaxAttributeSizeInBytes = 2 * sizeof(float)
-            };
+                .MaxAttributeSizeInBytes = 2 * sizeof(float)};
 
             D3D12_GLOBAL_ROOT_SIGNATURE globalSig{globalRootSignature.Get()};
 

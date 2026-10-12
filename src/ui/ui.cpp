@@ -82,7 +82,7 @@ namespace DE
         return ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam) != 0;
     }
 
-    void UI::tick(uint32_t sidebarWidth, SceneDescription &sceneDescription)
+    void UI::tick(uint32_t sidebarWidth, const SceneDescription &sceneDescription, Settings &settings)
     {
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -97,12 +97,16 @@ namespace DE
         ImGui::Text("%.f FPS", ImGui::GetIO().Framerate);
         ImGui::EndChild();
 
+        const float minFov = 0.f;
+        const float maxFov = 180.f;
+        ImGui::SliderScalar("FOV", ImGuiDataType_Float, &settings.fov, &minFov, &maxFov);
+
         ImGui::SeparatorText("Model Instances");
         static int32_t selectedRowIndex = -1;
         ImGui::BeginTable("Table", 3, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_Borders);
         for (uint32_t rowIndex = 0; rowIndex < sceneDescription.modelInstanceDescriptions.size(); ++rowIndex)
         {
-            ModelInstanceDescription &modelInstance = sceneDescription.modelInstanceDescriptions[rowIndex];
+            const ModelInstanceDescription &modelInstance = sceneDescription.modelInstanceDescriptions[rowIndex];
 
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
@@ -112,7 +116,7 @@ namespace DE
             ImGui::PopID();
 
             ImGui::TableNextColumn();
-            for (ModelDescription &modelDescription : sceneDescription.modelDescriptions)
+            for (const ModelDescription &modelDescription : sceneDescription.modelDescriptions)
             {
                 if (modelInstance.modelHandle == modelDescription.handle)
                     ImGui::Text(std::filesystem::path(modelDescription.filePath).filename().string().c_str());
@@ -127,7 +131,7 @@ namespace DE
         ImGui::Render();
     }
 
-    void UI::draw(ID3D12GraphicsCommandList *list, UINT frameIndex)
+    void UI::draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const
     {
         const D3D12_CPU_DESCRIPTOR_HANDLE target = backBufferView(frameIndex);
         list->OMSetRenderTargets(1, &target, FALSE, nullptr);

@@ -9,7 +9,7 @@
 
 namespace DE
 {
-    void Renderer::tick(UI &ui)
+    void Renderer::tick(const UI &ui, const Settings &settings)
     {
         const UINT frameIndex = swapChain.swapchain->GetCurrentBackBufferIndex();
 
@@ -37,6 +37,7 @@ namespace DE
         commands.list->SetComputeRootDescriptorTable(abstractions::RootParams::OutputTexture, renderTarget.descriptorHeap->GetGPUDescriptorHandleForHeapStart());
         commands.list->SetComputeRootShaderResourceView(abstractions::RootParams::TLAS, scene.getTLASAddress());
         commands.list->SetComputeRootShaderResourceView(abstractions::RootParams::MaterialBuffer, scene.getMaterialsAddress());
+        commands.list->SetComputeRoot32BitConstants(abstractions::RootParams::Settings, 2, &settings, 0);
         commands.list->SetPipelineState1(pipeline.stateObject.Get());
 
         const UINT64 shaderRecordSize = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;

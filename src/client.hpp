@@ -7,6 +7,7 @@
 #include "window/window.hpp"
 #include "sceneDescription.hpp"
 #include "ui/ui.hpp"
+#include "settings.hpp"
 #include "rect.hpp"
 
 namespace DE
@@ -34,6 +35,8 @@ namespace DE
         HandleGenerator handleGenerator;
 
         UI ui;
+
+        Settings settings;
 
         float sidebarWidthFraction = 0.20f;
 

@@ -7,6 +7,8 @@
 
 #include "../renderer/common.hpp"
 
+#include "../settings.hpp"
+
 namespace DE
 {
     class UI
@@ -17,8 +19,8 @@ namespace DE
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        void tick(uint32_t sidebarWidth, SceneDescription &sceneDescription);
-        void draw(ID3D12GraphicsCommandList *list, UINT frameIndex);
+        void tick(uint32_t sidebarWidth, const SceneDescription &sceneDescription, Settings &settings);
+        void draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const;
 
         void createBackBufferViews(const PerFrame<ComPtr<ID3D12Resource>> &backBuffers);
         D3D12_CPU_DESCRIPTOR_HANDLE backBufferView(UINT frameIndex) const;

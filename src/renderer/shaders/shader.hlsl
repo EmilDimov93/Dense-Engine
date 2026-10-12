@@ -24,6 +24,14 @@ struct ShadowPayload
     float visibility;
 };
 
+struct Settings
+{
+    int selectedID;
+    float fov;
+};
+
+ConstantBuffer<Settings> settings : register(b0);
+
 [shader("raygeneration")]
 void RayGen()
 {
@@ -31,7 +39,7 @@ void RayGen()
     uint2 dims = DispatchRaysDimensions().xy;
 
     float2 ndc = (float2(pixel) + 0.5f) / float2(dims) * 2.0f - 1.0f;
-    const float fovY = radians(60.0f);
+    const float fovY = radians(settings.fov);
     const float tanHalfFov = tan(fovY / 2.f);
 
     ndc.x *= float(dims.x) / float(dims.y);
@@ -80,4 +88,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
     TraceRay(Scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, shadowRay, shadow);
 
     payload.color = material.diffuse.rgb * lerp(0.2f, 1.0f, shadow.visibility);
+
+    if(InstanceID() == settings.selectedID)
+        payload.color += float3(0.3f, 0.3f, 0.f);
 }
