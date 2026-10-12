@@ -13,8 +13,7 @@ namespace DE::abstractions
     {
         ComPtr<IDXGISwapChain4> swapchain;
         PerFrame<ComPtr<ID3D12Resource>> backBuffers;
-        UINT width = 0;
-        UINT height = 0;
+        XMUINT2 size;
 
         SwapChain(IDXGIFactory6 *factory, ID3D12CommandQueue *graphicsQueue, HWND windowHandle, UINT width, UINT height)
         {
@@ -40,8 +39,8 @@ namespace DE::abstractions
             for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
                 dxa(swapchain->GetBuffer(bufferIndex, IID_PPV_ARGS(&backBuffers[bufferIndex])), "Failed to get swapchain buffer");
 
-            this->width = width;
-            this->height = height;
+            size.x = width;
+            size.y = height;
         }
 
         ~SwapChain()
@@ -52,18 +51,17 @@ namespace DE::abstractions
             swapchain.Reset();
         }
 
-        void resize(UINT newWidth, UINT newHeight)
+        void resize(XMUINT2 newSize)
         {
             for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
                 backBuffers[bufferIndex].Reset();
 
-            dxa(swapchain->ResizeBuffers(FRAMES_IN_FLIGHT, newWidth, newHeight, DXGI_FORMAT_UNKNOWN, 0), "Failed to resize swapchain");
+            dxa(swapchain->ResizeBuffers(FRAMES_IN_FLIGHT, newSize.x, newSize.y, DXGI_FORMAT_UNKNOWN, 0), "Failed to resize swapchain");
 
             for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
                 dxa(swapchain->GetBuffer(bufferIndex, IID_PPV_ARGS(&backBuffers[bufferIndex])), "Failed to get swapchain buffer");
 
-            width = newWidth;
-            height = newHeight;
+            size = newSize;
         }
     };
 }

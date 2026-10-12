@@ -6,6 +6,7 @@
 #include "renderer/renderer.hpp"
 #include "window/window.hpp"
 #include "sceneDescription.hpp"
+#include "rect.hpp"
 
 namespace DE
 {
@@ -19,6 +20,8 @@ namespace DE
         Handle addModel(const std::string &filePath);
         Handle addModelInstance(Handle modelHandle, Transform transform);
 
+        void setSidebarWidthFraction(float fraction);
+
     private:
         Window window;
         Renderer renderer;
@@ -27,5 +30,9 @@ namespace DE
         bool hasSceneChanged = true;
 
         HandleGenerator handleGenerator;
+
+        float sidebarWidthFraction = 0.20f;
+
+        Rect makeViewportRect() const;
     };
 }

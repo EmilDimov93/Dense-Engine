@@ -5,10 +5,16 @@
 
 namespace DE
 {
-    Client::Client() : window(L"Dense Engine", 500u, 500u), renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight()))
+    Rect Client::makeViewportRect() const
     {
-        renderer.setViewport({100, 100}, {200, 200});
+        XMUINT2 swapChainSize = renderer.getSwapChainSize();
+
+        return Rect{{static_cast<uint32_t>(sidebarWidthFraction * swapChainSize.x), 0},
+                    {static_cast<uint32_t>(swapChainSize.x - sidebarWidthFraction * swapChainSize.x), swapChainSize.y}};
     }
+
+    Client::Client() : window(L"Dense Engine", 500u, 500u), renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight()))
+    {}
 
     void Client::run()
     {
@@ -17,7 +23,14 @@ namespace DE
             if (window.getMinimized())
                 continue;
 
-            renderer.resize(window.getWidth(), window.getHeight());
+            XMUINT2 swapChainSize = renderer.getSwapChainSize();
+            XMUINT2 windowSize = XMUINT2(window.getWidth(), window.getHeight());
+
+            if (swapChainSize.x != window.getWidth() || swapChainSize.y != window.getHeight())
+            {
+                renderer.resizeSwapChain(window.getWidth(), window.getHeight());
+                renderer.setViewportRect(makeViewportRect());
+            }
 
             if (hasSceneChanged)
             {
@@ -48,5 +61,14 @@ namespace DE
         sceneDescription.modelInstanceDescriptions.emplace_back(handle, modelHandle, transform);
 
         return handle;
+    }
+
+    void Client::setSidebarWidthFraction(float fraction)
+    {
+        if(fraction >= 0.f && fraction < 1.f)
+        {
+            sidebarWidthFraction = fraction;
+            renderer.setViewportRect(makeViewportRect());
+        }
     }
 }

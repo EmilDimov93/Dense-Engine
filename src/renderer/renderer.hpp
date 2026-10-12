@@ -11,6 +11,8 @@
 
 #include "../scene/scene.hpp"
 
+#include "../rect.hpp"
+
 #include "common.hpp"
 
 namespace DE
@@ -25,9 +27,11 @@ namespace DE
 
         void uploadScene(const SceneDescription &sceneDescription);
 
-        void resize(UINT width, UINT height);
+        XMUINT2 getSwapChainSize() const;
 
-        void setViewport(XMUINT2 start, XMUINT2 size);
+        void resizeSwapChain(UINT width, UINT height);
+
+        void setViewportRect(Rect rect);
 
     private:
         abstractions::Device device;
@@ -36,8 +40,7 @@ namespace DE
         abstractions::Pipeline pipeline;
         abstractions::RenderTarget renderTarget;
 
-        XMUINT2 viewportStart;
-        XMUINT2 viewportSize;
+        Rect viewportRect;
 
         Scene scene;
     };

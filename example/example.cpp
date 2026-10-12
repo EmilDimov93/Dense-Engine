@@ -12,5 +12,7 @@ int main()
     Handle cube = client.addModel("../../example/assets/cube.obj");
     client.addModelInstance(cube, Transform({0.f, 0.f, 3.f}, {0.5f, 0.5f, 0.f}));
 
+    client.setSidebarWidthFraction(0.5f);
+
     client.run();
 }
