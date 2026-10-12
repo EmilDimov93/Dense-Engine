@@ -3,13 +3,12 @@
 
 #pragma once
 
-#include "../common.hpp"
-
-#include "../assertions.hpp"
+#include "core/dxcommon.hpp"
+#include "core/assertions.hpp"
 
 #include "fence.hpp"
 
-namespace DE::abstractions
+namespace DE::dxabstractions
 {
     struct CommandContext
     {

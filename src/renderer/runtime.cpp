@@ -3,9 +3,10 @@
 
 #include "renderer.hpp"
 
-#include "../ui/ui.hpp"
+#include "ui/ui.hpp"
 
-#include "assertions.hpp"
+#include "core/dxcommon.hpp"
+#include "core/assertions.hpp"
 
 namespace DE
 {
@@ -34,10 +35,10 @@ namespace DE
         commands.list->SetDescriptorHeaps(static_cast<UINT>(std::size(descriptorHeaps)), descriptorHeaps);
 
         commands.list->SetComputeRootSignature(pipeline.globalRootSignature.Get());
-        commands.list->SetComputeRootDescriptorTable(abstractions::RootParams::OutputTexture, renderTarget.descriptorHeap->GetGPUDescriptorHandleForHeapStart());
-        commands.list->SetComputeRootShaderResourceView(abstractions::RootParams::TLAS, scene.getTLASAddress());
-        commands.list->SetComputeRootShaderResourceView(abstractions::RootParams::MaterialBuffer, scene.getMaterialsAddress());
-        commands.list->SetComputeRoot32BitConstants(abstractions::RootParams::Settings, 2, &settings, 0);
+        commands.list->SetComputeRootDescriptorTable(dxabstractions::RootParams::OutputTexture, renderTarget.descriptorHeap->GetGPUDescriptorHandleForHeapStart());
+        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLAS, scene.getTLASAddress());
+        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::MaterialBuffer, scene.getMaterialsAddress());
+        commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::Settings, 2, &settings, 0);
         commands.list->SetPipelineState1(pipeline.stateObject.Get());
 
         const UINT64 shaderRecordSize = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
@@ -107,7 +108,7 @@ namespace DE
 
     void Renderer::uploadScene(const SceneDescription &sceneDescription)
     {
-        for (abstractions::Fence &fence : commands.fences)
+        for (dxabstractions::Fence &fence : commands.fences)
             fence.wait();
 
         commands.begin(0);
@@ -125,7 +126,7 @@ namespace DE
 
     void Renderer::resizeSwapChain(XMUINT2 size)
     {
-        for (abstractions::Fence &fence : commands.fences)
+        for (dxabstractions::Fence &fence : commands.fences)
             fence.wait();
 
         swapChain.resize(size);
@@ -135,10 +136,10 @@ namespace DE
     {
         viewportRect.start = rect.start;
 
-        for (abstractions::Fence &fence : commands.fences)
+        for (dxabstractions::Fence &fence : commands.fences)
             fence.wait();
 
         viewportRect.size = rect.size;
-        renderTarget = abstractions::RenderTarget(device, rect.size.x, rect.size.y);
+        renderTarget = dxabstractions::RenderTarget(device, rect.size.x, rect.size.y);
     }
 }

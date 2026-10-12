@@ -3,15 +3,14 @@
 
 #pragma once
 
-#include "../common.hpp"
-
-#include "../assertions.hpp"
+#include "core/dxcommon.hpp"
+#include "core/assertions.hpp"
 
 #include <cstring>
 #include <fstream>
 #include <vector>
 
-namespace DE::abstractions
+namespace DE::dxabstractions
 {
     enum RootParams
     {

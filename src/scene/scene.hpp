@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "../renderer/common.hpp"
+#include "core/dxcommon.hpp"
 
-#include "../sceneDescription.hpp"
+#include "sceneDescription.hpp"
 
 #include "model.hpp"
 #include "modelInstance.hpp"
@@ -34,7 +34,7 @@ namespace DE
 
         ComPtr<ID3D12Resource> materialBuffer;
 
-        abstractions::AccelerationStructure tlas;
+        dxabstractions::AccelerationStructure tlas;
 
         ID3D12Device5 *device;
         ID3D12GraphicsCommandList4 *commandList;

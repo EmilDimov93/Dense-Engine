@@ -3,7 +3,7 @@
 
 #include "window.hpp"
 
-#include "../ui/ui.hpp"
+#include "ui/ui.hpp"
 
 namespace DE
 {

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../renderer/common.hpp"
+#include "core/dxcommon.hpp"
 
 #include "mesh.hpp"
 #include "material.hpp"

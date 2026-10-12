@@ -3,19 +3,18 @@
 
 #pragma once
 
-#include "abstractions/device.hpp"
-#include "abstractions/commandContext.hpp"
-#include "abstractions/swapChain.hpp"
-#include "abstractions/pipeline.hpp"
-#include "abstractions/renderTarget.hpp"
+#include "dxabstractions/device.hpp"
+#include "dxabstractions/commandContext.hpp"
+#include "dxabstractions/swapChain.hpp"
+#include "dxabstractions/pipeline.hpp"
+#include "dxabstractions/renderTarget.hpp"
 
-#include "../scene/scene.hpp"
+#include "scene/scene.hpp"
 
-#include "../rect.hpp"
+#include "core/rect.hpp"
+#include "core/dxcommon.hpp"
 
-#include "../settings.hpp"
-
-#include "common.hpp"
+#include "settings.hpp"
 
 namespace DE
 {
@@ -44,11 +43,11 @@ namespace DE
         const PerFrame<ComPtr<ID3D12Resource>> &getBackBuffers() const { return swapChain.backBuffers; }
 
     private:
-        abstractions::Device device;
-        abstractions::CommandContext commands;
-        abstractions::SwapChain swapChain;
-        abstractions::Pipeline pipeline;
-        abstractions::RenderTarget renderTarget;
+        dxabstractions::Device device;
+        dxabstractions::CommandContext commands;
+        dxabstractions::SwapChain swapChain;
+        dxabstractions::Pipeline pipeline;
+        dxabstractions::RenderTarget renderTarget;
 
         Rect viewportRect;
 

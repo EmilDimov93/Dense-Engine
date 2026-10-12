@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "../sceneDescription.hpp"
+#include "core/dxcommon.hpp"
 
-#include "../renderer/common.hpp"
+#include "scene/sceneDescription.hpp"
 
-#include "../settings.hpp"
+#include "settings.hpp"
 
 namespace DE
 {

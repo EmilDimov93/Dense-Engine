@@ -3,7 +3,7 @@
 
 #include "modelLoader.hpp"
 
-#include "../renderer/assertions.hpp"
+#include "core/assertions.hpp"
 
 #include <fstream>
 #include <filesystem>

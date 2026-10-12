@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "handle.hpp"
+#include "core/handle.hpp"
 
-#include "scene/transform.hpp"
+#include "transform.hpp"
 
 #include <string>
 

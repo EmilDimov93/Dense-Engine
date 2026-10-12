@@ -3,13 +3,13 @@
 
 #include "ui.hpp"
 
+#include "core/assertions.hpp"
+
 #include <imgui.h>
 #include <backends/imgui_impl_win32.h>
 #include <backends/imgui_impl_dx12.h>
 
 #include <filesystem>
-
-#include "../renderer/assertions.hpp"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

@@ -3,11 +3,10 @@
 
 #pragma once
 
-#include "../common.hpp"
+#include "core/dxcommon.hpp"
+#include "core/assertions.hpp"
 
-#include "../assertions.hpp"
-
-namespace DE::abstractions
+namespace DE::dxabstractions
 {
     struct Fence
     {

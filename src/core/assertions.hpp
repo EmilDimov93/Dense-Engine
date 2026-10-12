@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "common.hpp"
+#include "dxcommon.hpp"
 
 #include <iostream>
 #include <string_view>

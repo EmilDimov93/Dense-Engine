@@ -3,12 +3,11 @@
 
 #pragma once
 
-#include "../renderer/common.hpp"
+#include "core/dxcommon.hpp"
+#include "core/handle.hpp"
 
 #include "model.hpp"
 #include "transform.hpp"
-
-#include "../handle.hpp"
 
 namespace DE
 {

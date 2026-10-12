@@ -3,7 +3,8 @@
 
 #include "renderer.hpp"
 
-#include "assertions.hpp"
+#include "core/assertions.hpp"
+
 #include <filesystem>
 #include <iostream>
 #include <source_location>
@@ -25,7 +26,7 @@ namespace DE
 
     void Renderer::waitForGpu()
     {
-        for (abstractions::Fence &fence : commands.fences)
+        for (dxabstractions::Fence &fence : commands.fences)
         {
             fence.signal(commands.queue.Get());
             fence.wait();

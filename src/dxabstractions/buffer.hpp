@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include "common.hpp"
-
-#include "assertions.hpp"
+#include "core/dxcommon.hpp"
+#include "core/assertions.hpp"
 
 namespace DE
 {

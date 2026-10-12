@@ -3,15 +3,14 @@
 
 #pragma once
 
-#include "../buffer.hpp"
+#include "core/dxcommon.hpp"
+#include "core/assertions.hpp"
 
-#include "../common.hpp"
-
-#include "../assertions.hpp"
+#include "buffer.hpp"
 
 #include "fence.hpp"
 
-namespace DE::abstractions
+namespace DE::dxabstractions
 {
     struct AccelerationStructure
     {

@@ -5,10 +5,10 @@
 
 #include "renderer/renderer.hpp"
 #include "window/window.hpp"
-#include "sceneDescription.hpp"
+#include "scene/sceneDescription.hpp"
 #include "ui/ui.hpp"
+#include "core/rect.hpp"
 #include "settings.hpp"
-#include "rect.hpp"
 
 namespace DE
 {

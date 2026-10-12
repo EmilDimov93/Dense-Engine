@@ -3,8 +3,9 @@
 
 #include "scene.hpp"
 
-#include "../renderer/buffer.hpp"
-#include "../renderer/assertions.hpp"
+#include "core/assertions.hpp"
+
+#include "dxabstractions/buffer.hpp"
 
 #include <cstring>
 

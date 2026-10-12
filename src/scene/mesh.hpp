@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "../renderer/common.hpp"
+#include "core/dxcommon.hpp"
+
+#include "dxabstractions/accelerationStructure.hpp"
 
 #include "vertex.hpp"
-
-#include "../renderer/abstractions/accelerationStructure.hpp"
 
 namespace DE
 {
@@ -27,7 +27,7 @@ namespace DE
         ComPtr<ID3D12Resource> indexBuffer;
         uint32_t indexCount;
         
-        abstractions::AccelerationStructure blas;
+        dxabstractions::AccelerationStructure blas;
 
         uint32_t materialIndex;
 

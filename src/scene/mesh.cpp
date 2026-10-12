@@ -3,8 +3,9 @@
 
 #include "mesh.hpp"
 
-#include "../renderer/buffer.hpp"
-#include "../renderer/assertions.hpp"
+#include "dxabstractions/buffer.hpp"
+
+#include "core/assertions.hpp"
 
 namespace DE
 {
