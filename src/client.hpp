@@ -6,6 +6,7 @@
 #include "renderer/renderer.hpp"
 #include "window/window.hpp"
 #include "sceneDescription.hpp"
+#include "ui/ui.hpp"
 #include "rect.hpp"
 
 namespace DE
@@ -14,6 +15,7 @@ namespace DE
     {
     public:
         Client();
+        ~Client();
 
         void run();
 
@@ -30,6 +32,8 @@ namespace DE
         bool hasSceneChanged = true;
 
         HandleGenerator handleGenerator;
+
+        UI ui;
 
         float sidebarWidthFraction = 0.20f;
 

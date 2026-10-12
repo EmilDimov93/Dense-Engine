@@ -10,11 +10,20 @@
 
 namespace DE
 {
-    Renderer::Renderer(HWND window, XMUINT2 windowSize) : commands(device), swapChain(device.factory.Get(), commands.queue.Get(), window, windowSize.x, windowSize.y), pipeline(device, "shaders/shader.cso"), scene(device, commands.list.Get()), renderTarget(device, windowSize.x, windowSize.y)
+    Renderer::Renderer(HWND window, XMUINT2 windowSize) : commands(device),
+                                                          swapChain(device.factory.Get(), commands.queue.Get(), window, windowSize.x, windowSize.y),
+                                                          pipeline(device, "shaders/shader.cso"),
+                                                          scene(device, commands.list.Get()),
+                                                          renderTarget(device, windowSize.x, windowSize.y)
     {
     }
 
     Renderer::~Renderer()
+    {
+        waitForGpu();
+    }
+
+    void Renderer::waitForGpu()
     {
         for (abstractions::Fence &fence : commands.fences)
         {

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace DE
 {
     using Handle = uint64_t;

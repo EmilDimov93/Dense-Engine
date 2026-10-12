@@ -3,6 +3,8 @@
 
 #include "window.hpp"
 
+#include "../ui/ui.hpp"
+
 namespace DE
 {
     static const wchar_t *const WINDOW_CLASS_NAME = L"DenseWindowClass";
@@ -85,6 +87,9 @@ namespace DE
 
     LRESULT Window::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
+        if (UI::handleMessage(hwnd, message, wParam, lParam))
+            return true;
+
         switch (message)
         {
         case WM_CLOSE:

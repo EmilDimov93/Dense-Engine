@@ -3,11 +3,13 @@
 
 #include "renderer.hpp"
 
+#include "../ui/ui.hpp"
+
 #include "assertions.hpp"
 
 namespace DE
 {
-    void Renderer::tick()
+    void Renderer::tick(UI &ui)
     {
         const UINT frameIndex = swapChain.swapchain->GetCurrentBackBufferIndex();
 
@@ -54,9 +56,17 @@ namespace DE
 
         commands.list->DispatchRays(&dispatchDesc);
 
+        const D3D12_CPU_DESCRIPTOR_HANDLE backBufferView = ui.backBufferView(frameIndex);
+
+        const D3D12_RESOURCE_BARRIER toClearBarrier = transition(backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        commands.list->ResourceBarrier(1, &toClearBarrier);
+
+        const float clearColor[] = {0.1f, 0.1f, 0.1f, 1.0f};
+        commands.list->ClearRenderTargetView(backBufferView, clearColor, 0, nullptr);
+
         const D3D12_RESOURCE_BARRIER toCopyBarriers[] = {
             transition(output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),
-            transition(backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST)};
+            transition(backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST)};
         commands.list->ResourceBarrier(static_cast<UINT>(std::size(toCopyBarriers)), toCopyBarriers);
 
         D3D12_TEXTURE_COPY_LOCATION dst{};
@@ -79,10 +89,15 @@ namespace DE
             commands.list->CopyTextureRegion(&dst, viewportRect.start.x, viewportRect.start.y, 0, &src, &srcBox);
         }
 
-        const D3D12_RESOURCE_BARRIER toPresentBarriers[] = {
+        const D3D12_RESOURCE_BARRIER toGuiBarriers[] = {
             transition(output, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-            transition(backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT)};
-        commands.list->ResourceBarrier(static_cast<UINT>(std::size(toPresentBarriers)), toPresentBarriers);
+            transition(backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET)};
+        commands.list->ResourceBarrier(static_cast<UINT>(std::size(toGuiBarriers)), toGuiBarriers);
+
+        ui.draw(commands.list.Get(), frameIndex);
+
+        const D3D12_RESOURCE_BARRIER toPresentBarrier = transition(backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+        commands.list->ResourceBarrier(1, &toPresentBarrier);
 
         commands.execute(frameIndex);
 
@@ -107,12 +122,12 @@ namespace DE
         return swapChain.size;
     }
 
-    void Renderer::resizeSwapChain(UINT width, UINT height)
+    void Renderer::resizeSwapChain(XMUINT2 size)
     {
         for (abstractions::Fence &fence : commands.fences)
             fence.wait();
 
-        swapChain.resize({width, height});
+        swapChain.resize(size);
     }
 
     void Renderer::setViewportRect(Rect rect)

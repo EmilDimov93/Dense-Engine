@@ -18,6 +18,8 @@ set(ENGINE_SOURCES
     src/scene/mesh.cpp
     src/scene/modelLoader.cpp
 
+    src/ui/ui.cpp
+
     src/window/window.cpp
 )
 

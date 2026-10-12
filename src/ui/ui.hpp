@@ -3,19 +3,36 @@
 
 #pragma once
 
-#include <windows.h>
+#include "../sceneDescription.hpp"
 
-#include <DirectXMath.h>
+#include "../renderer/common.hpp"
 
 namespace DE
 {
     class UI
     {
     public:
-    private:
-        DirectX::XMUINT2 viewportStart;
-        DirectX::XMUINT2 viewportSize;
+        UI(HWND windowHandle, ID3D12Device *device, ID3D12CommandQueue *queue, const PerFrame<ComPtr<ID3D12Resource>> &backBuffers);
+        ~UI();
 
-        DirectX::XMUINT2 windowSize;
+        static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+        void tick(uint32_t sidebarWidth, SceneDescription &sceneDescription);
+        void draw(ID3D12GraphicsCommandList *list, UINT frameIndex);
+
+        void createBackBufferViews(const PerFrame<ComPtr<ID3D12Resource>> &backBuffers);
+        D3D12_CPU_DESCRIPTOR_HANDLE backBufferView(UINT frameIndex) const;
+
+    private:
+        static constexpr UINT MAX_TEXTURES = 64;
+
+        ID3D12Device *device = nullptr;
+
+        ComPtr<ID3D12DescriptorHeap> textureHeap;
+        UINT textureDescriptorSize = 0;
+        std::vector<UINT> freeTextureSlots;
+
+        ComPtr<ID3D12DescriptorHeap> backBufferViewHeap;
+        UINT backBufferViewSize = 0;
     };
 }

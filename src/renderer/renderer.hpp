@@ -17,21 +17,29 @@
 
 namespace DE
 {
+    class UI;
+
     class Renderer
     {
     public:
         Renderer(HWND window, XMUINT2 windowSize);
         ~Renderer();
 
-        void tick();
+        void tick(UI &ui);
+
+        void waitForGpu();
 
         void uploadScene(const SceneDescription &sceneDescription);
 
         XMUINT2 getSwapChainSize() const;
 
-        void resizeSwapChain(UINT width, UINT height);
+        void resizeSwapChain(XMUINT2 size);
 
         void setViewportRect(Rect rect);
+
+        ID3D12Device5 *getDevice() const { return device; }
+        ID3D12CommandQueue *getQueue() const { return commands.queue.Get(); }
+        const PerFrame<ComPtr<ID3D12Resource>> &getBackBuffers() const { return swapChain.backBuffers; }
 
     private:
         abstractions::Device device;

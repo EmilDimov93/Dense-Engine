@@ -13,8 +13,17 @@ namespace DE
                     {static_cast<uint32_t>(swapChainSize.x - sidebarWidthFraction * swapChainSize.x), swapChainSize.y}};
     }
 
-    Client::Client() : window(L"Dense Engine", 500u, 500u), renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight()))
-    {}
+    Client::Client() : window(L"Dense Engine", 500u, 500u),
+                       renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight())),
+                       ui(window.getHandle(), renderer.getDevice(), renderer.getQueue(), renderer.getBackBuffers())
+    {
+        renderer.setViewportRect(makeViewportRect());
+    }
+
+    Client::~Client()
+    {
+        renderer.waitForGpu();
+    }
 
     void Client::run()
     {
@@ -26,9 +35,10 @@ namespace DE
             XMUINT2 swapChainSize = renderer.getSwapChainSize();
             XMUINT2 windowSize = XMUINT2(window.getWidth(), window.getHeight());
 
-            if (swapChainSize.x != window.getWidth() || swapChainSize.y != window.getHeight())
+            if (swapChainSize.x != windowSize.x || swapChainSize.y != windowSize.y)
             {
-                renderer.resizeSwapChain(window.getWidth(), window.getHeight());
+                renderer.resizeSwapChain(windowSize);
+                ui.createBackBufferViews(renderer.getBackBuffers());
                 renderer.setViewportRect(makeViewportRect());
             }
 
@@ -39,7 +49,9 @@ namespace DE
                 hasSceneChanged = false;
             }
 
-            renderer.tick();
+            ui.tick(makeViewportRect().start.x, sceneDescription);
+
+            renderer.tick(ui);
         }
     }
 
@@ -65,7 +77,7 @@ namespace DE
 
     void Client::setSidebarWidthFraction(float fraction)
     {
-        if(fraction >= 0.f && fraction < 1.f)
+        if (fraction >= 0.f && fraction < 1.f)
         {
             sidebarWidthFraction = fraction;
             renderer.setViewportRect(makeViewportRect());
