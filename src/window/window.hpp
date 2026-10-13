@@ -10,7 +10,7 @@ namespace DE
     class Window
     {
     public:
-        Window(const wchar_t *title, int width, int height);
+        Window(const wchar_t *title, int width = -1, int height = -1);
         ~Window();
 
         bool tick();

@@ -9,7 +9,7 @@ namespace DE
 {
     static const wchar_t *const WINDOW_CLASS_NAME = L"DenseWindowClass";
 
-    Window::Window(const wchar_t *title, int width, int height) : width(width), height(height), instanceHandle(GetModuleHandleW(nullptr))
+    Window::Window(const wchar_t *title, int width, int height) : instanceHandle(GetModuleHandleW(nullptr))
     {
         WNDCLASSEXW windowClass = {};
         windowClass.cbSize = sizeof(windowClass);
@@ -21,6 +21,25 @@ namespace DE
         RegisterClassExW(&windowClass);
 
         const DWORD windowStyle = WS_OVERLAPPEDWINDOW;
+
+        if (width <= 0 || height <= 0)
+        {
+            HMONITOR monitorHandle = MonitorFromWindow(windowHandle, MONITOR_DEFAULTTONEAREST);
+
+            MONITORINFO monitorInfo = {};
+            monitorInfo.cbSize = sizeof(MONITORINFO);
+
+            if (GetMonitorInfo(monitorHandle, &monitorInfo))
+            {
+                const RECT &monitorRect = monitorInfo.rcMonitor;
+
+                width = (monitorRect.right - monitorRect.left) / 2;
+                height = (monitorRect.bottom - monitorRect.top) / 2;
+            }
+        }
+
+        this->width = width;
+        this->height = height;
 
         RECT windowRect = {0, 0, width, height};
         AdjustWindowRect(&windowRect, windowStyle, FALSE);

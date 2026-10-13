@@ -13,7 +13,7 @@ namespace DE
                     {static_cast<uint32_t>(swapChainSize.x - sidebarWidthFraction * swapChainSize.x), swapChainSize.y}};
     }
 
-    Client::Client() : window(L"Dense Engine", 500u, 500u),
+    Client::Client() : window(L"Dense Engine"),
                        renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight())),
                        ui(window.getHandle(), renderer.getDevice(), renderer.getQueue(), renderer.getBackBuffers())
     {
