@@ -99,10 +99,10 @@ namespace DE
 
         const float minFov = 0.f;
         const float maxFov = 180.f;
-        ImGui::SliderScalar("FOV", ImGuiDataType_Float, &settings.fov, &minFov, &maxFov);
+        const char* fovFormat = (settings.fov < 0.01f) ? "ORTHO" : "%.1f";
+        ImGui::SliderScalar("FOV", ImGuiDataType_Float, &settings.fov, &minFov, &maxFov, fovFormat);
 
         ImGui::SeparatorText("Model Instances");
-        static int32_t selectedRowIndex = -1;
         ImGui::BeginTable("Table", 3, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_Borders);
         for (uint32_t rowIndex = 0; rowIndex < sceneDescription.modelInstanceDescriptions.size(); ++rowIndex)
         {
@@ -111,8 +111,8 @@ namespace DE
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::PushID(rowIndex);
-            if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), selectedRowIndex == static_cast<int32_t>(rowIndex), ImGuiSelectableFlags_SpanAllColumns))
-                selectedRowIndex = rowIndex;
+            if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), settings.selectedInstanceID == static_cast<int32_t>(rowIndex), ImGuiSelectableFlags_SpanAllColumns))
+                settings.selectedInstanceID = rowIndex;
             ImGui::PopID();
 
             ImGui::TableNextColumn();

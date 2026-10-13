@@ -43,12 +43,24 @@ void RayGen()
     const float tanHalfFov = tan(fovY / 2.f);
 
     ndc.x *= float(dims.x) / float(dims.y);
-    ndc *= tanHalfFov;
     ndc.y = -ndc.y;
 
     RayDesc ray;
-    ray.Origin = float3(0.0f, 0.0f, -2.0f);
-    ray.Direction = normalize(float3(ndc, 1.0f));
+
+    const float3 cameraPosition = float3(0.0f, 0.0f, -2.0f);
+    
+    if(settings.fov < 0.01f)
+    {
+        const float halfHeight = 2.f;
+        ray.Origin = cameraPosition + float3(ndc * halfHeight, 0.0f);
+        ray.Direction = float3(0.0f, 0.0f, 1.0f);
+    }
+    else
+    {
+        ray.Origin = cameraPosition;
+        ray.Direction = normalize(float3(ndc * tanHalfFov, 1.0f));
+    }
+
     ray.TMin = 0.001f;
     ray.TMax = 1000.0f;
 
