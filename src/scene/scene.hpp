@@ -15,13 +15,23 @@
 
 namespace DE
 {
+    struct TLASInstanceData
+    {
+        uint32_t vertexOffset;
+        uint32_t indexOffset;
+        uint32_t materialIndex;
+    };
+
     class Scene
     {
     public:
         Scene(ID3D12Device5 *device, ID3D12GraphicsCommandList4 *commandList) : device(device), commandList(commandList) {}
 
         void upload(const SceneDescription &sceneDescription);
-        D3D12_GPU_VIRTUAL_ADDRESS getMaterialsAddress() const { return materialBuffer->GetGPUVirtualAddress(); }
+        D3D12_GPU_VIRTUAL_ADDRESS getMaterialBufferAddress() const { return materialBuffer->GetGPUVirtualAddress(); }
+        D3D12_GPU_VIRTUAL_ADDRESS getVertexBufferAddress() const { return vertexBuffer->GetGPUVirtualAddress(); }
+        D3D12_GPU_VIRTUAL_ADDRESS getIndexBufferAddress() const { return indexBuffer->GetGPUVirtualAddress(); }
+        D3D12_GPU_VIRTUAL_ADDRESS getTLASInstanceDataAddress() const { return tlasInstanceDataBuffer->GetGPUVirtualAddress(); }
         D3D12_GPU_VIRTUAL_ADDRESS getTLASAddress() const { return tlas.getAddress(); }
 
     private:
@@ -39,6 +49,11 @@ namespace DE
         ID3D12Device5 *device;
         ID3D12GraphicsCommandList4 *commandList;
 
+        ComPtr<ID3D12Resource> vertexBuffer;
+        ComPtr<ID3D12Resource> indexBuffer;
+        ComPtr<ID3D12Resource> tlasInstanceDataBuffer;
+
+        void uploadGeometry();
         void uploadMaterials();
         void buildTLAS();
     };

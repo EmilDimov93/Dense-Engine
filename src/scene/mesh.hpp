@@ -31,6 +31,9 @@ namespace DE
 
         uint32_t materialIndex;
 
-        Mesh(const MeshUploadData &meshUploadData, ID3D12Device5* device, ID3D12GraphicsCommandList4* commandList);
+        uint32_t vertexOffset = 0;
+        uint32_t indexOffset = 0;
+
+        Mesh(const MeshUploadData &meshUploadData, ID3D12Device5 *device, ID3D12GraphicsCommandList4 *commandList);
     };
 }

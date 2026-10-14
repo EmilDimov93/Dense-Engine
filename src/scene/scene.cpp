@@ -44,8 +44,38 @@ namespace DE
                 found->second.transform = modelInstanceDescription.transform;
         }
 
+        uploadGeometry();
         uploadMaterials();
         buildTLAS();
+    }
+
+    void Scene::uploadGeometry()
+    {
+        uint64_t totalVertexCount = 0;
+        uint64_t totalIndexCount = 0;
+
+        for (auto &[handle, model] : models)
+            for (Mesh &mesh : model.meshes)
+            {
+                mesh.vertexOffset = static_cast<uint32_t>(totalVertexCount);
+                mesh.indexOffset = static_cast<uint32_t>(totalIndexCount);
+                totalVertexCount += mesh.vertexCount;
+                totalIndexCount += mesh.indexCount;
+            }
+
+        vertexBuffer = createBuffer(device, sizeof(Vertex) * totalVertexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_FLAG_NONE);
+        indexBuffer = createBuffer(device, sizeof(uint32_t) * totalIndexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_FLAG_NONE);
+
+        for (const auto &[handle, model] : models)
+            for (const Mesh &mesh : model.meshes)
+            {
+                commandList->CopyBufferRegion(vertexBuffer.Get(), sizeof(Vertex) * mesh.vertexOffset, mesh.vertexBuffer.Get(), 0, sizeof(Vertex) * mesh.vertexCount);
+                commandList->CopyBufferRegion(indexBuffer.Get(), sizeof(uint32_t) * mesh.indexOffset, mesh.indexBuffer.Get(), 0, sizeof(uint32_t) * mesh.indexCount);
+            }
+
+        const D3D12_RESOURCE_BARRIER barriers[] = {
+            transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+            transition(indexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)};
     }
 
     void Scene::uploadMaterials()

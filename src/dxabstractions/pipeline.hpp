@@ -17,7 +17,10 @@ namespace DE::dxabstractions
         OutputTexture = 0,
         TLAS = 1,
         MaterialBuffer = 2,
-        Settings = 3,
+        VertexBuffer = 3,
+        IndexBuffer = 4,
+        TLASInstanceDataBuffer = 5,
+        Settings = 6,
         Count
     };
 
@@ -56,12 +59,20 @@ namespace DE::dxabstractions
             rootParams[RootParams::MaterialBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
             rootParams[RootParams::MaterialBuffer].Descriptor = {1, 0};
             rootParams[RootParams::MaterialBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[RootParams::VertexBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+            rootParams[RootParams::VertexBuffer].Descriptor = {2, 0};
+            rootParams[RootParams::VertexBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[RootParams::IndexBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+            rootParams[RootParams::IndexBuffer].Descriptor = {3, 0};
+            rootParams[RootParams::IndexBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[RootParams::TLASInstanceDataBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+            rootParams[RootParams::TLASInstanceDataBuffer].Descriptor = {4, 0};
+            rootParams[RootParams::TLASInstanceDataBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
             rootParams[RootParams::Settings].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
             rootParams[RootParams::Settings].Constants = {
                 .ShaderRegister = 0,
                 .RegisterSpace = 0,
-                .Num32BitValues = 2
-            };
+                .Num32BitValues = 2};
 
             D3D12_ROOT_SIGNATURE_DESC rootSigDesc{.NumParameters = RootParams::Count, .pParameters = rootParams, .NumStaticSamplers = 0, .pStaticSamplers = nullptr, .Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE};
 
@@ -80,12 +91,12 @@ namespace DE::dxabstractions
                 .ClosestHitShaderImport = L"ClosestHit"};
 
             D3D12_RAYTRACING_SHADER_CONFIG shaderConfig{
-                .MaxPayloadSizeInBytes = 3 * sizeof(float),
+                .MaxPayloadSizeInBytes = sizeof(float) + sizeof(uint32_t),
                 .MaxAttributeSizeInBytes = 2 * sizeof(float)};
 
             D3D12_GLOBAL_ROOT_SIGNATURE globalSig{globalRootSignature.Get()};
 
-            D3D12_RAYTRACING_PIPELINE_CONFIG pipelineConfig{.MaxTraceRecursionDepth = 2};
+            D3D12_RAYTRACING_PIPELINE_CONFIG pipelineConfig{.MaxTraceRecursionDepth = 3};
 
             const D3D12_STATE_SUBOBJECT subobjects[] =
                 {

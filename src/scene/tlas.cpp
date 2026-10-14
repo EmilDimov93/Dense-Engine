@@ -14,6 +14,7 @@ namespace DE
     void Scene::buildTLAS()
     {
         std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instanceDescs;
+        std::vector<TLASInstanceData> tlasInstanceData;
 
         for (const auto &entry : modelInstances)
         {
@@ -41,6 +42,7 @@ namespace DE
                 instanceDesc.AccelerationStructure = mesh.blas.getAddress();
 
                 instanceDescs.push_back(instanceDesc);
+                tlasInstanceData.push_back({mesh.vertexOffset, mesh.indexOffset, materialOffset + mesh.materialIndex});
             }
         }
 
@@ -58,6 +60,19 @@ namespace DE
 
             std::memcpy(mappedData, instanceDescs.data(), size);
             instanceBuffer->Unmap(0, nullptr);
+        }
+
+        {
+            const uint64_t size = sizeof(TLASInstanceData) * tlasInstanceData.size();
+            tlasInstanceDataBuffer = createBuffer(device, size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
+
+            void *mappedData = nullptr;
+            const D3D12_RANGE noCpuReadRange{0, 0};
+
+            dxa(tlasInstanceDataBuffer->Map(0, &noCpuReadRange, &mappedData), "Failed to map buffer");
+
+            std::memcpy(mappedData, tlasInstanceData.data(), size);
+            tlasInstanceDataBuffer->Unmap(0, nullptr);
         }
 
         D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS tlasInputs{};

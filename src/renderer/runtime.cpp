@@ -19,25 +19,16 @@ namespace DE
         ID3D12Resource *backBuffer = swapChain.backBuffers[frameIndex].Get();
         ID3D12Resource *output = renderTarget.texture.Get();
 
-        auto transition = [](ID3D12Resource *resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) -> D3D12_RESOURCE_BARRIER
-        {
-            D3D12_RESOURCE_BARRIER barrier{};
-            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-            barrier.Transition.pResource = resource;
-            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-            barrier.Transition.StateBefore = before;
-            barrier.Transition.StateAfter = after;
-            return barrier;
-        };
-
         ID3D12DescriptorHeap *descriptorHeaps[] = {renderTarget.descriptorHeap.Get()};
         commands.list->SetDescriptorHeaps(static_cast<UINT>(std::size(descriptorHeaps)), descriptorHeaps);
 
         commands.list->SetComputeRootSignature(pipeline.globalRootSignature.Get());
         commands.list->SetComputeRootDescriptorTable(dxabstractions::RootParams::OutputTexture, renderTarget.descriptorHeap->GetGPUDescriptorHandleForHeapStart());
         commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLAS, scene.getTLASAddress());
-        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::MaterialBuffer, scene.getMaterialsAddress());
+        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::MaterialBuffer, scene.getMaterialBufferAddress());
+        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::VertexBuffer, scene.getVertexBufferAddress());
+        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::IndexBuffer, scene.getIndexBufferAddress());
+        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLASInstanceDataBuffer, scene.getTLASInstanceDataAddress());
         commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::Settings, 2, &settings, 0);
         commands.list->SetPipelineState1(pipeline.stateObject.Get());
 
