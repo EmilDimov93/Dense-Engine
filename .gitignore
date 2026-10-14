@@ -1,6 +1,7 @@
 .vscode/
 build/
 logo/
+early_dev/
 run.ps1
 lines.ps1
 conventions.md
