@@ -91,7 +91,7 @@ namespace DE::dxabstractions
                 .ClosestHitShaderImport = L"ClosestHit"};
 
             D3D12_RAYTRACING_SHADER_CONFIG shaderConfig{
-                .MaxPayloadSizeInBytes = sizeof(float) + sizeof(uint32_t),
+                .MaxPayloadSizeInBytes = 3 * sizeof(float) + sizeof(uint32_t),
                 .MaxAttributeSizeInBytes = 2 * sizeof(float)};
 
             D3D12_GLOBAL_ROOT_SIGNATURE globalSig{globalRootSignature.Get()};
