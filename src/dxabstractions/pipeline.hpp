@@ -145,6 +145,24 @@ namespace DE::dxabstractions
             shaderTable->Unmap(0, nullptr);
         }
 
+        D3D12_DISPATCH_RAYS_DESC dispatchDesc(XMUINT2 size) const
+        {
+            D3D12_DISPATCH_RAYS_DESC dispatchDesc{};
+            dispatchDesc.RayGenerationShaderRecord.StartAddress = Raygen();
+            dispatchDesc.RayGenerationShaderRecord.SizeInBytes = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
+            dispatchDesc.MissShaderTable.StartAddress = Miss();
+            dispatchDesc.MissShaderTable.SizeInBytes = 2 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
+            dispatchDesc.MissShaderTable.StrideInBytes = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
+            dispatchDesc.HitGroupTable.StartAddress = HitGroup();
+            dispatchDesc.HitGroupTable.SizeInBytes = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
+            dispatchDesc.HitGroupTable.StrideInBytes = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
+            dispatchDesc.Width = size.x;
+            dispatchDesc.Height = size.y;
+            dispatchDesc.Depth = 1;
+
+            return dispatchDesc;
+        }
+
         D3D12_GPU_VIRTUAL_ADDRESS Raygen() const { return shaderTable->GetGPUVirtualAddress(); }
         D3D12_GPU_VIRTUAL_ADDRESS Miss() const { return shaderTable->GetGPUVirtualAddress() + D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }
         D3D12_GPU_VIRTUAL_ADDRESS ShadowMiss() const { return shaderTable->GetGPUVirtualAddress() + 2 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }

@@ -32,20 +32,7 @@ namespace DE
         commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::Settings, 2, &settings, 0);
         commands.list->SetPipelineState1(pipeline.stateObject.Get());
 
-        const UINT64 shaderRecordSize = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
-
-        D3D12_DISPATCH_RAYS_DESC dispatchDesc{};
-        dispatchDesc.RayGenerationShaderRecord.StartAddress = pipeline.Raygen();
-        dispatchDesc.RayGenerationShaderRecord.SizeInBytes = shaderRecordSize;
-        dispatchDesc.MissShaderTable.StartAddress = pipeline.Miss();
-        dispatchDesc.MissShaderTable.SizeInBytes = 2 * shaderRecordSize;
-        dispatchDesc.MissShaderTable.StrideInBytes = shaderRecordSize;
-        dispatchDesc.HitGroupTable.StartAddress = pipeline.HitGroup();
-        dispatchDesc.HitGroupTable.SizeInBytes = shaderRecordSize;
-        dispatchDesc.HitGroupTable.StrideInBytes = shaderRecordSize;
-        dispatchDesc.Width = viewportRect.size.x;
-        dispatchDesc.Height = viewportRect.size.y;
-        dispatchDesc.Depth = 1;
+        D3D12_DISPATCH_RAYS_DESC dispatchDesc = pipeline.dispatchDesc(viewportRect.size);
 
         commands.list->DispatchRays(&dispatchDesc);
 
