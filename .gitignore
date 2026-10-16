@@ -5,4 +5,5 @@ early_dev/
 run.ps1
 lines.ps1
 conventions.md
+src/fpsManager.hpp
 desktop.ini
