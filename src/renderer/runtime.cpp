@@ -86,8 +86,7 @@ namespace DE
 
     void Renderer::uploadScene(const SceneDescription &sceneDescription)
     {
-        for (dxabstractions::Fence &fence : commands.fences)
-            fence.wait();
+        commands.waitIdle();
 
         commands.begin(0);
 
@@ -104,8 +103,7 @@ namespace DE
 
     void Renderer::resizeSwapChain(XMUINT2 size)
     {
-        for (dxabstractions::Fence &fence : commands.fences)
-            fence.wait();
+        commands.waitIdle();
 
         swapChain.resize(size);
     }
@@ -114,8 +112,7 @@ namespace DE
     {
         viewportRect.start = rect.start;
 
-        for (dxabstractions::Fence &fence : commands.fences)
-            fence.wait();
+        commands.waitIdle();
 
         viewportRect.size = rect.size;
         renderTarget = dxabstractions::RenderTarget(device, rect.size.x, rect.size.y);

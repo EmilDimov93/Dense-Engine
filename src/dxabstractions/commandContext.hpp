@@ -52,5 +52,11 @@ namespace DE::dxabstractions
 
             fences[frameIndex].signal(queue.Get());
         }
+
+        void waitIdle()
+        {
+            for (dxabstractions::Fence &fence : fences)
+                fence.wait();
+        }
     };
 }
