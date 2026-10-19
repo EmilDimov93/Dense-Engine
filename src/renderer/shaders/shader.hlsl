@@ -66,7 +66,7 @@ void RayGen()
     uint2 pixel = DispatchRaysIndex().xy;
     uint2 dims = DispatchRaysDimensions().xy;
 
-    float2 ndc = (float2(pixel) + 0.5f) / float2(dims) * 2.0f - 1.0f;
+    float2 ndc = (float2(pixel) + 0.5f) / float2(dims) * 2.f - 1.f;
     const float fovY = radians(settings.fov);
     const float tanHalfFov = tan(fovY / 2.f);
 
@@ -75,27 +75,27 @@ void RayGen()
 
     RayDesc ray;
 
-    const float3 cameraPosition = float3(0.0f, 0.0f, -2.0f);
+    const float3 cameraPosition = float3(0.f, 0.f, -2.f);
     
     if(settings.fov < 0.01f)
     {
         const float halfHeight = 2.f;
-        ray.Origin = cameraPosition + float3(ndc * halfHeight, 0.0f);
-        ray.Direction = float3(0.0f, 0.0f, 1.0f);
+        ray.Origin = cameraPosition + float3(ndc * halfHeight, 0.f);
+        ray.Direction = float3(0.f, 0.f, 1.f);
     }
     else
     {
         ray.Origin = cameraPosition;
-        ray.Direction = normalize(float3(ndc * tanHalfFov, 1.0f));
+        ray.Direction = normalize(float3(ndc * tanHalfFov, 1.f));
     }
 
     ray.TMin = 0.001f;
-    ray.TMax = 1000.0f;
+    ray.TMax = 1000.f;
 
-    RayPayload payload = { float3(0.0f, 0.0f, 0.0f), 0 };
+    RayPayload payload = { float3(0.f, 0.f, 0.f), 0 };
     TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
 
-    output[pixel] = float4(payload.color, 1.0f);
+    output[pixel] = float4(payload.color, 1.f);
 }
 
 [shader("miss")]
@@ -107,7 +107,7 @@ void Miss(inout RayPayload payload)
 [shader("miss")]
 void ShadowMiss(inout ShadowPayload payload)
 {
-    payload.visibility = 1.0f;
+    payload.visibility = 1.f;
 }
 
 [shader("closesthit")]
@@ -117,11 +117,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
 
     Material hitMaterial = materials[instanceData.materialIndex];
 
-    payload.color = hitMaterial.diffuse.rgb;
-
-    float3 hitPos = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
-
-    if(hitMaterial.metallic > 0.f && payload.depth < MAX_BOUNCES)
+    float3 faceNormalWorld;
     {
         uint baseIndex = instanceData.indexOffset + PrimitiveIndex() * 3;
         float3 vertex0Local = vertices[instanceData.vertexOffset + indices[baseIndex + 0]].pos;
@@ -129,22 +125,35 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         float3 vertex2Local = vertices[instanceData.vertexOffset + indices[baseIndex + 2]].pos;
 
         float3 faceNormalLocal = cross(vertex1Local - vertex0Local, vertex2Local - vertex0Local);
-        float3 faceNormalWorld = normalize(mul(faceNormalLocal, (float3x3)WorldToObject3x4()));
+        faceNormalWorld = normalize(mul(faceNormalLocal, (float3x3)WorldToObject3x4()));
+    }
 
-        if (dot(faceNormalWorld, WorldRayDirection()) > 0.0f)
-            faceNormalWorld = -faceNormalWorld;
+    float3 hitPos = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 
+    if (dot(faceNormalWorld, WorldRayDirection()) > 0.f)
+        faceNormalWorld = -faceNormalWorld;
+
+    float3 reflectedColor = clearColor;
+    if(payload.depth < MAX_BOUNCES)
+    {
         RayDesc reflectionRay;
         reflectionRay.Origin = hitPos - WorldRayDirection() * 0.001f;
         reflectionRay.Direction = reflect(WorldRayDirection(), faceNormalWorld);
         reflectionRay.TMin = 0.001f;
-        reflectionRay.TMax = 1000.f * hitMaterial.metallic;
+        reflectionRay.TMax = 1000.f;
 
         RayPayload reflectionPayload = {clearColor, payload.depth + 1};
         TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, reflectionRay, reflectionPayload);
 
-        float3 reflectedColor = reflectionPayload.color * hitMaterial.diffuse.rgb;
-        payload.color = lerp(payload.color, reflectedColor, hitMaterial.metallic);
+        reflectedColor = reflectionPayload.color;
+    }
+
+    float3 fresnel;
+    {
+        const float3 specularF0 = lerp(float3(0.04f, 0.04f, 0.04f), hitMaterial.diffuse.rgb, hitMaterial.metallic);
+
+        const float cosViewNormal = clamp(dot(-WorldRayDirection(), faceNormalWorld), 0.f, 1.f);
+        fresnel = specularF0 + (1.f - specularF0) * pow(1.f - cosViewNormal, 5.f);
     }
 
     const float3 lightDir = normalize(float3(0.f, 1.f, 0.f));
@@ -153,13 +162,20 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
     shadowRay.Origin = hitPos - WorldRayDirection() * 0.001f;
     shadowRay.Direction = lightDir;
     shadowRay.TMin = 0.001f;
-    shadowRay.TMax = 1000.0f;
+    shadowRay.TMax = 1000.f;
 
-    ShadowPayload shadowPayload = { 0.0f };
+    ShadowPayload shadowPayload = { 0.f };
     TraceRay(scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, shadowRay, shadowPayload);
 
-    payload.color *= lerp(0.2f, 1.0f, shadowPayload.visibility);
+    const float3 specularColor = fresnel * reflectedColor;
 
-    if(InstanceID() == settings.selectedID)
+    const float cosLightNormal = clamp(dot(faceNormalWorld, lightDir), 0.f, 1.f);
+    const float directLighting = lerp(0.2f, 1.f, shadowPayload.visibility * cosLightNormal);
+    const float3 diffuseAlbedo = hitMaterial.diffuse.rgb * (1.f - hitMaterial.metallic);
+    const float3 diffuseColor = (1.f - fresnel) * diffuseAlbedo * directLighting;
+
+    payload.color = diffuseColor + specularColor;
+
+    if(InstanceID() == settings.selectedID && payload.depth == 0)
         payload.color += float3(0.3f, 0.3f, 0.f);
 }
