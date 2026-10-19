@@ -111,8 +111,9 @@ namespace DE
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::PushID(rowIndex);
-            if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), settings.selectedInstanceID == static_cast<int32_t>(rowIndex), ImGuiSelectableFlags_SpanAllColumns))
-                settings.selectedInstanceID = rowIndex;
+            if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), settings.selectedInstanceID == static_cast<int32_t>(modelInstance.handle), ImGuiSelectableFlags_SpanAllColumns))
+                settings.selectedInstanceID = static_cast<int32_t>(modelInstance.handle);
+                
             ImGui::PopID();
 
             ImGui::TableNextColumn();

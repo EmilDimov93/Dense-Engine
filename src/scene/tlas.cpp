@@ -35,7 +35,7 @@ namespace DE
             {
                 D3D12_RAYTRACING_INSTANCE_DESC instanceDesc{};
                 XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4 *>(instanceDesc.Transform), world);
-                instanceDesc.InstanceID = materialOffset + mesh.materialIndex;
+                instanceDesc.InstanceID = entry.first;
                 instanceDesc.InstanceMask = 0xFF;
                 instanceDesc.InstanceContributionToHitGroupIndex = 0;
                 instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
