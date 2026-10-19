@@ -120,11 +120,15 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
     float3 faceNormalWorld;
     {
         uint baseIndex = instanceData.indexOffset + PrimitiveIndex() * 3;
-        float3 vertex0Local = vertices[instanceData.vertexOffset + indices[baseIndex + 0]].pos;
-        float3 vertex1Local = vertices[instanceData.vertexOffset + indices[baseIndex + 1]].pos;
-        float3 vertex2Local = vertices[instanceData.vertexOffset + indices[baseIndex + 2]].pos;
+        float3 vertex0NormalLocal = vertices[instanceData.vertexOffset + indices[baseIndex + 0]].normal;
+        float3 vertex1NormalLocal = vertices[instanceData.vertexOffset + indices[baseIndex + 1]].normal;
+        float3 vertex2NormalLocal = vertices[instanceData.vertexOffset + indices[baseIndex + 2]].normal;
 
-        float3 faceNormalLocal = cross(vertex1Local - vertex0Local, vertex2Local - vertex0Local);
+        const float3 barycentricWeights = float3(1.f - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+
+        float3 faceNormalLocal = vertex0NormalLocal * barycentricWeights.x + 
+                                    vertex1NormalLocal * barycentricWeights.y + 
+                                    vertex2NormalLocal * barycentricWeights.z;
         faceNormalWorld = normalize(mul(faceNormalLocal, (float3x3)WorldToObject3x4()));
     }
 
