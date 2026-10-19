@@ -3,6 +3,8 @@
 
 #include "client.hpp"
 
+#include "command.hpp"
+
 namespace DE
 {
     Rect Client::makeViewportRect() const
@@ -49,7 +51,15 @@ namespace DE
                 hasSceneChanged = false;
             }
 
-            ui.tick(makeViewportRect().start.x, sceneDescription, hasSceneChanged, settings);
+            std::optional<commands::Command> command;
+            ui.tick(makeViewportRect().start.x, sceneDescription, hasSceneChanged, settings, command);
+            if (command)
+            {
+                if (const commands::AddModelCommand *addModelCommand = std::get_if<commands::AddModelCommand>(&*command))
+                    addModel(addModelCommand->filePath);
+                else if (const commands::AddInstanceCommand *addInstanceCommand = std::get_if<commands::AddInstanceCommand>(&*command))
+                    addModelInstance(addInstanceCommand->modelHandle);
+            }
 
             renderer.tick(ui, settings);
         }

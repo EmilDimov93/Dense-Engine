@@ -21,7 +21,7 @@ namespace DE
         void run();
 
         Handle addModel(const std::string &filePath);
-        Handle addModelInstance(Handle modelHandle, Transform transform);
+        Handle addModelInstance(Handle modelHandle, Transform transform = {});
 
         void setSidebarWidthFraction(float fraction);
 

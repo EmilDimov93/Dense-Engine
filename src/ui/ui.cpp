@@ -5,6 +5,8 @@
 
 #include "core/assertions.hpp"
 
+#include "fileDialog.hpp"
+
 #include <imgui.h>
 #include <backends/imgui_impl_win32.h>
 #include <backends/imgui_impl_dx12.h>
@@ -16,7 +18,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 namespace DE
 {
-    UI::UI(HWND windowHandle, ID3D12Device *device, ID3D12CommandQueue *queue, const PerFrame<ComPtr<ID3D12Resource>> &backBuffers) : device(device)
+    UI::UI(HWND windowHandle, ID3D12Device *device, ID3D12CommandQueue *queue, const PerFrame<ComPtr<ID3D12Resource>> &backBuffers) : windowHandle(windowHandle), device(device)
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -83,7 +85,7 @@ namespace DE
         return ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam) != 0;
     }
 
-    void UI::tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, Settings &settings)
+    void UI::tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, Settings &settings, std::optional<commands::Command> &command)
     {
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -103,8 +105,55 @@ namespace DE
         const char *fovFormat = (settings.fov < 0.01f) ? "ORTHO" : "%.1f";
         ImGui::SliderScalar("FOV", ImGuiDataType_Float, &settings.fov, &minFov, &maxFov, fovFormat);
 
+        if (ImGui::Button("Add Model", ImVec2(-FLT_MIN, 0)))
+        {
+            std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle);
+            if (selectedPath)
+                command = commands::AddModelCommand(selectedPath->string());
+        }
+        if (ImGui::Button("Add Instance", ImVec2(-FLT_MIN, 0)))
+        {
+            ImGui::OpenPopup("Models popup");
+        }
+
+        if (ImGui::BeginPopup("Models popup"))
+        {
+            ImGui::BeginTable("Select model", 1, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_Borders);
+            ImGui::TableSetupColumn("Model name");
+            ImGui::TableNextRow();
+            ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(ImGuiCol_TableHeaderBg));
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted("Model name");
+
+            for (uint32_t modelIndex = 0; modelIndex < sceneDescription.modelDescriptions.size(); modelIndex++)
+            {
+                const ModelDescription &modelDescription = sceneDescription.modelDescriptions[modelIndex];
+                const std::string fileName = std::filesystem::path(modelDescription.filePath).filename().string();
+
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::PushID(modelIndex);
+                if (ImGui::Selectable(fileName.c_str()))
+                {
+                    command = commands::AddInstanceCommand(modelDescription.handle);
+                }
+                ImGui::PopID();
+            }
+
+            ImGui::EndTable();
+            ImGui::EndPopup();
+        }
+
         ImGui::SeparatorText("Model Instances");
-        ImGui::BeginTable("Table", 3, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_Borders);
+        ImGui::BeginTable("Table", 2, ImGuiTableFlags_Borders);
+        ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableNextRow();
+        ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(ImGuiCol_TableHeaderBg));
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted("Handle");
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted("Name");
         for (uint32_t rowIndex = 0; rowIndex < sceneDescription.modelInstanceDescriptions.size(); ++rowIndex)
         {
             ModelInstanceDescription &modelInstance = sceneDescription.modelInstanceDescriptions[rowIndex];
@@ -125,7 +174,15 @@ namespace DE
                 ImGui::TableSetupColumn("X");
                 ImGui::TableSetupColumn("Y");
                 ImGui::TableSetupColumn("Z");
-                ImGui::TableHeadersRow();
+                ImGui::TableNextRow();
+                ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(ImGuiCol_TableHeaderBg));
+                ImGui::TableNextColumn();
+                ImGui::TableNextColumn();
+                ImGui::TextUnformatted("X");
+                ImGui::TableNextColumn();
+                ImGui::TextUnformatted("Y");
+                ImGui::TableNextColumn();
+                ImGui::TextUnformatted("Z");
 
                 auto drawRow = [&hasSceneChanged](const char *name, float &x, float &y, float &z)
                 {
@@ -163,10 +220,11 @@ namespace DE
                 if (modelInstance.modelHandle == modelDescription.handle)
                     ImGui::TextUnformatted(std::filesystem::path(modelDescription.filePath).filename().string().c_str());
             }
-            ImGui::TableNextColumn();
-            ImGui::Text("{%.2f, %.2f, %.2f}", modelInstance.transform.pos.x, modelInstance.transform.pos.y, modelInstance.transform.pos.z);
         }
         ImGui::EndTable();
+
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
+            settings.selectedInstanceID = -1;
 
         ImGui::End();
 

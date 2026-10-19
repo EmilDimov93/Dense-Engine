@@ -9,6 +9,11 @@
 
 #include "settings.hpp"
 
+#include "command.hpp"
+
+#include <string>
+#include <optional>
+
 namespace DE
 {
     class UI
@@ -19,7 +24,7 @@ namespace DE
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        void tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, Settings &settings);
+        void tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, Settings &settings, std::optional<commands::Command> &command);
         void draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const;
 
         void createBackBufferViews(const PerFrame<ComPtr<ID3D12Resource>> &backBuffers);
@@ -29,6 +34,8 @@ namespace DE
         static constexpr UINT MAX_TEXTURES = 64;
 
         ID3D12Device *device = nullptr;
+
+        HWND windowHandle = nullptr;
 
         ComPtr<ID3D12DescriptorHeap> textureHeap;
         UINT textureDescriptorSize = 0;
