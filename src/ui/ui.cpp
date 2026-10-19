@@ -10,6 +10,7 @@
 #include <backends/imgui_impl_dx12.h>
 
 #include <filesystem>
+#include <array>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -82,7 +83,7 @@ namespace DE
         return ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam) != 0;
     }
 
-    void UI::tick(uint32_t sidebarWidth, const SceneDescription &sceneDescription, Settings &settings)
+    void UI::tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, Settings &settings)
     {
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -92,35 +93,75 @@ namespace DE
         ImGui::SetNextWindowSize({static_cast<float>(sidebarWidth), ImGui::GetIO().DisplaySize.y});
 
         ImGui::Begin("Sidebar", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration);
-        
+
         ImGui::BeginChild("FpsBlock", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
         ImGui::Text("%.f FPS", ImGui::GetIO().Framerate);
         ImGui::EndChild();
 
         const float minFov = 0.f;
         const float maxFov = 180.f;
-        const char* fovFormat = (settings.fov < 0.01f) ? "ORTHO" : "%.1f";
+        const char *fovFormat = (settings.fov < 0.01f) ? "ORTHO" : "%.1f";
         ImGui::SliderScalar("FOV", ImGuiDataType_Float, &settings.fov, &minFov, &maxFov, fovFormat);
 
         ImGui::SeparatorText("Model Instances");
         ImGui::BeginTable("Table", 3, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_Borders);
         for (uint32_t rowIndex = 0; rowIndex < sceneDescription.modelInstanceDescriptions.size(); ++rowIndex)
         {
-            const ModelInstanceDescription &modelInstance = sceneDescription.modelInstanceDescriptions[rowIndex];
+            ModelInstanceDescription &modelInstance = sceneDescription.modelInstanceDescriptions[rowIndex];
 
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::PushID(rowIndex);
             if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), settings.selectedInstanceID == static_cast<int32_t>(modelInstance.handle), ImGuiSelectableFlags_SpanAllColumns))
+            {
                 settings.selectedInstanceID = static_cast<int32_t>(modelInstance.handle);
-                
+                ImGui::OpenPopup("InstanceDetailsPopup");
+            }
+
+            if (ImGui::BeginPopup("InstanceDetailsPopup"))
+            {
+                ImGui::BeginTable("TransformTable", 4, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders);
+                ImGui::TableSetupColumn("");
+                ImGui::TableSetupColumn("X");
+                ImGui::TableSetupColumn("Y");
+                ImGui::TableSetupColumn("Z");
+                ImGui::TableHeadersRow();
+
+                auto drawRow = [&hasSceneChanged](const char *name, float &x, float &y, float &z)
+                {
+                    ImGui::PushID(name);
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::TextUnformatted(name);
+
+                    std::array<float *, 3> components = {&x, &y, &z};
+                    for (int32_t i = 0; i < 3; i++)
+                    {
+                        ImGui::TableNextColumn();
+                        ImGui::PushID(i);
+                        ImGui::SetNextItemWidth(50.f);
+                        hasSceneChanged |= ImGui::InputFloat("##value", components[i], 0.f, 0.f, "%.3f");
+                        ImGui::PopID();
+                    }
+                    ImGui::PopID();
+                };
+
+                drawRow("Position", modelInstance.transform.pos.x, modelInstance.transform.pos.y, modelInstance.transform.pos.z);
+                drawRow("Rotation", modelInstance.transform.rot.x, modelInstance.transform.rot.y, modelInstance.transform.rot.z);
+                drawRow("Scale", modelInstance.transform.scale.x, modelInstance.transform.scale.y, modelInstance.transform.scale.z);
+
+                ImGui::EndTable();
+
+                ImGui::EndPopup();
+            }
+
             ImGui::PopID();
 
             ImGui::TableNextColumn();
             for (const ModelDescription &modelDescription : sceneDescription.modelDescriptions)
             {
                 if (modelInstance.modelHandle == modelDescription.handle)
-                    ImGui::Text(std::filesystem::path(modelDescription.filePath).filename().string().c_str());
+                    ImGui::TextUnformatted(std::filesystem::path(modelDescription.filePath).filename().string().c_str());
             }
             ImGui::TableNextColumn();
             ImGui::Text("{%.2f, %.2f, %.2f}", modelInstance.transform.pos.x, modelInstance.transform.pos.y, modelInstance.transform.pos.z);

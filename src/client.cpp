@@ -49,7 +49,7 @@ namespace DE
                 hasSceneChanged = false;
             }
 
-            ui.tick(makeViewportRect().start.x, sceneDescription, settings);
+            ui.tick(makeViewportRect().start.x, sceneDescription, hasSceneChanged, settings);
 
             renderer.tick(ui, settings);
         }
