@@ -13,14 +13,14 @@ namespace DE
 {
     struct ModelDescription
     {
-        const Handle handle;
-        const std::string filePath;
+        Handle handle;
+        std::string filePath;
     };
 
     struct ModelInstanceDescription
     {
-        const Handle handle;
-        const Handle modelHandle;
+        Handle handle;
+        Handle modelHandle;
         Transform transform;
     };
 

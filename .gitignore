@@ -3,6 +3,7 @@ build/
 logo/
 early_dev/
 run.ps1
+git.ps1
 lines.ps1
 conventions.md
 src/fpsManager.hpp
