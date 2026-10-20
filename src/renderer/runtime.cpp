@@ -22,26 +22,29 @@ namespace DE
         ID3D12DescriptorHeap *descriptorHeaps[] = {renderTarget.descriptorHeap.Get()};
         commands.list->SetDescriptorHeaps(static_cast<UINT>(std::size(descriptorHeaps)), descriptorHeaps);
 
-        commands.list->SetComputeRootSignature(pipeline.globalRootSignature.Get());
-        commands.list->SetComputeRootDescriptorTable(dxabstractions::RootParams::OutputTexture, renderTarget.descriptorHeap->GetGPUDescriptorHandleForHeapStart());
-        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLAS, scene.getTLASAddress());
-        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::MaterialBuffer, scene.getMaterialBufferAddress());
-        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::VertexBuffer, scene.getVertexBufferAddress());
-        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::IndexBuffer, scene.getIndexBufferAddress());
-        commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLASInstanceDataBuffer, scene.getTLASInstanceDataAddress());
-        commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::Settings, 2, &settings, 0);
-        commands.list->SetPipelineState1(pipeline.stateObject.Get());
+        if (!scene.empty())
+        {
+            commands.list->SetComputeRootSignature(pipeline.globalRootSignature.Get());
+            commands.list->SetComputeRootDescriptorTable(dxabstractions::RootParams::OutputTexture, renderTarget.descriptorHeap->GetGPUDescriptorHandleForHeapStart());
+            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLAS, scene.getTLASAddress());
+            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::MaterialBuffer, scene.getMaterialBufferAddress());
+            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::VertexBuffer, scene.getVertexBufferAddress());
+            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::IndexBuffer, scene.getIndexBufferAddress());
+            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLASInstanceDataBuffer, scene.getTLASInstanceDataAddress());
+            commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::Settings, 2, &settings, 0);
+            commands.list->SetPipelineState1(pipeline.stateObject.Get());
 
-        D3D12_DISPATCH_RAYS_DESC dispatchDesc = pipeline.dispatchDesc(viewportRect.size);
+            D3D12_DISPATCH_RAYS_DESC dispatchDesc = pipeline.dispatchDesc(viewportRect.size);
 
-        commands.list->DispatchRays(&dispatchDesc);
-
-        const D3D12_CPU_DESCRIPTOR_HANDLE backBufferView = ui.backBufferView(frameIndex);
+            commands.list->DispatchRays(&dispatchDesc);
+        }
 
         const D3D12_RESOURCE_BARRIER toClearBarrier = transition(backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
         commands.list->ResourceBarrier(1, &toClearBarrier);
 
-        const float clearColor[] = {0.1f, 0.1f, 0.1f, 1.0f};
+        const D3D12_CPU_DESCRIPTOR_HANDLE backBufferView = ui.backBufferView(frameIndex);
+
+        const float clearColor[] = {0.5f, 0.5f, 0.8f, 1.0f};
         commands.list->ClearRenderTargetView(backBufferView, clearColor, 0, nullptr);
 
         const D3D12_RESOURCE_BARRIER toCopyBarriers[] = {
@@ -59,7 +62,7 @@ namespace DE
         src.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
         src.SubresourceIndex = 0;
 
-        if (viewportRect.start.x < swapChain.size.x && viewportRect.start.y < swapChain.size.y)
+        if (!scene.empty() && viewportRect.start.x < swapChain.size.x && viewportRect.start.y < swapChain.size.y)
         {
             D3D12_BOX srcBox{};
             srcBox.right = std::min(viewportRect.size.x, swapChain.size.x - viewportRect.start.x);

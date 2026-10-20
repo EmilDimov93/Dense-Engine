@@ -44,6 +44,9 @@ namespace DE
                 found->second.transform = modelInstanceDescription.transform;
         }
 
+        if (empty())
+            return;
+
         uploadGeometry();
         uploadMaterials();
         buildTLAS();

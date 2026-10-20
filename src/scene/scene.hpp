@@ -34,6 +34,8 @@ namespace DE
         D3D12_GPU_VIRTUAL_ADDRESS getTLASInstanceDataAddress() const { return tlasInstanceDataBuffer->GetGPUVirtualAddress(); }
         D3D12_GPU_VIRTUAL_ADDRESS getTLASAddress() const { return tlas.getAddress(); }
 
+        [[nodiscard]] bool empty() const { return modelInstances.empty(); }
+
     private:
         std::unordered_map<Handle, Model> models;
         std::unordered_map<Handle, ModelInstance> modelInstances;
