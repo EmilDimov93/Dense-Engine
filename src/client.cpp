@@ -10,13 +10,19 @@
 namespace DE
 {
     Client::Client(const char *sceneFilePath) : window(L"Dense Engine"),
-                       renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight())),
-                       ui(window.getHandle(), renderer.getDevice(), renderer.getQueue(), renderer.getBackBuffers())
+                                                renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight())),
+                                                ui(window.getHandle(), renderer.getDevice(), renderer.getQueue(), renderer.getBackBuffers())
     {
         renderer.setViewportRect(makeViewportRect());
 
-        if(sceneFilePath != nullptr)
-            loadScene(sceneFilePath, sceneDescription);
+        if (sceneFilePath != nullptr)
+        {
+            Handle lastHandle = 0;
+            loadScene(sceneFilePath, sceneDescription, lastHandle);
+            handleGenerator.setLast(lastHandle);
+            hasSceneChanged = true;
+            renderer.loadScene(sceneDescription);
+        }
 
         // Temporary
         addDirectionalLight({0.f, 1.f, 0.f}, 1.f, {1.f, 1.f, 1.f});
@@ -63,12 +69,15 @@ namespace DE
                 {
                     addModelInstance(addInstanceCommand->modelHandle);
                 }
-                else if(const commands::LoadSceneCommand *loadSceneCommand = std::get_if<commands::LoadSceneCommand>(&*command))
+                else if (const commands::LoadSceneCommand *loadSceneCommand = std::get_if<commands::LoadSceneCommand>(&*command))
                 {
-                    loadScene(loadSceneCommand->filePath, sceneDescription);
+                    Handle lastHandle = 0;
+                    loadScene(loadSceneCommand->filePath, sceneDescription, lastHandle);
+                    handleGenerator.setLast(lastHandle);
                     hasSceneChanged = true;
+                    renderer.loadScene(sceneDescription);
                 }
-                else if(const commands::SaveSceneCommand *saveSceneCommand = std::get_if<commands::SaveSceneCommand>(&*command))
+                else if (const commands::SaveSceneCommand *saveSceneCommand = std::get_if<commands::SaveSceneCommand>(&*command))
                 {
                     saveScene("scene.descene", sceneDescription);
                 }

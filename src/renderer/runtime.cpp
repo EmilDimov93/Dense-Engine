@@ -89,6 +89,13 @@ namespace DE
         dxa(swapChain.swapchain->Present(1, 0), "Failed to present");
     }
 
+    void Renderer::loadScene(const SceneDescription &sceneDescription)
+    {
+        commands.waitIdle();
+        scene.clear();
+        uploadScene(sceneDescription);
+    }
+
     void Renderer::uploadScene(const SceneDescription &sceneDescription)
     {
         commands.waitIdle();

@@ -30,6 +30,7 @@ namespace DE
 
         void waitForGpu();
 
+        void loadScene(const SceneDescription &sceneDescription);
         void uploadScene(const SceneDescription &sceneDescription);
 
         XMUINT2 getSwapChainSize() const;

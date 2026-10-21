@@ -76,6 +76,24 @@ namespace DE
         uploadLights();
     }
 
+    void Scene::clear()
+    {
+        models.clear();
+        modelInstances.clear();
+        pointLights.clear();
+        directionalLights.clear();
+        modelMaterialArrayOffsets.clear();
+
+        vertexBuffer.Reset();
+        indexBuffer.Reset();
+        materialBuffer.Reset();
+        tlasInstanceDataBuffer.Reset();
+        instanceBuffer.Reset();
+        pointLightBuffer.Reset();
+        directionalLightBuffer.Reset();
+        tlas = {};
+    }
+
     void Scene::uploadGeometry()
     {
         uint64_t totalVertexCount = 0;

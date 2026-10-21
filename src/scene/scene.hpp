@@ -41,6 +41,8 @@ namespace DE
 
         [[nodiscard]] bool empty() const { return modelInstances.empty(); }
 
+        void clear();
+
     private:
         std::unordered_map<Handle, Model> models;
         std::unordered_map<Handle, ModelInstance> modelInstances;

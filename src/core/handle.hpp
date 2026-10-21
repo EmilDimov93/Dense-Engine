@@ -12,12 +12,14 @@ namespace DE
     class HandleGenerator
     {
     public:
-        [[nodiscard]] static Handle generateHandle()
+        [[nodiscard]] Handle generateHandle()
         {
             return Handle{++last};
         }
 
+        void setLast(Handle handle) { last = handle; }
+
     private:
-        static inline uint64_t last = 0;
+        uint64_t last = 0;
     };
 }
