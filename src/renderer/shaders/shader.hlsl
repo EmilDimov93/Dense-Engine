@@ -33,6 +33,23 @@ struct TLASInstanceData
 };
 StructuredBuffer<TLASInstanceData> tlasInstanceData : register(t4);
 
+struct PointLight
+{
+    float3 pos;
+    float intensity;
+    float3 color;
+    float range;
+};
+StructuredBuffer<PointLight> pointLights : register(t5);
+
+struct DirectionalLight
+{
+    float3 direction;
+    float intensity;
+    float3 color;
+};
+StructuredBuffer<DirectionalLight> directionalLights : register(t6);
+
 struct Settings
 {
     int selectedID;
@@ -168,7 +185,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         fresnel = specularF0 + (1.f - specularF0) * pow(1.f - cosViewNormal, 5.f);
     }
 
-    const float3 lightDir = normalize(float3(0.f, 1.f, 0.f));
+    const float3 lightDir = normalize(directionalLights[0].direction);
 
     RayDesc shadowRay;
     shadowRay.Origin = hitPos - WorldRayDirection() * 0.001f;

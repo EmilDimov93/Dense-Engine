@@ -20,11 +20,6 @@ namespace DE
 
         void run();
 
-        Handle addModel(const std::string &filePath);
-        Handle addModelInstance(Handle modelHandle, Transform transform = {});
-
-        void setSidebarWidthFraction(float fraction);
-
     private:
         Window window;
         Renderer renderer;
@@ -39,6 +34,14 @@ namespace DE
         Settings settings;
 
         float sidebarWidthFraction = 0.20f;
+
+        Handle addModel(const std::string &filePath);
+        Handle addModelInstance(Handle modelHandle, Transform transform = {});
+
+        Handle addPointLight(XMFLOAT3 pos, float intensity, XMFLOAT3 color, float range);
+        Handle addDirectionalLight(XMFLOAT3 direction, float intensity, XMFLOAT3 color);
+
+        void setSidebarWidthFraction(float fraction);
 
         Rect makeViewportRect() const;
     };

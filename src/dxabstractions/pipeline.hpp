@@ -20,7 +20,9 @@ namespace DE::dxabstractions
         VertexBuffer = 3,
         IndexBuffer = 4,
         TLASInstanceDataBuffer = 5,
-        Settings = 6,
+        PointLightBuffer = 6,
+        DirectionalLightBuffer = 7,
+        Settings = 8,
         Count
     };
 
@@ -68,6 +70,12 @@ namespace DE::dxabstractions
             rootParams[RootParams::TLASInstanceDataBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
             rootParams[RootParams::TLASInstanceDataBuffer].Descriptor = {4, 0};
             rootParams[RootParams::TLASInstanceDataBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[RootParams::PointLightBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+            rootParams[RootParams::PointLightBuffer].Descriptor = {5, 0};
+            rootParams[RootParams::PointLightBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[RootParams::DirectionalLightBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+            rootParams[RootParams::DirectionalLightBuffer].Descriptor = {6, 0};
+            rootParams[RootParams::DirectionalLightBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
             rootParams[RootParams::Settings].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
             rootParams[RootParams::Settings].Constants = {
                 .ShaderRegister = 0,

@@ -9,22 +9,17 @@
 
 namespace DE
 {
-    Rect Client::makeViewportRect() const
-    {
-        XMUINT2 swapChainSize = renderer.getSwapChainSize();
-
-        return Rect{{static_cast<uint32_t>(sidebarWidthFraction * swapChainSize.x), 0},
-                    {static_cast<uint32_t>(swapChainSize.x - sidebarWidthFraction * swapChainSize.x), swapChainSize.y}};
-    }
-
     Client::Client(const char *sceneFilePath) : window(L"Dense Engine"),
                        renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight())),
                        ui(window.getHandle(), renderer.getDevice(), renderer.getQueue(), renderer.getBackBuffers())
     {
         renderer.setViewportRect(makeViewportRect());
 
-        if(sceneFilePath != "")
+        if(sceneFilePath != nullptr)
             loadScene(sceneFilePath, sceneDescription);
+
+        // Temporary
+        addDirectionalLight({0.f, 1.f, 0.f}, 1.f, {1.f, 1.f, 1.f});
     }
 
     Client::~Client()
@@ -103,6 +98,28 @@ namespace DE
         return handle;
     }
 
+    Handle Client::addPointLight(XMFLOAT3 pos, float intensity, XMFLOAT3 color, float range)
+    {
+        hasSceneChanged = true;
+
+        Handle handle = handleGenerator.generateHandle();
+
+        sceneDescription.pointLightDescriptions.emplace_back(handle, pos, intensity, color, range);
+
+        return handle;
+    }
+
+    Handle Client::addDirectionalLight(XMFLOAT3 direction, float intensity, XMFLOAT3 color)
+    {
+        hasSceneChanged = true;
+
+        Handle handle = handleGenerator.generateHandle();
+
+        sceneDescription.directionalLightDescriptions.emplace_back(handle, direction, intensity, color);
+
+        return handle;
+    }
+
     void Client::setSidebarWidthFraction(float fraction)
     {
         if (fraction >= 0.f && fraction < 1.f)
@@ -110,5 +127,13 @@ namespace DE
             sidebarWidthFraction = fraction;
             renderer.setViewportRect(makeViewportRect());
         }
+    }
+
+    Rect Client::makeViewportRect() const
+    {
+        XMUINT2 swapChainSize = renderer.getSwapChainSize();
+
+        return Rect{{static_cast<uint32_t>(sidebarWidthFraction * swapChainSize.x), 0},
+                    {static_cast<uint32_t>(swapChainSize.x - sidebarWidthFraction * swapChainSize.x), swapChainSize.y}};
     }
 }
