@@ -50,6 +50,12 @@ struct DirectionalLight
 };
 StructuredBuffer<DirectionalLight> directionalLights : register(t6);
 
+cbuffer LightCounts : register(b0)
+{
+    uint pointLightCount;
+    uint directionalLightCount;
+};
+
 struct ClientState
 {
     int selectedID;
@@ -57,7 +63,7 @@ struct ClientState
     float time;
 };
 
-ConstantBuffer<ClientState> clientState : register(b0);
+ConstantBuffer<ClientState> clientState : register(b1);
 
 // Constants
 
@@ -186,24 +192,29 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         fresnel = specularF0 + (1.f - specularF0) * pow(1.f - cosViewNormal, 5.f);
     }
 
-    const float3 lightDir = normalize(directionalLights[0].direction);
+    float directLighting = 0.f;
+    for(uint i = 0; i < directionalLightCount; i++)
+    {
+        const float3 lightDir = normalize(directionalLights[i].direction);
 
-    RayDesc shadowRay;
-    shadowRay.Origin = hitPos - WorldRayDirection() * 0.001f;
-    shadowRay.Direction = lightDir;
-    shadowRay.TMin = 0.001f;
-    shadowRay.TMax = 1000.f;
+        RayDesc shadowRay;
+        shadowRay.Origin = hitPos - WorldRayDirection() * 0.001f;
+        shadowRay.Direction = lightDir;
+        shadowRay.TMin = 0.001f;
+        shadowRay.TMax = 1000.f;
 
-    ShadowPayload shadowPayload = { 0.f };
-    TraceRay(scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, shadowRay, shadowPayload);
+        ShadowPayload shadowPayload = { 0.f };
+        TraceRay(scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, shadowRay, shadowPayload);
+
+        const float cosLightNormal = clamp(dot(faceNormalWorld, lightDir), 0.f, 1.f);
+        directLighting += lerp(0.2f, 1.f, shadowPayload.visibility * cosLightNormal);
+    }
+    
+    const float3 diffuseAlbedo = hitMaterial.diffuse.rgb * (1.f - hitMaterial.metallic);
+    const float3 diffuseColor = (1.f - fresnel) * diffuseAlbedo * directLighting;
 
     const float smoothness = 1.f - hitMaterial.roughness;
     const float3 specularColor = fresnel * reflectedColor * smoothness * smoothness;
-
-    const float cosLightNormal = clamp(dot(faceNormalWorld, lightDir), 0.f, 1.f);
-    const float directLighting = lerp(0.2f, 1.f, shadowPayload.visibility * cosLightNormal);
-    const float3 diffuseAlbedo = hitMaterial.diffuse.rgb * (1.f - hitMaterial.metallic);
-    const float3 diffuseColor = (1.f - fresnel) * diffuseAlbedo * directLighting;
 
     payload.color = diffuseColor + specularColor;
 

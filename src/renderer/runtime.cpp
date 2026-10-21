@@ -24,6 +24,8 @@ namespace DE
 
         if (!scene.empty())
         {
+            LightCounts lightCounts = scene.getLightCounts();
+            
             commands.list->SetComputeRootSignature(pipeline.globalRootSignature.Get());
             commands.list->SetComputeRootDescriptorTable(dxabstractions::RootParams::OutputTexture, renderTarget.descriptorHeap->GetGPUDescriptorHandleForHeapStart());
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLAS, scene.getTLASAddress());
@@ -33,6 +35,7 @@ namespace DE
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLASInstanceDataBuffer, scene.getTLASInstanceDataAddress());
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::PointLightBuffer, scene.getPointLightBufferAddress());
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::DirectionalLightBuffer, scene.getDirectionalLightBufferAddress());
+            commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::LightCounts, sizeof(LightCounts) / 4, &lightCounts, 0);
             commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::ClientState, sizeof(ClientState) / 4, &clientState, 0);
             commands.list->SetPipelineState1(pipeline.stateObject.Get());
 

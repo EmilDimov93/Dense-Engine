@@ -22,7 +22,8 @@ namespace DE::dxabstractions
         TLASInstanceDataBuffer = 5,
         PointLightBuffer = 6,
         DirectionalLightBuffer = 7,
-        ClientState = 8,
+        LightCounts = 8,
+        ClientState = 9,
         Count
     };
 
@@ -76,9 +77,14 @@ namespace DE::dxabstractions
             rootParams[RootParams::DirectionalLightBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
             rootParams[RootParams::DirectionalLightBuffer].Descriptor = {6, 0};
             rootParams[RootParams::DirectionalLightBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[RootParams::LightCounts].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+            rootParams[RootParams::LightCounts].Constants = {
+                .ShaderRegister = 0,
+                .RegisterSpace = 0,
+                .Num32BitValues = 2};
             rootParams[RootParams::ClientState].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
             rootParams[RootParams::ClientState].Constants = {
-                .ShaderRegister = 0,
+                .ShaderRegister = 1,
                 .RegisterSpace = 0,
                 .Num32BitValues = 3};
 

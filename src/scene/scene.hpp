@@ -25,6 +25,11 @@ namespace DE
         uint32_t materialIndex;
     };
 
+    struct LightCounts
+    {
+        uint32_t pointLightCount, directionalLightCount;
+    };
+
     class Scene
     {
     public:
@@ -42,6 +47,8 @@ namespace DE
         [[nodiscard]] bool empty() const { return modelInstances.empty(); }
 
         void clear();
+
+        [[nodiscard]] LightCounts getLightCounts() const { return LightCounts{static_cast<uint32_t>(pointLights.size()), static_cast<uint32_t>(directionalLights.size())}; }
 
     private:
         std::unordered_map<Handle, Model> models;
