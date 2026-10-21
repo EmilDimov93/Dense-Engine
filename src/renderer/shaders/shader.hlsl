@@ -47,6 +47,14 @@ static const uint MAX_BOUNCES = 1;
 
 static const float3 clearColor = float3(0.5f, 0.5f, 0.8f);
 
+// Helpers
+
+float3 linearToSRGB(float3 c)
+{
+    c = clamp(c, 0.f, 1.f);
+    return select(c <= 0.0031308f, c * 12.92f, 1.055f * pow(c, 1.f / 2.4f) - 0.055f);
+}
+
 // Payloads
 
 struct RayPayload
@@ -95,7 +103,7 @@ void RayGen()
     RayPayload payload = { float3(0.f, 0.f, 0.f), 0 };
     TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
 
-    output[pixel] = float4(payload.color, 1.f);
+    output[pixel] = float4(linearToSRGB(payload.color), 1.f);
 }
 
 [shader("miss")]
@@ -171,7 +179,8 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
     ShadowPayload shadowPayload = { 0.f };
     TraceRay(scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, shadowRay, shadowPayload);
 
-    const float3 specularColor = fresnel * reflectedColor;
+    const float smoothness = 1.f - hitMaterial.roughness;
+    const float3 specularColor = fresnel * reflectedColor * smoothness * smoothness;
 
     const float cosLightNormal = clamp(dot(faceNormalWorld, lightDir), 0.f, 1.f);
     const float directLighting = lerp(0.2f, 1.f, shadowPayload.visibility * cosLightNormal);
