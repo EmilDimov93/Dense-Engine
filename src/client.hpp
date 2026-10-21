@@ -15,7 +15,7 @@ namespace DE
     class Client
     {
     public:
-        Client();
+        Client(const char *sceneFilePath);
         ~Client();
 
         void run();

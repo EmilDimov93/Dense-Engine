@@ -2,6 +2,7 @@
 build/
 logo/
 early_dev/
+exampleAssets/
 run.ps1
 git.ps1
 lines.ps1
