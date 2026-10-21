@@ -25,5 +25,14 @@ namespace DE::commands
         Handle modelHandle;
     };
 
-    using Command = std::variant<AddModelCommand, AddInstanceCommand>;
+    struct LoadSceneCommand
+    {
+        std::string filePath;
+    };
+
+    struct SaveSceneCommand
+    {
+    };
+
+    using Command = std::variant<AddModelCommand, AddInstanceCommand, LoadSceneCommand, SaveSceneCommand>;
 }

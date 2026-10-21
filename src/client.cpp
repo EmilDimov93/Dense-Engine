@@ -5,6 +5,8 @@
 
 #include "command.hpp"
 
+#include "scene/sceneSerialization.hpp"
+
 namespace DE
 {
     Rect Client::makeViewportRect() const
@@ -56,9 +58,22 @@ namespace DE
             if (command)
             {
                 if (const commands::AddModelCommand *addModelCommand = std::get_if<commands::AddModelCommand>(&*command))
+                {
                     addModel(addModelCommand->filePath);
+                }
                 else if (const commands::AddInstanceCommand *addInstanceCommand = std::get_if<commands::AddInstanceCommand>(&*command))
+                {
                     addModelInstance(addInstanceCommand->modelHandle);
+                }
+                else if(const commands::LoadSceneCommand *loadSceneCommand = std::get_if<commands::LoadSceneCommand>(&*command))
+                {
+                    loadScene(loadSceneCommand->filePath, sceneDescription);
+                    hasSceneChanged = true;
+                }
+                else if(const commands::SaveSceneCommand *saveSceneCommand = std::get_if<commands::SaveSceneCommand>(&*command))
+                {
+                    saveScene("scene.descene", sceneDescription);
+                }
             }
 
             renderer.tick(ui, settings);

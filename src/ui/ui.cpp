@@ -96,6 +96,22 @@ namespace DE
 
         ImGui::Begin("Sidebar", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration);
 
+        if(ImGui::Button("Load", ImVec2(0, 0)))
+        {
+            std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle, {L"DE Scene", L"*.descene"});
+            if (selectedPath)
+                command = commands::LoadSceneCommand(selectedPath->string());
+        }
+
+        ImGui::SameLine();
+
+        if(ImGui::Button("Save", ImVec2(0, 0)))
+        {
+            command = commands::SaveSceneCommand();
+        }
+
+        ImGui::SameLine();
+
         ImGui::BeginChild("FpsBlock", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
         ImGui::Text("%.f FPS", ImGui::GetIO().Framerate);
         ImGui::EndChild();
@@ -107,7 +123,7 @@ namespace DE
 
         if (ImGui::Button("Add Model", ImVec2(-FLT_MIN, 0)))
         {
-            std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle);
+            std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle, {L"3D Models", L"*.obj"});
             if (selectedPath)
                 command = commands::AddModelCommand(selectedPath->string());
         }

@@ -10,14 +10,14 @@
 
 namespace DE
 {
-    inline std::optional<std::filesystem::path> openFileDialog(HWND ownerWindowHandle)
+    inline std::optional<std::filesystem::path> openFileDialog(HWND ownerWindowHandle, COMDLG_FILTERSPEC fileTypeFilter)
     {
         Microsoft::WRL::ComPtr<IFileOpenDialog> fileOpenDialog;
         if (FAILED(CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&fileOpenDialog))))
             return std::nullopt;
 
         const COMDLG_FILTERSPEC fileTypeFilters[] = {
-            {L"3D Models", L"*.gltf;*.glb;*.obj"},
+            fileTypeFilter,
             {L"All Files", L"*.*"},
         };
         fileOpenDialog->SetFileTypes(static_cast<UINT>(std::size(fileTypeFilters)), fileTypeFilters);
