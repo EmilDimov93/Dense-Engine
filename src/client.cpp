@@ -58,7 +58,7 @@ namespace DE
             }
 
             std::optional<commands::Command> command;
-            ui.tick(makeViewportRect().start.x, sceneDescription, hasSceneChanged, settings, command);
+            ui.tick(makeViewportRect().start.x, sceneDescription, hasSceneChanged, clientState, command);
             if (command)
             {
                 if (const commands::AddModelCommand *addModelCommand = std::get_if<commands::AddModelCommand>(&*command))
@@ -83,7 +83,9 @@ namespace DE
                 }
             }
 
-            renderer.tick(ui, settings);
+            clientState.time = std::chrono::duration<float>(std::chrono::steady_clock::now() - startTime).count();
+
+            renderer.tick(ui, clientState);
         }
     }
 

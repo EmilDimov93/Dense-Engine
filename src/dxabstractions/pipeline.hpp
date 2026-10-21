@@ -22,7 +22,7 @@ namespace DE::dxabstractions
         TLASInstanceDataBuffer = 5,
         PointLightBuffer = 6,
         DirectionalLightBuffer = 7,
-        Settings = 8,
+        ClientState = 8,
         Count
     };
 
@@ -76,11 +76,11 @@ namespace DE::dxabstractions
             rootParams[RootParams::DirectionalLightBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
             rootParams[RootParams::DirectionalLightBuffer].Descriptor = {6, 0};
             rootParams[RootParams::DirectionalLightBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-            rootParams[RootParams::Settings].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-            rootParams[RootParams::Settings].Constants = {
+            rootParams[RootParams::ClientState].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+            rootParams[RootParams::ClientState].Constants = {
                 .ShaderRegister = 0,
                 .RegisterSpace = 0,
-                .Num32BitValues = 2};
+                .Num32BitValues = 3};
 
             D3D12_ROOT_SIGNATURE_DESC rootSigDesc{.NumParameters = RootParams::Count, .pParameters = rootParams, .NumStaticSamplers = 0, .pStaticSamplers = nullptr, .Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE};
 

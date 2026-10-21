@@ -85,7 +85,7 @@ namespace DE
         return ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam) != 0;
     }
 
-    void UI::tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, Settings &settings, std::optional<commands::Command> &command)
+    void UI::tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command)
     {
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -118,8 +118,8 @@ namespace DE
 
         const float minFov = 0.f;
         const float maxFov = 180.f;
-        const char *fovFormat = (settings.fov < 0.01f) ? "ORTHO" : "%.1f";
-        ImGui::SliderScalar("FOV", ImGuiDataType_Float, &settings.fov, &minFov, &maxFov, fovFormat);
+        const char *fovFormat = (clientState.fov < 0.01f) ? "ORTHO" : "%.1f";
+        ImGui::SliderScalar("FOV", ImGuiDataType_Float, &clientState.fov, &minFov, &maxFov, fovFormat);
 
         if (ImGui::Button("Add Model", ImVec2(-FLT_MIN, 0)))
         {
@@ -177,9 +177,9 @@ namespace DE
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::PushID(rowIndex);
-            if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), settings.selectedInstanceID == static_cast<int32_t>(modelInstance.handle), ImGuiSelectableFlags_SpanAllColumns))
+            if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), clientState.selectedInstanceID == static_cast<int32_t>(modelInstance.handle), ImGuiSelectableFlags_SpanAllColumns))
             {
-                settings.selectedInstanceID = static_cast<int32_t>(modelInstance.handle);
+                clientState.selectedInstanceID = static_cast<int32_t>(modelInstance.handle);
                 ImGui::OpenPopup("InstanceDetailsPopup");
             }
 
@@ -240,7 +240,7 @@ namespace DE
         ImGui::EndTable();
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
-            settings.selectedInstanceID = -1;
+            clientState.selectedInstanceID = -1;
 
         ImGui::End();
 

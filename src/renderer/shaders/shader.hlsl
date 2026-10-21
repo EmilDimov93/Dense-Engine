@@ -50,13 +50,14 @@ struct DirectionalLight
 };
 StructuredBuffer<DirectionalLight> directionalLights : register(t6);
 
-struct Settings
+struct ClientState
 {
     int selectedID;
     float fov;
+    float time;
 };
 
-ConstantBuffer<Settings> settings : register(b0);
+ConstantBuffer<ClientState> clientState : register(b0);
 
 // Constants
 
@@ -92,7 +93,7 @@ void RayGen()
     uint2 dims = DispatchRaysDimensions().xy;
 
     float2 ndc = (float2(pixel) + 0.5f) / float2(dims) * 2.f - 1.f;
-    const float fovY = radians(settings.fov);
+    const float fovY = radians(clientState.fov);
     const float tanHalfFov = tan(fovY / 2.f);
 
     ndc.x *= float(dims.x) / float(dims.y);
@@ -102,7 +103,7 @@ void RayGen()
 
     const float3 cameraPosition = float3(0.f, 0.f, -2.f);
     
-    if(settings.fov < 0.01f)
+    if(clientState.fov < 0.01f)
     {
         const float halfHeight = 2.f;
         ray.Origin = cameraPosition + float3(ndc * halfHeight, 0.f);
@@ -206,6 +207,6 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
 
     payload.color = diffuseColor + specularColor;
 
-    if(InstanceID() == settings.selectedID && payload.depth == 0)
-        payload.color += float3(0.3f, 0.3f, 0.f);
+    if(InstanceID() == clientState.selectedID && payload.depth == 0)
+        payload.color += float3(0.8f, 0.8f, 0.f) * (1.f - clamp((abs(sin((hitPos.x * hitPos.z) * 2.f + clientState.time * 5.f)) + 0.2f), 0.f, 1.f));
 }

@@ -7,9 +7,10 @@
 
 namespace DE
 {
-    struct Settings
+    struct ClientState
     {
         int32_t selectedInstanceID = -1;
         float fov = 60.f;
+        float time;
     };
 }

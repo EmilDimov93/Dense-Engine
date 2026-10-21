@@ -10,7 +10,7 @@
 
 namespace DE
 {
-    void Renderer::tick(const UI &ui, const Settings &settings)
+    void Renderer::tick(const UI &ui, const ClientState &clientState)
     {
         const UINT frameIndex = swapChain.swapchain->GetCurrentBackBufferIndex();
 
@@ -33,7 +33,7 @@ namespace DE
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLASInstanceDataBuffer, scene.getTLASInstanceDataAddress());
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::PointLightBuffer, scene.getPointLightBufferAddress());
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::DirectionalLightBuffer, scene.getDirectionalLightBufferAddress());
-            commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::Settings, sizeof(Settings) / 4, &settings, 0);
+            commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::ClientState, sizeof(ClientState) / 4, &clientState, 0);
             commands.list->SetPipelineState1(pipeline.stateObject.Get());
 
             D3D12_DISPATCH_RAYS_DESC dispatchDesc = pipeline.dispatchDesc(viewportRect.size);

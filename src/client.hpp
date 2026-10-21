@@ -8,7 +8,9 @@
 #include "scene/sceneDescription.hpp"
 #include "ui/ui.hpp"
 #include "core/rect.hpp"
-#include "settings.hpp"
+#include "clientState.hpp"
+
+#include <chrono>
 
 namespace DE
 {
@@ -31,9 +33,11 @@ namespace DE
 
         UI ui;
 
-        Settings settings;
+        ClientState clientState;
 
         float sidebarWidthFraction = 0.20f;
+
+        const std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 
         Handle addModel(const std::string &filePath);
         Handle addModelInstance(Handle modelHandle, Transform transform = {});

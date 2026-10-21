@@ -14,7 +14,7 @@
 #include "core/rect.hpp"
 #include "core/dxcommon.hpp"
 
-#include "settings.hpp"
+#include "clientState.hpp"
 
 namespace DE
 {
@@ -26,7 +26,7 @@ namespace DE
         Renderer(HWND window, XMUINT2 windowSize);
         ~Renderer();
 
-        void tick(const UI &ui, const Settings &settings);
+        void tick(const UI &ui, const ClientState &clientState);
 
         void waitForGpu();
 
