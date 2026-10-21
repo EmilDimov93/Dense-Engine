@@ -24,9 +24,28 @@ namespace DE
         Transform transform;
     };
 
+    struct PointLightDescription
+    {
+        Handle handle;
+        XMFLOAT3 pos;
+        float intensity;
+        XMFLOAT3 color;
+        float range;
+    };
+
+    struct DirectionalLightDescription
+    {
+        Handle handle;
+        XMFLOAT3 direction;
+        float intensity;
+        XMFLOAT3 color;
+    };
+
     struct SceneDescription
     {
         std::vector<ModelDescription> modelDescriptions;
         std::vector<ModelInstanceDescription> modelInstanceDescriptions;
+        std::vector<PointLightDescription> pointLightDescriptions;
+        std::vector<DirectionalLightDescription> directionalLightDescriptions;
     };
 }

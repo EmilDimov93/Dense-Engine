@@ -15,6 +15,7 @@ namespace DE
 {
     void Scene::upload(const SceneDescription &sceneDescription)
     {
+        models.reserve(sceneDescription.modelDescriptions.size());
         for (const ModelDescription &modelDescription : sceneDescription.modelDescriptions)
             if (models.find(modelDescription.handle) == models.end())
             {
@@ -35,6 +36,7 @@ namespace DE
                 modelMaterialArrayOffsets.emplace(modelDescription.handle, 0);
             }
 
+        modelInstances.reserve(sceneDescription.modelInstanceDescriptions.size());
         for (const ModelInstanceDescription &modelInstanceDescription : sceneDescription.modelInstanceDescriptions)
         {
             auto found = modelInstances.find(modelInstanceDescription.handle);
@@ -50,6 +52,28 @@ namespace DE
         uploadGeometry();
         uploadMaterials();
         buildTLAS();
+
+        pointLights.reserve(sceneDescription.pointLightDescriptions.size());
+        for (const PointLightDescription &pointLightDescription : sceneDescription.pointLightDescriptions)
+        {
+            auto found = pointLights.find(pointLightDescription.handle);
+            if (found == pointLights.end())
+                pointLights.emplace(pointLightDescription.handle, PointLight(pointLightDescription.pos, pointLightDescription.intensity, pointLightDescription.color, pointLightDescription.range));
+            else
+                found->second = PointLight(pointLightDescription.pos, pointLightDescription.intensity, pointLightDescription.color, pointLightDescription.range);
+        }
+
+        directionalLights.reserve(sceneDescription.directionalLightDescriptions.size());
+        for (const DirectionalLightDescription &directionalLightDescription : sceneDescription.directionalLightDescriptions)
+        {
+            auto found = directionalLights.find(directionalLightDescription.handle);
+            if (found == directionalLights.end())
+                directionalLights.emplace(directionalLightDescription.handle, DirectionalLight(directionalLightDescription.direction, directionalLightDescription.intensity, directionalLightDescription.color));
+            else
+                found->second = DirectionalLight(directionalLightDescription.direction, directionalLightDescription.intensity, directionalLightDescription.color);
+        }
+
+        uploadLights();
     }
 
     void Scene::uploadGeometry()
@@ -102,6 +126,55 @@ namespace DE
 
             std::memcpy(mappedData, materials.data(), size);
             materialBuffer->Unmap(0, nullptr);
+        }
+    }
+
+    void Scene::uploadLights()
+    {
+        // Point Lights
+        std::vector<PointLight> pointLightsVector;
+        pointLightsVector.reserve(pointLights.size());
+
+        for (const auto &[handle, pointLight] : pointLights)
+        {
+            pointLightsVector.push_back(pointLight);
+        }
+
+        {
+            const uint64_t dataSize = sizeof(PointLight) * pointLightsVector.size();
+            const uint64_t bufferSize = std::max<uint64_t>(dataSize, sizeof(PointLight));
+            pointLightBuffer = createBuffer(device, bufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
+
+            void *mappedData = nullptr;
+            const D3D12_RANGE noCpuReadRange{0, 0};
+
+            dxa(pointLightBuffer->Map(0, &noCpuReadRange, &mappedData), "Failed to map buffer");
+
+            std::memcpy(mappedData, pointLightsVector.data(), dataSize);
+            pointLightBuffer->Unmap(0, nullptr);
+        }
+
+        // Directional Lights
+        std::vector<DirectionalLight> directionalLightsVector;
+        directionalLightsVector.reserve(directionalLights.size());
+
+        for (const auto &[handle, directionalLight] : directionalLights)
+        {
+            directionalLightsVector.push_back(directionalLight);
+        }
+
+        {
+            const uint64_t dataSize = sizeof(DirectionalLight) * directionalLightsVector.size();
+            const uint64_t bufferSize = std::max<uint64_t>(dataSize, sizeof(DirectionalLight));
+            directionalLightBuffer = createBuffer(device, bufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
+
+            void *mappedData = nullptr;
+            const D3D12_RANGE noCpuReadRange{0, 0};
+
+            dxa(directionalLightBuffer->Map(0, &noCpuReadRange, &mappedData), "Failed to map buffer");
+
+            std::memcpy(mappedData, directionalLightsVector.data(), dataSize);
+            directionalLightBuffer->Unmap(0, nullptr);
         }
     }
 }

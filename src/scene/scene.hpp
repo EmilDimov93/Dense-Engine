@@ -10,6 +10,9 @@
 #include "model.hpp"
 #include "modelInstance.hpp"
 
+#include "pointLight.hpp"
+#include "directionalLight.hpp"
+
 #include <unordered_map>
 #include <string>
 
@@ -33,6 +36,8 @@ namespace DE
         D3D12_GPU_VIRTUAL_ADDRESS getIndexBufferAddress() const { return indexBuffer->GetGPUVirtualAddress(); }
         D3D12_GPU_VIRTUAL_ADDRESS getTLASInstanceDataAddress() const { return tlasInstanceDataBuffer->GetGPUVirtualAddress(); }
         D3D12_GPU_VIRTUAL_ADDRESS getTLASAddress() const { return tlas.getAddress(); }
+        D3D12_GPU_VIRTUAL_ADDRESS getPointLightBufferAddress() const { return pointLightBuffer->GetGPUVirtualAddress(); }
+        D3D12_GPU_VIRTUAL_ADDRESS getDirectionalLightBufferAddress() const { return directionalLightBuffer->GetGPUVirtualAddress(); }
 
         [[nodiscard]] bool empty() const { return modelInstances.empty(); }
 
@@ -40,11 +45,17 @@ namespace DE
         std::unordered_map<Handle, Model> models;
         std::unordered_map<Handle, ModelInstance> modelInstances;
 
+        std::unordered_map<Handle, PointLight> pointLights;
+        std::unordered_map<Handle, DirectionalLight> directionalLights;
+
         std::unordered_map<Handle, uint32_t> modelMaterialArrayOffsets;
 
         ComPtr<ID3D12Resource> instanceBuffer;
 
         ComPtr<ID3D12Resource> materialBuffer;
+
+        ComPtr<ID3D12Resource> pointLightBuffer;
+        ComPtr<ID3D12Resource> directionalLightBuffer;
 
         dxabstractions::AccelerationStructure tlas;
 
@@ -57,6 +68,7 @@ namespace DE
 
         void uploadGeometry();
         void uploadMaterials();
+        void uploadLights();
         void buildTLAS();
     };
 }
