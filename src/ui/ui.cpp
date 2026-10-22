@@ -127,6 +127,9 @@ namespace DE
             if (selectedPath)
                 command = commands::AddModelCommand(selectedPath->string());
         }
+
+        ImGui::SeparatorText("Model Instances");
+
         if (ImGui::Button("Add Instance", ImVec2(-FLT_MIN, 0)))
         {
             ImGui::OpenPopup("Models popup");
@@ -136,10 +139,7 @@ namespace DE
         {
             ImGui::BeginTable("Select model", 1, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_Borders);
             ImGui::TableSetupColumn("Model name");
-            ImGui::TableNextRow();
-            ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(ImGuiCol_TableHeaderBg));
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted("Model name");
+            ImGui::TableHeadersRow();
 
             for (uint32_t modelIndex = 0; modelIndex < sceneDescription.modelDescriptions.size(); modelIndex++)
             {
@@ -189,7 +189,6 @@ namespace DE
             ImGui::PopID();
         };
 
-        ImGui::SeparatorText("Model Instances");
         ImGui::BeginTable("ModelInstancesTable", 2, ImGuiTableFlags_Borders);
         ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
@@ -234,6 +233,41 @@ namespace DE
         }
         ImGui::EndTable();
 
+        ImGui::SeparatorText("Lights");
+
+        if (ImGui::Button("Add Light", ImVec2(-FLT_MIN, 0)))
+        {
+            ImGui::OpenPopup("Lights popup");
+        }
+
+        if (ImGui::BeginPopup("Lights popup"))
+        {
+            ImGui::BeginTable("Select light type", 1, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_Borders);
+            ImGui::TableSetupColumn("Light type");
+            ImGui::TableHeadersRow();
+
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::PushID(0);
+            if (ImGui::Selectable("Point"))
+            {
+                command = commands::AddLightCommand(commands::AddLightCommand::LightType::Point);
+            }
+            ImGui::PopID();
+
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::PushID(1);
+            if (ImGui::Selectable("Directional"))
+            {
+                command = commands::AddLightCommand(commands::AddLightCommand::LightType::Point);
+            }
+            ImGui::PopID();
+
+            ImGui::EndTable();
+            ImGui::EndPopup();
+        }
+
         const float labelColumnWidth = ImGui::CalcTextSize("Intensity").x + ImGui::GetStyle().ItemSpacing.x;
 
         auto drawLabeledFloat = [&hasSceneChanged, labelColumnWidth](const char *name, float &value, float min, float max)
@@ -248,7 +282,6 @@ namespace DE
             ImGui::PopID();
         };
 
-        ImGui::SeparatorText("Lights");
         ImGui::BeginTable("LightsTable", 2, ImGuiTableFlags_Borders);
         ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);

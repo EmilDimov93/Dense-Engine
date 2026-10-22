@@ -71,6 +71,13 @@ namespace DE
                 {
                     addModelInstance(addInstanceCommand->modelHandle);
                 }
+                else if (const commands::AddLightCommand *addLightCommand = std::get_if<commands::AddLightCommand>(&*command))
+                {
+                    if(addLightCommand->lightType == commands::AddLightCommand::LightType::Point)
+                        addPointLight({0.f, 0.f, 0.f}, 1.f, {1.f, 1.f, 1.f}, 5.f);
+                    else if(addLightCommand->lightType == commands::AddLightCommand::LightType::Directional)
+                        addDirectionalLight({0.f, 1.f, 0.f}, 1.f, {1.f, 1.f, 1.f});
+                }
                 else if (const commands::LoadSceneCommand *loadSceneCommand = std::get_if<commands::LoadSceneCommand>(&*command))
                 {
                     Handle lastHandle = 0;

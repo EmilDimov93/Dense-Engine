@@ -25,6 +25,15 @@ namespace DE::commands
         Handle modelHandle;
     };
 
+    struct AddLightCommand
+    {
+        enum LightType
+        {
+            Point,
+            Directional
+        } lightType;
+    };
+
     struct LoadSceneCommand
     {
         std::string filePath;
@@ -34,5 +43,5 @@ namespace DE::commands
     {
     };
 
-    using Command = std::variant<AddModelCommand, AddInstanceCommand, LoadSceneCommand, SaveSceneCommand>;
+    using Command = std::variant<AddModelCommand, AddInstanceCommand, AddLightCommand, LoadSceneCommand, SaveSceneCommand>;
 }
