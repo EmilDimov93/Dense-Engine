@@ -30,8 +30,7 @@ namespace DE
 
         UINT width;
         UINT height;
-
-        bool wasResized = false;
+        
         bool isMinimized = false;
     };
 }

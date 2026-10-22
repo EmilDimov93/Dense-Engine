@@ -15,17 +15,19 @@ namespace DE
     {
         renderer.setViewportRect(makeViewportRect());
 
+        // Default light (sun)
+        addDirectionalLight({0.f, 1.f, 0.f}, 1.f, {1.f, 1.f, 1.f});
+
         if (sceneFilePath != nullptr)
         {
             Handle lastHandle = 0;
-            loadScene(sceneFilePath, sceneDescription, lastHandle);
-            handleGenerator.setLast(lastHandle);
-            hasSceneChanged = true;
-            renderer.loadScene(sceneDescription);
+            if (loadScene(sceneFilePath, sceneDescription, lastHandle))
+            {
+                handleGenerator.setLast(lastHandle);
+                hasSceneChanged = true;
+                renderer.loadScene(sceneDescription);
+            }
         }
-
-        // Default light (sun)
-        addDirectionalLight({0.f, 1.f, 0.f}, 1.f, {1.f, 1.f, 1.f});
     }
 
     Client::~Client()
@@ -72,10 +74,12 @@ namespace DE
                 else if (const commands::LoadSceneCommand *loadSceneCommand = std::get_if<commands::LoadSceneCommand>(&*command))
                 {
                     Handle lastHandle = 0;
-                    loadScene(loadSceneCommand->filePath, sceneDescription, lastHandle);
-                    handleGenerator.setLast(lastHandle);
-                    hasSceneChanged = true;
-                    renderer.loadScene(sceneDescription);
+                    if (loadScene(loadSceneCommand->filePath, sceneDescription, lastHandle))
+                    {
+                        handleGenerator.setLast(lastHandle);
+                        hasSceneChanged = true;
+                        renderer.loadScene(sceneDescription);
+                    }
                 }
                 else if (const commands::SaveSceneCommand *saveSceneCommand = std::get_if<commands::SaveSceneCommand>(&*command))
                 {

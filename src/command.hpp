@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0
 
 /*
-    Commands exchanged between Client and UI containing information about
-    model or model instance additions to the scene.
+    Commands exchanged between Client and UI containing 
+    information about additions to the scene.
 */
 
 #pragma once

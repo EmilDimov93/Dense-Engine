@@ -177,9 +177,9 @@ namespace DE
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::PushID(rowIndex);
-            if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), clientState.selectedInstanceID == static_cast<int32_t>(modelInstance.handle), ImGuiSelectableFlags_SpanAllColumns))
+            if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), clientState.selectedModelInstanceID == static_cast<int32_t>(modelInstance.handle), ImGuiSelectableFlags_SpanAllColumns))
             {
-                clientState.selectedInstanceID = static_cast<int32_t>(modelInstance.handle);
+                clientState.selectedModelInstanceID = static_cast<int32_t>(modelInstance.handle);
                 ImGui::OpenPopup("InstanceDetailsPopup");
             }
 
@@ -240,7 +240,7 @@ namespace DE
         ImGui::EndTable();
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
-            clientState.selectedInstanceID = -1;
+            clientState.selectedModelInstanceID = -1;
 
         ImGui::End();
 

@@ -1,4 +1,4 @@
-// Copyright 2025 Emil Dimov
+// Copyright 2026 Emil Dimov
 // Licensed under the Apache License, Version 2.0
 
 #include "scene.hpp"
@@ -123,6 +123,7 @@ namespace DE
         const D3D12_RESOURCE_BARRIER barriers[] = {
             transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
             transition(indexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)};
+        commandList->ResourceBarrier(static_cast<UINT>(std::size(barriers)), barriers);
     }
 
     void Scene::uploadMaterials()

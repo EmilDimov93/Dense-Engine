@@ -42,6 +42,8 @@ namespace DE::dxabstractions
                 D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5{};
                 if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options5, sizeof(options5))) && options5.RaytracingTier >= D3D12_RAYTRACING_TIER_1_0)
                     break;
+
+                device.Reset();
             }
 
             ptra(device, "Failed to find suitable adapter");

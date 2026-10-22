@@ -28,6 +28,9 @@ namespace DE::dxabstractions
                 CloseHandle(fenceEvent);
         }
 
+        Fence(const Fence &) = delete;
+        Fence &operator=(const Fence &) = delete;
+
         void signal(ID3D12CommandQueue *queue)
         {
             dxa(queue->Signal(fence.Get(), ++signaledValue), "Failed to signal fence");

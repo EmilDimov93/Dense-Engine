@@ -5,10 +5,6 @@
 
 #include "core/assertions.hpp"
 
-#include <filesystem>
-#include <iostream>
-#include <source_location>
-
 namespace DE
 {
     Renderer::Renderer(HWND window, XMUINT2 windowSize) : commands(device),

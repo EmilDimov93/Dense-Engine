@@ -7,7 +7,7 @@
 
 namespace DE
 {
-    using Handle = uint64_t;
+    using Handle = uint32_t;
 
     class HandleGenerator
     {
@@ -20,6 +20,6 @@ namespace DE
         void setLast(Handle handle) { last = handle; }
 
     private:
-        uint64_t last = 0;
+        uint32_t last = 0;
     };
 }

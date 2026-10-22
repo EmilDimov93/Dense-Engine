@@ -37,10 +37,8 @@ namespace DE::dxabstractions
         {
             std::ifstream file(shaderFilePath, std::ios::binary | std::ios::ate);
             if (!file)
-            {
-                std::cerr << "Failed to open shader file" << std::endl;
-                abort();
-            }
+                fatal("Failed to open shader file");
+            
             std::vector<char> bytecode(static_cast<size_t>(file.tellg()));
             file.seekg(0);
             file.read(bytecode.data(), bytecode.size());
@@ -122,7 +120,7 @@ namespace DE::dxabstractions
 
             D3D12_STATE_OBJECT_DESC stateObjectDesc{
                 .Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE,
-                .NumSubobjects = _countof(subobjects),
+                .NumSubobjects = static_cast<UINT>(std::size(subobjects)),
                 .pSubobjects = subobjects};
 
             dxa(device->CreateStateObject(&stateObjectDesc, IID_PPV_ARGS(&stateObject)), "Failed to create raytracing state object");

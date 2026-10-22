@@ -49,7 +49,7 @@ namespace DE
 
         const D3D12_CPU_DESCRIPTOR_HANDLE backBufferView = ui.backBufferView(frameIndex);
 
-        const float clearColor[] = {0.5f, 0.5f, 0.8f, 1.0f};
+        const float clearColor[] = {0.25f, 0.25f, 0.4f, 1.0f};
         commands.list->ClearRenderTargetView(backBufferView, clearColor, 0, nullptr);
 
         const D3D12_RESOURCE_BARRIER toCopyBarriers[] = {

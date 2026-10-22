@@ -103,14 +103,14 @@ namespace DE
 
     inline bool loadScene(const std::filesystem::path &filePath, SceneDescription &sceneDescription, Handle &lastHandle)
     {
-        sceneDescription = SceneDescription();
-
         std::ifstream inputFile(filePath);
         if (!inputFile.is_open())
         {
             warn("Failed to load scene file");
             return false;
         }
+
+        SceneDescription newSceneDescription;
 
         try
         {
@@ -122,7 +122,7 @@ namespace DE
             }
             else
             {
-                if (stoi(line) != DENSE_ENGINE_VERSION)
+                if (stoul(line) != DENSE_ENGINE_VERSION)
                 {
                     warn("Scene file version mismatch. Scene(" + line + "). Client version (" + std::to_string(DENSE_ENGINE_VERSION) + ")");
                 }
@@ -175,7 +175,7 @@ namespace DE
                 {
                     if (line == endOfObject)
                     {
-                        sceneDescription.modelDescriptions.push_back(currModel);
+                        newSceneDescription.modelDescriptions.push_back(currModel);
                         tokenCounter = 0;
                         continue;
                     }
@@ -184,7 +184,7 @@ namespace DE
                         switch (tokenCounter)
                         {
                         case 0:
-                            currModel.handle = stoi(line);
+                            currModel.handle = stoul(line);
                             break;
                         case 1:
                             currModel.filePath = line;
@@ -197,7 +197,7 @@ namespace DE
                 {
                     if (line == endOfObject)
                     {
-                        sceneDescription.modelInstanceDescriptions.push_back(currInstance);
+                        newSceneDescription.modelInstanceDescriptions.push_back(currInstance);
                         tokenCounter = 0;
                         continue;
                     }
@@ -206,10 +206,10 @@ namespace DE
                         switch (tokenCounter)
                         {
                         case 0:
-                            currInstance.handle = stoi(line);
+                            currInstance.handle = stoul(line);
                             break;
                         case 1:
-                            currInstance.modelHandle = stoi(line);
+                            currInstance.modelHandle = stoul(line);
                             break;
                         case 2:
                             currInstance.transform.pos.x = stof(line);
@@ -246,7 +246,7 @@ namespace DE
                 {
                     if (line == endOfObject)
                     {
-                        sceneDescription.pointLightDescriptions.push_back(currPointLight);
+                        newSceneDescription.pointLightDescriptions.push_back(currPointLight);
                         tokenCounter = 0;
                         continue;
                     }
@@ -255,7 +255,7 @@ namespace DE
                         switch (tokenCounter)
                         {
                         case 0:
-                            currPointLight.handle = stoi(line);
+                            currPointLight.handle = stoul(line);
                             break;
                         case 1:
                             currPointLight.pos.x = stof(line);
@@ -289,7 +289,7 @@ namespace DE
                 {
                     if (line == endOfObject)
                     {
-                        sceneDescription.directionalLightDescriptions.push_back(currDirectionalLight);
+                        newSceneDescription.directionalLightDescriptions.push_back(currDirectionalLight);
                         tokenCounter = 0;
                         continue;
                     }
@@ -298,7 +298,7 @@ namespace DE
                         switch (tokenCounter)
                         {
                         case 0:
-                            currDirectionalLight.handle = stoi(line);
+                            currDirectionalLight.handle = stoul(line);
                             break;
                         case 1:
                             currDirectionalLight.direction.x = stof(line);
@@ -337,24 +337,23 @@ namespace DE
         catch (const std::exception &)
         {
             warn("Failed to load scene: corrupted file");
-            sceneDescription = SceneDescription();
             return false;
         }
 
-        for(const ModelDescription &modelDescription : sceneDescription.modelDescriptions)
+        for(const ModelDescription &modelDescription : newSceneDescription.modelDescriptions)
             if(modelDescription.handle > lastHandle)
                 lastHandle = modelDescription.handle;
-        for(const ModelInstanceDescription &instanceDescription : sceneDescription.modelInstanceDescriptions)
+        for(const ModelInstanceDescription &instanceDescription : newSceneDescription.modelInstanceDescriptions)
             if(instanceDescription.handle > lastHandle)
                 lastHandle = instanceDescription.handle;
-        for(const PointLightDescription &pointLightDescription : sceneDescription.pointLightDescriptions)
+        for(const PointLightDescription &pointLightDescription : newSceneDescription.pointLightDescriptions)
             if(pointLightDescription.handle > lastHandle)
                 lastHandle = pointLightDescription.handle;
-        for(const DirectionalLightDescription &directionalLightDescription : sceneDescription.directionalLightDescriptions)
+        for(const DirectionalLightDescription &directionalLightDescription : newSceneDescription.directionalLightDescriptions)
             if(directionalLightDescription.handle > lastHandle)
                 lastHandle = directionalLightDescription.handle;
 
-        
+        sceneDescription = std::move(newSceneDescription);
 
         return true;
     }

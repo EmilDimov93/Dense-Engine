@@ -21,7 +21,7 @@ namespace DE
             {L"All Files", L"*.*"},
         };
         fileOpenDialog->SetFileTypes(static_cast<UINT>(std::size(fileTypeFilters)), fileTypeFilters);
-        fileOpenDialog->SetTitle(L"Load Model");
+        fileOpenDialog->SetTitle(fileTypeFilter.pszName);
 
         DWORD dialogOptions = 0;
         fileOpenDialog->GetOptions(&dialogOptions);

@@ -1,4 +1,4 @@
-// Copyright 2025 Emil Dimov
+// Copyright 2026 Emil Dimov
 // Licensed under the Apache License, Version 2.0
 
 #include "scene.hpp"
@@ -20,11 +20,11 @@ namespace DE
         {
             const ModelInstance &instance = entry.second;
 
-            const uint32_t materialOffset = modelMaterialArrayOffsets.at(instance.modelHandle);
-
             auto modelIt = models.find(instance.modelHandle);
             if (modelIt == models.end())
                 fatal("Model instance references unknown model");
+
+            const uint32_t materialOffset = modelMaterialArrayOffsets.at(instance.modelHandle);
 
             const Transform &transform = instance.transform;
             XMMATRIX world = XMMatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z) *

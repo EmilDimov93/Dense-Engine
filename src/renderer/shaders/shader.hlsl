@@ -50,15 +50,17 @@ struct DirectionalLight
 };
 StructuredBuffer<DirectionalLight> directionalLights : register(t6);
 
-cbuffer LightCounts : register(b0)
+struct LightCounts
 {
     uint pointLightCount;
     uint directionalLightCount;
 };
 
+ConstantBuffer<LightCounts> lightCounts : register(b0);
+
 struct ClientState
 {
-    int selectedID;
+    int selectedModelInstanceID;
     float fov;
     float time;
 };
@@ -200,7 +202,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
     }
 
     float3 totalDirectLighting = float3(0.f, 0.f, 0.f);
-    for(uint i = 0; i < directionalLightCount; i++)
+    for(uint i = 0; i < lightCounts.directionalLightCount; i++)
     {
         const float3 lightDir = normalize(directionalLights[i].direction);
 
@@ -229,6 +231,6 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
 
     payload.color = diffuseColor + specularColor;
 
-    if(InstanceID() == clientState.selectedID && payload.depth == 0)
+    if(InstanceID() == clientState.selectedModelInstanceID && payload.depth == 0)
         payload.color += float3(0.8f, 0.8f, 0.f) * (1.f - clamp((abs(sin((hitPos.x * hitPos.z) * 2.f + clientState.time * 5.f)) + 0.2f), 0.f, 1.f));
 }
