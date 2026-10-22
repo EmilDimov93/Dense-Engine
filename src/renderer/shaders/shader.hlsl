@@ -202,6 +202,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
     }
 
     float3 totalDirectLighting = float3(0.f, 0.f, 0.f);
+
     for(uint i = 0; i < lightCounts.directionalLightCount; i++)
     {
         const float3 lightDir = normalize(directionalLights[i].direction);
@@ -219,6 +220,34 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         const float lightAmount = shadowPayload.visibility * cosLightNormal * directionalLights[i].intensity;
 
         totalDirectLighting += directionalLights[i].color * lightAmount;
+    }
+
+    for(uint i = 0; i < lightCounts.pointLightCount; i++)
+    {
+        const float3 origin = hitPos - WorldRayDirection() * 0.001f;
+
+        const float3 lightOffset = pointLights[i].pos - origin;
+
+        const float distance = length(lightOffset);
+
+        if(distance > pointLights[i].range)
+            continue;
+
+        const float3 lightDir = lightOffset / distance;
+
+        RayDesc shadowRay;
+        shadowRay.Origin = origin;
+        shadowRay.Direction = lightDir;
+        shadowRay.TMin = 0.001f;
+        shadowRay.TMax = distance - 0.001f;
+
+        ShadowPayload shadowPayload = { 0.f };
+        TraceRay(scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, shadowRay, shadowPayload);
+
+        const float cosLightNormal = clamp(dot(faceNormalWorld, lightDir), 0.f, 1.f);
+        const float lightAmount = shadowPayload.visibility * cosLightNormal * pointLights[i].intensity / (distance * distance);
+
+        totalDirectLighting += pointLights[i].color * lightAmount;
     }
 
     const float3 ambient = float3(0.2f, 0.2f, 0.2f);
