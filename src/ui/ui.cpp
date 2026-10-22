@@ -96,7 +96,7 @@ namespace DE
 
         ImGui::Begin("Sidebar", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration);
 
-        if(ImGui::Button("Load", ImVec2(0, 0)))
+        if (ImGui::Button("Load", ImVec2(0, 0)))
         {
             std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle, {L"DE Scene", L"*.descene"});
             if (selectedPath)
@@ -105,7 +105,7 @@ namespace DE
 
         ImGui::SameLine();
 
-        if(ImGui::Button("Save", ImVec2(0, 0)))
+        if (ImGui::Button("Save", ImVec2(0, 0)))
         {
             command = commands::SaveSceneCommand();
         }
@@ -160,68 +160,60 @@ namespace DE
             ImGui::EndPopup();
         }
 
+        auto drawTableXYZHeader = [](const char *name)
+        {
+            ImGui::BeginTable(name, 4, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders);
+            ImGui::TableSetupColumn("");
+            ImGui::TableSetupColumn("X");
+            ImGui::TableSetupColumn("Y");
+            ImGui::TableSetupColumn("Z");
+            ImGui::TableHeadersRow();
+        };
+
+        auto drawTableXYZRow = [&hasSceneChanged](const char *name, float &x, float &y, float &z, float min, float max)
+        {
+            ImGui::PushID(name);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(name);
+
+            std::array<float *, 3> components = {&x, &y, &z};
+            for (int32_t i = 0; i < 3; i++)
+            {
+                ImGui::TableNextColumn();
+                ImGui::PushID(i);
+                ImGui::SetNextItemWidth(50.f);
+                hasSceneChanged |= ImGui::DragFloat("##value", components[i], 0.01f, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+                ImGui::PopID();
+            }
+            ImGui::PopID();
+        };
+
         ImGui::SeparatorText("Model Instances");
-        ImGui::BeginTable("Table", 2, ImGuiTableFlags_Borders);
+        ImGui::BeginTable("ModelInstancesTable", 2, ImGuiTableFlags_Borders);
         ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableNextRow();
-        ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(ImGuiCol_TableHeaderBg));
-        ImGui::TableNextColumn();
-        ImGui::TextUnformatted("Handle");
-        ImGui::TableNextColumn();
-        ImGui::TextUnformatted("Name");
-        for (uint32_t rowIndex = 0; rowIndex < sceneDescription.modelInstanceDescriptions.size(); ++rowIndex)
+        ImGui::TableHeadersRow();
+        for (uint32_t rowIndex = 0; rowIndex < sceneDescription.modelInstanceDescriptions.size(); rowIndex++)
         {
             ModelInstanceDescription &modelInstance = sceneDescription.modelInstanceDescriptions[rowIndex];
 
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::PushID(rowIndex);
-            if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), clientState.selectedModelInstanceID == static_cast<int32_t>(modelInstance.handle), ImGuiSelectableFlags_SpanAllColumns))
+            if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(modelInstance.handle), ImGuiSelectableFlags_SpanAllColumns))
             {
-                clientState.selectedModelInstanceID = static_cast<int32_t>(modelInstance.handle);
+                clientState.selectedSceneComponentHandle = static_cast<int32_t>(modelInstance.handle);
                 ImGui::OpenPopup("InstanceDetailsPopup");
             }
 
             if (ImGui::BeginPopup("InstanceDetailsPopup"))
             {
-                ImGui::BeginTable("TransformTable", 4, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders);
-                ImGui::TableSetupColumn("");
-                ImGui::TableSetupColumn("X");
-                ImGui::TableSetupColumn("Y");
-                ImGui::TableSetupColumn("Z");
-                ImGui::TableNextRow();
-                ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(ImGuiCol_TableHeaderBg));
-                ImGui::TableNextColumn();
-                ImGui::TableNextColumn();
-                ImGui::TextUnformatted("X");
-                ImGui::TableNextColumn();
-                ImGui::TextUnformatted("Y");
-                ImGui::TableNextColumn();
-                ImGui::TextUnformatted("Z");
+                drawTableXYZHeader("TransformTable");
 
-                auto drawRow = [&hasSceneChanged](const char *name, float &x, float &y, float &z)
-                {
-                    ImGui::PushID(name);
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::TextUnformatted(name);
-
-                    std::array<float *, 3> components = {&x, &y, &z};
-                    for (int32_t i = 0; i < 3; i++)
-                    {
-                        ImGui::TableNextColumn();
-                        ImGui::PushID(i);
-                        ImGui::SetNextItemWidth(50.f);
-                        hasSceneChanged |= ImGui::InputFloat("##value", components[i], 0.f, 0.f, "%.3f");
-                        ImGui::PopID();
-                    }
-                    ImGui::PopID();
-                };
-
-                drawRow("Position", modelInstance.transform.pos.x, modelInstance.transform.pos.y, modelInstance.transform.pos.z);
-                drawRow("Rotation", modelInstance.transform.rot.x, modelInstance.transform.rot.y, modelInstance.transform.rot.z);
-                drawRow("Scale", modelInstance.transform.scale.x, modelInstance.transform.scale.y, modelInstance.transform.scale.z);
+                drawTableXYZRow("Position", modelInstance.transform.pos.x, modelInstance.transform.pos.y, modelInstance.transform.pos.z, -FLT_MAX, FLT_MAX);
+                drawTableXYZRow("Rotation", modelInstance.transform.rot.x, modelInstance.transform.rot.y, modelInstance.transform.rot.z, -FLT_MAX, FLT_MAX);
+                drawTableXYZRow("Scale", modelInstance.transform.scale.x, modelInstance.transform.scale.y, modelInstance.transform.scale.z, -FLT_MAX, FLT_MAX);
 
                 ImGui::EndTable();
 
@@ -234,13 +226,110 @@ namespace DE
             for (const ModelDescription &modelDescription : sceneDescription.modelDescriptions)
             {
                 if (modelInstance.modelHandle == modelDescription.handle)
+                {
                     ImGui::TextUnformatted(std::filesystem::path(modelDescription.filePath).filename().string().c_str());
+                    break;
+                }
             }
         }
         ImGui::EndTable();
 
+        const float labelColumnWidth = ImGui::CalcTextSize("Intensity").x + ImGui::GetStyle().ItemSpacing.x;
+
+        auto drawLabeledFloat = [&hasSceneChanged, labelColumnWidth](const char *name, float &value, float min, float max)
+        {
+            ImGui::PushID(name);
+            const float rowStartX = ImGui::GetCursorPosX();
+            ImGui::AlignTextToFramePadding();
+            ImGui::TextUnformatted(name);
+            ImGui::SameLine(rowStartX + labelColumnWidth);
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            hasSceneChanged |= ImGui::DragFloat("##value", &value, 0.01f, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::PopID();
+        };
+
+        ImGui::SeparatorText("Lights");
+        ImGui::BeginTable("LightsTable", 2, ImGuiTableFlags_Borders);
+        ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+        for (uint32_t rowIndex = 0; rowIndex < sceneDescription.directionalLightDescriptions.size(); rowIndex++)
+        {
+            DirectionalLightDescription &directionalLight = sceneDescription.directionalLightDescriptions[rowIndex];
+
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::PushID(rowIndex);
+            if (ImGui::Selectable(std::to_string(directionalLight.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(directionalLight.handle), ImGuiSelectableFlags_SpanAllColumns))
+            {
+                clientState.selectedSceneComponentHandle = static_cast<int32_t>(directionalLight.handle);
+                ImGui::OpenPopup("DirectionalLightDetailsPopup");
+            }
+
+            if (ImGui::BeginPopup("DirectionalLightDetailsPopup"))
+            {
+                drawTableXYZHeader("DirectionAndColorTable");
+
+                drawTableXYZRow("Direction", directionalLight.direction.x, directionalLight.direction.y, directionalLight.direction.z, -FLT_MAX, FLT_MAX);
+                drawTableXYZRow("Color", directionalLight.color.x, directionalLight.color.y, directionalLight.color.z, 0.f, 1.f);
+                if (hasSceneChanged)
+                {
+                    const float length = std::sqrt(directionalLight.direction.x * directionalLight.direction.x + directionalLight.direction.y * directionalLight.direction.y + directionalLight.direction.z * directionalLight.direction.z);
+                    directionalLight.direction.x /= length;
+                    directionalLight.direction.y /= length;
+                    directionalLight.direction.z /= length;
+                }
+
+                ImGui::EndTable();
+
+                drawLabeledFloat("Intensity", directionalLight.intensity, 0.f, FLT_MAX);
+
+                ImGui::EndPopup();
+            }
+
+            ImGui::PopID();
+
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted("Directional");
+        }
+
+        for (uint32_t rowIndex = 0; rowIndex < sceneDescription.pointLightDescriptions.size(); rowIndex++)
+        {
+            PointLightDescription &pointLight = sceneDescription.pointLightDescriptions[rowIndex];
+
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::PushID(rowIndex);
+            if (ImGui::Selectable(std::to_string(pointLight.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(pointLight.handle), ImGuiSelectableFlags_SpanAllColumns))
+            {
+                clientState.selectedSceneComponentHandle = static_cast<int32_t>(pointLight.handle);
+                ImGui::OpenPopup("PointLightDetailsPopup");
+            }
+
+            if (ImGui::BeginPopup("PointLightDetailsPopup"))
+            {
+                drawTableXYZHeader("PositionAndColorTable");
+
+                drawTableXYZRow("Position", pointLight.pos.x, pointLight.pos.y, pointLight.pos.z, -FLT_MAX, FLT_MAX);
+                drawTableXYZRow("Color", pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.f, 1.f);
+
+                ImGui::EndTable();
+
+                drawLabeledFloat("Intensity", pointLight.intensity, 0.f, FLT_MAX);
+                drawLabeledFloat("Range", pointLight.range, 0.f, FLT_MAX);
+
+                ImGui::EndPopup();
+            }
+
+            ImGui::PopID();
+
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted("Point");
+        }
+        ImGui::EndTable();
+
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
-            clientState.selectedModelInstanceID = -1;
+            clientState.selectedSceneComponentHandle = -1;
 
         ImGui::End();
 

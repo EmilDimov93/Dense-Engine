@@ -60,7 +60,7 @@ ConstantBuffer<LightCounts> lightCounts : register(b0);
 
 struct ClientState
 {
-    int selectedModelInstanceID;
+    int selectedSceneComponentHandle;
     float fov;
     float time;
 };
@@ -260,6 +260,6 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
 
     payload.color = diffuseColor + specularColor;
 
-    if(InstanceID() == clientState.selectedModelInstanceID && payload.depth == 0)
+    if(InstanceID() == clientState.selectedSceneComponentHandle && payload.depth == 0)
         payload.color += float3(0.8f, 0.8f, 0.f) * (1.f - clamp((abs(sin((hitPos.x * hitPos.z) * 2.f + clientState.time * 5.f)) + 0.2f), 0.f, 1.f));
 }
