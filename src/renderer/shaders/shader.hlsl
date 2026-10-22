@@ -69,7 +69,7 @@ ConstantBuffer<ClientState> clientState : register(b1);
 
 static const uint MAX_BOUNCES = 1;
 
-static const float3 clearColor = float3(0.5f, 0.5f, 0.8f);
+static const float3 clearColor = float3(0.25f, 0.25f, 0.4f);
 
 // Helpers
 
@@ -77,6 +77,12 @@ float3 linearToSRGB(float3 c)
 {
     c = clamp(c, 0.f, 1.f);
     return select(c <= 0.0031308f, c * 12.92f, 1.055f * pow(c, 1.f / 2.4f) - 0.055f);
+}
+
+float3 toneMapACES(float3 x)
+{
+    const float a = 2.51f, b = 0.03f, c = 2.43f, d = 0.59f, e = 0.14f;
+    return saturate((x * (a * x + b)) / (x * (c * x + d) + e));
 }
 
 // Payloads
@@ -127,7 +133,8 @@ void RayGen()
     RayPayload payload = { float3(0.f, 0.f, 0.f), 0 };
     TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
 
-    output[pixel] = float4(linearToSRGB(payload.color), 1.f);
+    const float exposure = 1.f;
+    output[pixel] = float4(linearToSRGB(toneMapACES(payload.color * exposure)), 1.f);
 }
 
 [shader("miss")]
@@ -192,7 +199,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         fresnel = specularF0 + (1.f - specularF0) * pow(1.f - cosViewNormal, 5.f);
     }
 
-    float directLighting = 0.f;
+    float3 totalDirectLighting = float3(0.f, 0.f, 0.f);
     for(uint i = 0; i < directionalLightCount; i++)
     {
         const float3 lightDir = normalize(directionalLights[i].direction);
@@ -207,11 +214,15 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         TraceRay(scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, shadowRay, shadowPayload);
 
         const float cosLightNormal = clamp(dot(faceNormalWorld, lightDir), 0.f, 1.f);
-        directLighting += lerp(0.2f, 1.f, shadowPayload.visibility * cosLightNormal);
+        const float lightAmount = shadowPayload.visibility * cosLightNormal * directionalLights[i].intensity;
+
+        totalDirectLighting += directionalLights[i].color * lightAmount;
     }
-    
+
+    const float3 ambient = float3(0.2f, 0.2f, 0.2f);
+
     const float3 diffuseAlbedo = hitMaterial.diffuse.rgb * (1.f - hitMaterial.metallic);
-    const float3 diffuseColor = (1.f - fresnel) * diffuseAlbedo * directLighting;
+    const float3 diffuseColor = (1.f - fresnel) * diffuseAlbedo * (ambient + totalDirectLighting);
 
     const float smoothness = 1.f - hitMaterial.roughness;
     const float3 specularColor = fresnel * reflectedColor * smoothness * smoothness;

@@ -53,6 +53,7 @@ namespace DE
         uploadMaterials();
         buildTLAS();
 
+        pointLights.clear();
         pointLights.reserve(sceneDescription.pointLightDescriptions.size());
         for (const PointLightDescription &pointLightDescription : sceneDescription.pointLightDescriptions)
         {
@@ -63,6 +64,7 @@ namespace DE
                 found->second = PointLight(pointLightDescription.pos, pointLightDescription.intensity, pointLightDescription.color, pointLightDescription.range);
         }
 
+        directionalLights.clear();
         directionalLights.reserve(sceneDescription.directionalLightDescriptions.size());
         for (const DirectionalLightDescription &directionalLightDescription : sceneDescription.directionalLightDescriptions)
         {
