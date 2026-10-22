@@ -25,7 +25,6 @@ set(ENGINE_SOURCES
 
 add_library(imgui STATIC
     ext/imgui/imgui.cpp
-    ext/imgui/imgui_demo.cpp
     ext/imgui/imgui_draw.cpp
     ext/imgui/imgui_tables.cpp
     ext/imgui/imgui_widgets.cpp
