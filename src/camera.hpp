@@ -27,6 +27,9 @@ namespace DE
 
         float fov = 60;
 
+        float moveSpeed = 5.f;
+        float lookSensitivityRadPerPixel = 0.003f;
+
         CameraConstants toConstants() const
         {
             const XMMATRIX rotation = XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z);

@@ -44,5 +44,8 @@ namespace DE
 
         ComPtr<ID3D12DescriptorHeap> backBufferViewHeap;
         UINT backBufferViewSize = 0;
+
+        void updateCamera(Camera &camera);
+        void updateShortcuts(std::optional<commands::Command> &command);
     };
 }

@@ -190,6 +190,12 @@ namespace DE
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
+        const float minCameraSpeed = 0.f;
+        const float maxCameraSpeed = 100.f;
+        ImGui::SliderScalar("Camera Speed", ImGuiDataType_Float, &camera.moveSpeed, &minCameraSpeed, &maxCameraSpeed, "%.1f", ImGuiSliderFlags_Logarithmic);
+
+        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+
         drawTableXYZHeader("Background");
 
         drawTableXYZRow("Background", sceneDescription.clearColor.x, sceneDescription.clearColor.y, sceneDescription.clearColor.z, 0.f, 1.f, hasSceneChanged);
@@ -442,6 +448,9 @@ namespace DE
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
             clientState.selectedSceneComponentHandle = -1;
 
+        updateCamera(camera);
+        updateShortcuts(command);
+
         ImGui::End();
 
         ImGui::Render();
@@ -469,5 +478,47 @@ namespace DE
         D3D12_CPU_DESCRIPTOR_HANDLE handle = backBufferViewHeap->GetCPUDescriptorHandleForHeapStart();
         handle.ptr += static_cast<SIZE_T>(frameIndex) * backBufferViewSize;
         return handle;
+    }
+
+    void UI::updateCamera(Camera &camera)
+    {
+        const ImGuiIO &io = ImGui::GetIO();
+        if (io.WantTextInput || io.KeyCtrl)
+            return;
+
+        const float dolly = static_cast<float>(ImGui::IsKeyDown(ImGuiKey_W) - ImGui::IsKeyDown(ImGuiKey_S));
+        const float truck = static_cast<float>(ImGui::IsKeyDown(ImGuiKey_D) - ImGui::IsKeyDown(ImGuiKey_A));
+        float pan = 0.f;
+        float tilt = 0.f;
+        if (!io.WantCaptureMouse && ImGui::IsMouseDown(ImGuiMouseButton_Right))
+        {
+            pan = io.MouseDelta.x;
+            tilt = io.MouseDelta.y;
+        }
+
+        const float dt = io.DeltaTime;
+
+        camera.rot.y += pan * camera.lookSensitivityRadPerPixel;
+
+        camera.rot.x += tilt * camera.lookSensitivityRadPerPixel;
+        camera.rot.x = std::clamp(camera.rot.x, -XM_PI / 2.f, XM_PI / 2.f);
+
+        if (dolly == 0.f && truck == 0.f)
+            return;
+
+        const CameraConstants constants = camera.toConstants();
+        const XMVECTOR forward = XMLoadFloat3(&constants.forward);
+        const XMVECTOR right = XMLoadFloat3(&constants.right);
+
+        const XMVECTOR direction = XMVector3Normalize(forward * dolly + right * truck);
+        const XMVECTOR pos = XMLoadFloat3(&camera.pos) + direction * (camera.moveSpeed * dt);
+
+        XMStoreFloat3(&camera.pos, pos);
+    }
+
+    void UI::updateShortcuts(std::optional<commands::Command> &command)
+    {
+        if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_S))
+            command = commands::SaveSceneCommand();
     }
 }
