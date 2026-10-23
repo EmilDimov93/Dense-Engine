@@ -91,6 +91,16 @@ namespace DE
                        << endOfObject << '\n';
         }
 
+        outputFile << "Settings" << '\n';
+
+        outputFile << sceneDescription.clearColor.x << '\n'
+                   << sceneDescription.clearColor.y << '\n'
+                   << sceneDescription.clearColor.z << '\n'
+                   << sceneDescription.exposure << '\n'
+                   << sceneDescription.ambient.x << '\n'
+                   << sceneDescription.ambient.y << '\n'
+                   << sceneDescription.ambient.z << '\n';
+
         outputFile.close();
         if (outputFile.fail())
         {
@@ -134,7 +144,8 @@ namespace DE
                 Models = 1u,
                 Instances = 2u,
                 PointLights = 3u,
-                DirectionalLights = 4u
+                DirectionalLights = 4u,
+                Settings = 5u
             };
             Section currSection = Section::Context;
             uint32_t tokenCounter = 0;
@@ -165,6 +176,12 @@ namespace DE
                 else if (line == "DirectionalLights")
                 {
                     currSection = Section::DirectionalLights;
+                    tokenCounter = 0;
+                    continue;
+                }
+                else if (line == "Settings")
+                {
+                    currSection = Section::Settings;
                     tokenCounter = 0;
                     continue;
                 }
@@ -325,6 +342,34 @@ namespace DE
                     }
                     break;
                 }
+                case Section::Settings:
+                {
+                    switch (tokenCounter)
+                    {
+                    case 0:
+                        newSceneDescription.clearColor.x = stof(line);
+                        break;
+                    case 1:
+                        newSceneDescription.clearColor.y = stof(line);
+                        break;
+                    case 2:
+                        newSceneDescription.clearColor.z = stof(line);
+                        break;
+                    case 3:
+                        newSceneDescription.exposure = stof(line);
+                        break;
+                    case 4:
+                        newSceneDescription.ambient.x = stof(line);
+                        break;
+                    case 5:
+                        newSceneDescription.ambient.y = stof(line);
+                        break;
+                    case 6:
+                        newSceneDescription.ambient.z = stof(line);
+                        break;
+                    }
+                    break;
+                }
                 default:
                 {
                     continue;
@@ -340,17 +385,17 @@ namespace DE
             return false;
         }
 
-        for(const ModelDescription &modelDescription : newSceneDescription.modelDescriptions)
-            if(modelDescription.handle > lastHandle)
+        for (const ModelDescription &modelDescription : newSceneDescription.modelDescriptions)
+            if (modelDescription.handle > lastHandle)
                 lastHandle = modelDescription.handle;
-        for(const ModelInstanceDescription &instanceDescription : newSceneDescription.modelInstanceDescriptions)
-            if(instanceDescription.handle > lastHandle)
+        for (const ModelInstanceDescription &instanceDescription : newSceneDescription.modelInstanceDescriptions)
+            if (instanceDescription.handle > lastHandle)
                 lastHandle = instanceDescription.handle;
-        for(const PointLightDescription &pointLightDescription : newSceneDescription.pointLightDescriptions)
-            if(pointLightDescription.handle > lastHandle)
+        for (const PointLightDescription &pointLightDescription : newSceneDescription.pointLightDescriptions)
+            if (pointLightDescription.handle > lastHandle)
                 lastHandle = pointLightDescription.handle;
-        for(const DirectionalLightDescription &directionalLightDescription : newSceneDescription.directionalLightDescriptions)
-            if(directionalLightDescription.handle > lastHandle)
+        for (const DirectionalLightDescription &directionalLightDescription : newSceneDescription.directionalLightDescriptions)
+            if (directionalLightDescription.handle > lastHandle)
                 lastHandle = directionalLightDescription.handle;
 
         sceneDescription = std::move(newSceneDescription);
