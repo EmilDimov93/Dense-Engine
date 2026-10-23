@@ -119,6 +119,35 @@ namespace DE
         return ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam) != 0;
     }
 
+    void drawTableXYZHeader(const char *name)
+    {
+        ImGui::BeginTable(name, 4, ImGuiTableFlags_Borders);
+        ImGui::TableSetupColumn("");
+        ImGui::TableSetupColumn("X");
+        ImGui::TableSetupColumn("Y");
+        ImGui::TableSetupColumn("Z");
+        ImGui::TableHeadersRow();
+    }
+
+    void drawTableXYZRow(const char *name, float &x, float &y, float &z, float min, float max, bool &hasSceneChanged)
+    {
+        ImGui::PushID(name);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(name);
+
+        std::array<float *, 3> components = {&x, &y, &z};
+        for (int32_t i = 0; i < 3; i++)
+        {
+            ImGui::TableNextColumn();
+            ImGui::PushID(i);
+            ImGui::SetNextItemWidth(32.f);
+            hasSceneChanged |= ImGui::DragFloat("##value", components[i], 0.01f, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::PopID();
+        }
+        ImGui::PopID();
+    }
+
     void UI::tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera)
     {
         ImGui_ImplDX12_NewFrame();
@@ -161,6 +190,20 @@ namespace DE
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
+        drawTableXYZHeader("Background");
+
+        drawTableXYZRow("Background", sceneDescription.clearColor.x, sceneDescription.clearColor.y, sceneDescription.clearColor.z, 0.f, 1.f, hasSceneChanged);
+
+        ImGui::EndTable();
+
+        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+
+        const float minExposure = 0.f;
+        const float maxExposure = 100.f;
+        hasSceneChanged |= ImGui::SliderScalar("Exposure", ImGuiDataType_Float, &sceneDescription.exposure, &minExposure, &maxExposure, "%.2f", ImGuiSliderFlags_Logarithmic);
+
+        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+
         if (ImGui::Button("Add Model", ImVec2(-FLT_MIN, 0)))
         {
             std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle, {L"3D Models", L"*.obj"});
@@ -200,35 +243,6 @@ namespace DE
             ImGui::EndPopup();
         }
 
-        auto drawTableXYZHeader = [](const char *name)
-        {
-            ImGui::BeginTable(name, 4, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders);
-            ImGui::TableSetupColumn("");
-            ImGui::TableSetupColumn("X");
-            ImGui::TableSetupColumn("Y");
-            ImGui::TableSetupColumn("Z");
-            ImGui::TableHeadersRow();
-        };
-
-        auto drawTableXYZRow = [&hasSceneChanged](const char *name, float &x, float &y, float &z, float min, float max)
-        {
-            ImGui::PushID(name);
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted(name);
-
-            std::array<float *, 3> components = {&x, &y, &z};
-            for (int32_t i = 0; i < 3; i++)
-            {
-                ImGui::TableNextColumn();
-                ImGui::PushID(i);
-                ImGui::SetNextItemWidth(50.f);
-                hasSceneChanged |= ImGui::DragFloat("##value", components[i], 0.01f, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-                ImGui::PopID();
-            }
-            ImGui::PopID();
-        };
-
         ImGui::BeginTable("ModelInstancesTable", 2, ImGuiTableFlags_Borders);
         ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
@@ -250,9 +264,9 @@ namespace DE
             {
                 drawTableXYZHeader("TransformTable");
 
-                drawTableXYZRow("Position", modelInstance.transform.pos.x, modelInstance.transform.pos.y, modelInstance.transform.pos.z, -FLT_MAX, FLT_MAX);
-                drawTableXYZRow("Rotation", modelInstance.transform.rot.x, modelInstance.transform.rot.y, modelInstance.transform.rot.z, -FLT_MAX, FLT_MAX);
-                drawTableXYZRow("Scale", modelInstance.transform.scale.x, modelInstance.transform.scale.y, modelInstance.transform.scale.z, -FLT_MAX, FLT_MAX);
+                drawTableXYZRow("Position", modelInstance.transform.pos.x, modelInstance.transform.pos.y, modelInstance.transform.pos.z, -FLT_MAX, FLT_MAX, hasSceneChanged);
+                drawTableXYZRow("Rotation", modelInstance.transform.rot.x, modelInstance.transform.rot.y, modelInstance.transform.rot.z, -FLT_MAX, FLT_MAX, hasSceneChanged);
+                drawTableXYZRow("Scale", modelInstance.transform.scale.x, modelInstance.transform.scale.y, modelInstance.transform.scale.z, -FLT_MAX, FLT_MAX, hasSceneChanged);
 
                 ImGui::EndTable();
 
@@ -326,6 +340,30 @@ namespace DE
         ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableHeadersRow();
+
+        {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::PushID("Ambient");
+            const bool isAmbientPopupOpen = ImGui::IsPopupOpen("AmbientLightDetailsPopup");
+            if (ImGui::Selectable("-", isAmbientPopupOpen, ImGuiSelectableFlags_SpanAllColumns))
+                ImGui::OpenPopup("AmbientLightDetailsPopup");
+
+            if (ImGui::BeginPopup("AmbientLightDetailsPopup"))
+            {
+                drawTableXYZHeader("ColorTable");
+                drawTableXYZRow("Color", sceneDescription.ambient.x, sceneDescription.ambient.y, sceneDescription.ambient.z, 0.f, 1.f, hasSceneChanged);
+                ImGui::EndTable();
+
+                ImGui::EndPopup();
+            }
+
+            ImGui::PopID();
+
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted("ambient");
+        }
+
         for (uint32_t rowIndex = 0; rowIndex < sceneDescription.directionalLightDescriptions.size(); rowIndex++)
         {
             DirectionalLightDescription &directionalLight = sceneDescription.directionalLightDescriptions[rowIndex];
@@ -343,8 +381,8 @@ namespace DE
             {
                 drawTableXYZHeader("DirectionAndColorTable");
 
-                drawTableXYZRow("Direction", directionalLight.direction.x, directionalLight.direction.y, directionalLight.direction.z, -FLT_MAX, FLT_MAX);
-                drawTableXYZRow("Color", directionalLight.color.x, directionalLight.color.y, directionalLight.color.z, 0.f, 1.f);
+                drawTableXYZRow("Direction", directionalLight.direction.x, directionalLight.direction.y, directionalLight.direction.z, -FLT_MAX, FLT_MAX, hasSceneChanged);
+                drawTableXYZRow("Color", directionalLight.color.x, directionalLight.color.y, directionalLight.color.z, 0.f, 1.f, hasSceneChanged);
                 if (hasSceneChanged)
                 {
                     const float length = std::sqrt(directionalLight.direction.x * directionalLight.direction.x + directionalLight.direction.y * directionalLight.direction.y + directionalLight.direction.z * directionalLight.direction.z);
@@ -363,7 +401,7 @@ namespace DE
             ImGui::PopID();
 
             ImGui::TableNextColumn();
-            ImGui::TextUnformatted("Directional");
+            ImGui::TextUnformatted("directional");
         }
 
         for (uint32_t rowIndex = 0; rowIndex < sceneDescription.pointLightDescriptions.size(); rowIndex++)
@@ -383,8 +421,8 @@ namespace DE
             {
                 drawTableXYZHeader("PositionAndColorTable");
 
-                drawTableXYZRow("Position", pointLight.pos.x, pointLight.pos.y, pointLight.pos.z, -FLT_MAX, FLT_MAX);
-                drawTableXYZRow("Color", pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.f, 1.f);
+                drawTableXYZRow("Position", pointLight.pos.x, pointLight.pos.y, pointLight.pos.z, -FLT_MAX, FLT_MAX, hasSceneChanged);
+                drawTableXYZRow("Color", pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.f, 1.f, hasSceneChanged);
 
                 ImGui::EndTable();
 
@@ -397,7 +435,7 @@ namespace DE
             ImGui::PopID();
 
             ImGui::TableNextColumn();
-            ImGui::TextUnformatted("Point");
+            ImGui::TextUnformatted("point");
         }
         ImGui::EndTable();
 

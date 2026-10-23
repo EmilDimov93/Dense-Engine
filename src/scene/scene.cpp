@@ -46,6 +46,10 @@ namespace DE
                 found->second.transform = modelInstanceDescription.transform;
         }
 
+        sceneSettings.clearColor = sceneDescription.clearColor;
+        sceneSettings.exposure = sceneDescription.exposure;
+        sceneSettings.ambient = sceneDescription.ambient;
+
         if (empty())
             return;
 
@@ -76,10 +80,6 @@ namespace DE
         }
 
         uploadLights();
-
-        sceneSettings.clearColor = sceneDescription.clearColor;
-        sceneSettings.exposure = sceneDescription.exposure;
-        sceneSettings.ambient = sceneDescription.ambient;
     }
 
     void Scene::clear()

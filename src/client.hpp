@@ -38,7 +38,7 @@ namespace DE
 
         Camera camera;
 
-        float sidebarWidthFraction = 0.20f;
+        float sidebarWidthFraction = 0.25f;
 
         const std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 
