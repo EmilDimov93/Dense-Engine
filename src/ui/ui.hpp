@@ -8,6 +8,7 @@
 #include "scene/sceneDescription.hpp"
 
 #include "clientState.hpp"
+#include "camera.hpp"
 
 #include "command.hpp"
 
@@ -24,7 +25,7 @@ namespace DE
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        void tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command);
+        void tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera);
         void draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const;
 
         void createBackBufferViews(const PerFrame<ComPtr<ID3D12Resource>> &backBuffers);

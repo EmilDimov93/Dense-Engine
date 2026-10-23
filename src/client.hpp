@@ -9,6 +9,7 @@
 #include "ui/ui.hpp"
 #include "core/rect.hpp"
 #include "clientState.hpp"
+#include "camera.hpp"
 
 #include <chrono>
 
@@ -34,6 +35,8 @@ namespace DE
         UI ui;
 
         ClientState clientState;
+
+        Camera camera;
 
         float sidebarWidthFraction = 0.20f;
 

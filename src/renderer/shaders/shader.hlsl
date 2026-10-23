@@ -58,20 +58,39 @@ struct LightCounts
 
 ConstantBuffer<LightCounts> lightCounts : register(b0);
 
+struct SceneSettings
+{
+    float3 clearColor;
+    float exposure;
+    float3 ambient;
+};
+
+ConstantBuffer<SceneSettings> sceneSettings : register(b1);
+
+struct Camera
+{
+    float3 position;
+    float fov;
+    float3 right;
+    float orthoHalfHeight;
+    float3 up;
+    float padding;
+    float3 forward;
+};
+
+ConstantBuffer<Camera> camera : register(b2);
+
 struct ClientState
 {
     int selectedSceneComponentHandle;
-    float fov;
     float time;
 };
 
-ConstantBuffer<ClientState> clientState : register(b1);
+ConstantBuffer<ClientState> clientState : register(b3);
 
 // Constants
 
 static const uint MAX_BOUNCES = 1;
-
-static const float3 clearColor = float3(0.25f, 0.25f, 0.4f);
 
 // Helpers
 
@@ -107,26 +126,23 @@ void RayGen()
     uint2 dims = DispatchRaysDimensions().xy;
 
     float2 ndc = (float2(pixel) + 0.5f) / float2(dims) * 2.f - 1.f;
-    const float fovY = radians(clientState.fov);
+    const float fovY = radians(camera.fov);
     const float tanHalfFov = tan(fovY / 2.f);
 
     ndc.x *= float(dims.x) / float(dims.y);
     ndc.y = -ndc.y;
 
     RayDesc ray;
-
-    const float3 cameraPosition = float3(0.f, 0.f, -2.f);
     
-    if(clientState.fov < 0.01f)
+    if(camera.fov < 0.01f)
     {
-        const float halfHeight = 2.f;
-        ray.Origin = cameraPosition + float3(ndc * halfHeight, 0.f);
-        ray.Direction = float3(0.f, 0.f, 1.f);
+        ray.Origin = camera.position + (camera.right * ndc.x + camera.up * ndc.y) * camera.orthoHalfHeight;
+        ray.Direction = camera.forward;
     }
     else
     {
-        ray.Origin = cameraPosition;
-        ray.Direction = normalize(float3(ndc * tanHalfFov, 1.f));
+        ray.Origin = camera.position;
+        ray.Direction = normalize(camera.forward + (camera.right * ndc.x + camera.up * ndc.y) * tanHalfFov);
     }
 
     ray.TMin = 0.001f;
@@ -135,14 +151,13 @@ void RayGen()
     RayPayload payload = { float3(0.f, 0.f, 0.f), 0 };
     TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
 
-    const float exposure = 1.f;
-    output[pixel] = float4(linearToSRGB(toneMapACES(payload.color * exposure)), 1.f);
+    output[pixel] = float4(linearToSRGB(toneMapACES(payload.color * sceneSettings.exposure)), 1.f);
 }
 
 [shader("miss")]
 void Miss(inout RayPayload payload)
 {
-    payload.color = clearColor;
+    payload.color = sceneSettings.clearColor;
 }
 
 [shader("miss")]
@@ -178,7 +193,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
     if (dot(faceNormalWorld, WorldRayDirection()) > 0.f)
         faceNormalWorld = -faceNormalWorld;
 
-    float3 reflectedColor = clearColor;
+    float3 reflectedColor = sceneSettings.clearColor;
     if(payload.depth < MAX_BOUNCES)
     {
         RayDesc reflectionRay;
@@ -187,7 +202,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         reflectionRay.TMin = 0.001f;
         reflectionRay.TMax = 1000.f;
 
-        RayPayload reflectionPayload = {clearColor, payload.depth + 1};
+        RayPayload reflectionPayload = {sceneSettings.clearColor, payload.depth + 1};
         TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, reflectionRay, reflectionPayload);
 
         reflectedColor = reflectionPayload.color;
@@ -250,10 +265,8 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         totalDirectLighting += pointLights[i].color * lightAmount;
     }
 
-    const float3 ambient = float3(0.2f, 0.2f, 0.2f);
-
     const float3 diffuseAlbedo = hitMaterial.diffuse.rgb * (1.f - hitMaterial.metallic);
-    const float3 diffuseColor = (1.f - fresnel) * diffuseAlbedo * (ambient + totalDirectLighting);
+    const float3 diffuseColor = (1.f - fresnel) * diffuseAlbedo * (sceneSettings.ambient + totalDirectLighting);
 
     const float smoothness = 1.f - hitMaterial.roughness;
     const float3 specularColor = fresnel * reflectedColor * smoothness * smoothness;

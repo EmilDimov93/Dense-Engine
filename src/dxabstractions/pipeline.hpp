@@ -23,7 +23,9 @@ namespace DE::dxabstractions
         PointLightBuffer = 6,
         DirectionalLightBuffer = 7,
         LightCounts = 8,
-        ClientState = 9,
+        SceneSettings = 9,
+        Camera = 10,
+        ClientState = 11,
         Count
     };
 
@@ -80,11 +82,21 @@ namespace DE::dxabstractions
                 .ShaderRegister = 0,
                 .RegisterSpace = 0,
                 .Num32BitValues = 2};
-            rootParams[RootParams::ClientState].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-            rootParams[RootParams::ClientState].Constants = {
+            rootParams[RootParams::SceneSettings].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+            rootParams[RootParams::SceneSettings].Constants = {
                 .ShaderRegister = 1,
                 .RegisterSpace = 0,
-                .Num32BitValues = 3};
+                .Num32BitValues = 7};
+            rootParams[RootParams::Camera].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+            rootParams[RootParams::Camera].Constants = {
+                .ShaderRegister = 2,
+                .RegisterSpace = 0,
+                .Num32BitValues = 15};
+            rootParams[RootParams::ClientState].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+            rootParams[RootParams::ClientState].Constants = {
+                .ShaderRegister = 3,
+                .RegisterSpace = 0,
+                .Num32BitValues = 2};
 
             D3D12_ROOT_SIGNATURE_DESC rootSigDesc{.NumParameters = RootParams::Count, .pParameters = rootParams, .NumStaticSamplers = 0, .pStaticSamplers = nullptr, .Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE};
 

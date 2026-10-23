@@ -10,7 +10,7 @@
 
 namespace DE
 {
-    void Renderer::tick(const UI &ui, const ClientState &clientState)
+    void Renderer::tick(const UI &ui, const ClientState &clientState, const CameraConstants &cameraConstants)
     {
         const UINT frameIndex = swapChain.swapchain->GetCurrentBackBufferIndex();
 
@@ -21,6 +21,8 @@ namespace DE
 
         ID3D12DescriptorHeap *descriptorHeaps[] = {renderTarget.descriptorHeap.Get()};
         commands.list->SetDescriptorHeaps(static_cast<UINT>(std::size(descriptorHeaps)), descriptorHeaps);
+
+        SceneSettings sceneSettings = scene.getSceneSettings();
 
         if (!scene.empty())
         {
@@ -36,6 +38,8 @@ namespace DE
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::PointLightBuffer, scene.getPointLightBufferAddress());
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::DirectionalLightBuffer, scene.getDirectionalLightBufferAddress());
             commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::LightCounts, sizeof(LightCounts) / 4, &lightCounts, 0);
+            commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::SceneSettings, sizeof(SceneSettings) / 4, &sceneSettings, 0);
+            commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::Camera, sizeof(CameraConstants) / 4, &cameraConstants, 0);
             commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::ClientState, sizeof(ClientState) / 4, &clientState, 0);
             commands.list->SetPipelineState1(pipeline.stateObject.Get());
 
@@ -49,7 +53,7 @@ namespace DE
 
         const D3D12_CPU_DESCRIPTOR_HANDLE backBufferView = ui.backBufferView(frameIndex);
 
-        const float clearColor[] = {0.25f, 0.25f, 0.4f, 1.0f};
+        const FLOAT clearColor[4] = {sceneSettings.clearColor.x, sceneSettings.clearColor.y, sceneSettings.clearColor.z, 1.f};
         commands.list->ClearRenderTargetView(backBufferView, clearColor, 0, nullptr);
 
         const D3D12_RESOURCE_BARRIER toCopyBarriers[] = {

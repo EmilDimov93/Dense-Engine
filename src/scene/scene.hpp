@@ -30,6 +30,13 @@ namespace DE
         uint32_t pointLightCount, directionalLightCount;
     };
 
+    struct SceneSettings
+    {
+        XMFLOAT3 clearColor = {0.f, 0.f, 0.f};
+        float exposure = 1.f;
+        XMFLOAT3 ambient = {0.2f, 0.2f, 0.2f};
+    };
+
     class Scene
     {
     public:
@@ -50,6 +57,8 @@ namespace DE
 
         [[nodiscard]] LightCounts getLightCounts() const { return LightCounts{static_cast<uint32_t>(pointLights.size()), static_cast<uint32_t>(directionalLights.size())}; }
 
+        [[nodiscard]] SceneSettings getSceneSettings() const { return sceneSettings; }
+
     private:
         std::unordered_map<Handle, Model> models;
         std::unordered_map<Handle, ModelInstance> modelInstances;
@@ -58,6 +67,8 @@ namespace DE
         std::unordered_map<Handle, DirectionalLight> directionalLights;
 
         std::unordered_map<Handle, uint32_t> modelMaterialArrayOffsets;
+
+        SceneSettings sceneSettings;
 
         ComPtr<ID3D12Resource> instanceBuffer;
 

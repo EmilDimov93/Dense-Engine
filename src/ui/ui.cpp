@@ -25,6 +25,35 @@ namespace DE
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
 
+        const ImVec4 green = ImVec4(0.24f, 0.68f, 0.42f, 1.00f);
+        const ImVec4 greenStrong = ImVec4(0.12f, 0.60f, 0.33f, 1.00f);
+        const ImVec4 greenDark = ImVec4(0.15f, 0.40f, 0.26f, 1.00f);
+        const ImVec4 greenGrab = ImVec4(0.22f, 0.60f, 0.37f, 1.00f);
+
+        auto withAlpha = [](ImVec4 c, float a)
+        { c.w = a; return c; };
+
+        ImVec4 *colors = ImGui::GetStyle().Colors;
+
+        colors[ImGuiCol_Button] = withAlpha(green, 0.12f);
+        colors[ImGuiCol_ButtonHovered] = withAlpha(green, 0.35f);
+        colors[ImGuiCol_ButtonActive] = withAlpha(greenStrong, 0.55f);
+        colors[ImGuiCol_FrameBgHovered] = withAlpha(green, 0.15f);
+        colors[ImGuiCol_FrameBgActive] = withAlpha(green, 0.30f);
+        colors[ImGuiCol_SliderGrab] = withAlpha(greenGrab, 0.70f);
+        colors[ImGuiCol_SliderGrabActive] = green;
+        colors[ImGuiCol_CheckMark] = green;
+        colors[ImGuiCol_Header] = withAlpha(green, 0.10f);
+        colors[ImGuiCol_HeaderHovered] = withAlpha(green, 0.28f);
+        colors[ImGuiCol_HeaderActive] = withAlpha(green, 0.45f);
+        colors[ImGuiCol_TitleBgActive] = withAlpha(greenDark, 0.50f);
+        colors[ImGuiCol_Tab] = withAlpha(greenDark, 0.30f);
+        colors[ImGuiCol_TabHovered] = withAlpha(green, 0.35f);
+        colors[ImGuiCol_TextSelectedBg] = withAlpha(green, 0.20f);
+        colors[ImGuiCol_ResizeGrip] = withAlpha(green, 0.08f);
+        colors[ImGuiCol_ResizeGripHovered] = withAlpha(green, 0.28f);
+        colors[ImGuiCol_ResizeGripActive] = withAlpha(green, 0.45f);
+
         ImGui_ImplWin32_Init(windowHandle);
 
         D3D12_DESCRIPTOR_HEAP_DESC textureHeapDesc{};
@@ -74,7 +103,7 @@ namespace DE
         ImGui_ImplDX12_Init(&initInfo);
 
         ImFont *font = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(JetBrainsMonoNLExtraBold_compressed_data, JetBrainsMonoNLExtraBold_compressed_size, 14.0f);
-        if(font != nullptr)
+        if (font != nullptr)
             ImGui::GetIO().FontDefault = font;
     }
 
@@ -90,7 +119,7 @@ namespace DE
         return ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam) != 0;
     }
 
-    void UI::tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command)
+    void UI::tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera)
     {
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -123,10 +152,14 @@ namespace DE
         ImGui::Text("FPS: %.f", ImGui::GetIO().Framerate);
         ImGui::EndChild();
 
+        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+
         const float minFov = 0.f;
         const float maxFov = 180.f;
-        const char *fovFormat = (clientState.fov < 0.01f) ? "ORTHO" : "%.1f";
-        ImGui::SliderScalar("FOV", ImGuiDataType_Float, &clientState.fov, &minFov, &maxFov, fovFormat);
+        const char *fovFormat = (camera.fov < 0.01f) ? "ORTHO" : "%.f";
+        ImGui::SliderScalar("FOV", ImGuiDataType_Float, &camera.fov, &minFov, &maxFov, fovFormat);
+
+        ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
         if (ImGui::Button("Add Model", ImVec2(-FLT_MIN, 0)))
         {

@@ -15,6 +15,7 @@
 #include "core/dxcommon.hpp"
 
 #include "clientState.hpp"
+#include "camera.hpp"
 
 namespace DE
 {
@@ -26,7 +27,7 @@ namespace DE
         Renderer(HWND window, XMUINT2 windowSize);
         ~Renderer();
 
-        void tick(const UI &ui, const ClientState &clientState);
+        void tick(const UI &ui, const ClientState &clientState, const CameraConstants &cameraConstants);
 
         void waitForGpu();
 

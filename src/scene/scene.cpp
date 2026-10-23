@@ -76,6 +76,10 @@ namespace DE
         }
 
         uploadLights();
+
+        sceneSettings.clearColor = sceneDescription.clearColor;
+        sceneSettings.exposure = sceneDescription.exposure;
+        sceneSettings.ambient = sceneDescription.ambient;
     }
 
     void Scene::clear()

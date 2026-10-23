@@ -10,7 +10,6 @@ namespace DE
     struct ClientState
     {
         int32_t selectedSceneComponentHandle = -1;
-        float fov = 60.f;
         float time = 0.f;
     };
 }
