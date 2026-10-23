@@ -33,7 +33,7 @@ add_library(imgui STATIC
 )
 target_include_directories(imgui PUBLIC ext/imgui)
 
-add_executable(DenseEngine ${ENGINE_SOURCES})
+add_executable(DenseEngine ${ENGINE_SOURCES} assets/DenseEngine.rc)
 
 target_include_directories(DenseEngine PRIVATE src)
 

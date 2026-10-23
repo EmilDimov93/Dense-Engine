@@ -6,6 +6,7 @@
 #include "core/assertions.hpp"
 
 #include "fileDialog.hpp"
+#include "fonts/jetBrainsMonoNLExtraBold.hpp"
 
 #include <imgui.h>
 #include <backends/imgui_impl_win32.h>
@@ -71,6 +72,10 @@ namespace DE
             ui->freeTextureSlots.push_back(static_cast<UINT>(offset / ui->textureDescriptorSize));
         };
         ImGui_ImplDX12_Init(&initInfo);
+
+        ImFont *font = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(JetBrainsMonoNLExtraBold_compressed_data, JetBrainsMonoNLExtraBold_compressed_size, 14.0f);
+        if(font != nullptr)
+            ImGui::GetIO().FontDefault = font;
     }
 
     UI::~UI()
@@ -112,8 +117,10 @@ namespace DE
 
         ImGui::SameLine();
 
-        ImGui::BeginChild("FpsBlock", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
-        ImGui::Text("%.f FPS", ImGui::GetIO().Framerate);
+        const float fpsBlockWidth = ImGui::CalcTextSize("FPS: 0000").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - fpsBlockWidth);
+        ImGui::BeginChild("FpsBlock", ImVec2(fpsBlockWidth, 0), ImGuiChildFlags_FrameStyle | ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
+        ImGui::Text("FPS: %.f", ImGui::GetIO().Framerate);
         ImGui::EndChild();
 
         const float minFov = 0.f;

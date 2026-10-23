@@ -17,6 +17,8 @@ namespace DE
         windowClass.lpfnWndProc = &Window::windowProc;
         windowClass.hInstance = instanceHandle;
         windowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+        windowClass.hIcon = LoadIconW(instanceHandle, MAKEINTRESOURCEW(101));
+        windowClass.hIconSm = static_cast<HICON>(LoadImageW(instanceHandle, MAKEINTRESOURCEW(101), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0));
         windowClass.lpszClassName = WINDOW_CLASS_NAME;
         RegisterClassExW(&windowClass);
 
