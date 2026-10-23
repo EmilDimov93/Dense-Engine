@@ -96,7 +96,7 @@ namespace DE::dxabstractions
             rootParams[RootParams::ClientState].Constants = {
                 .ShaderRegister = 3,
                 .RegisterSpace = 0,
-                .Num32BitValues = 2};
+                .Num32BitValues = 3};
 
             D3D12_ROOT_SIGNATURE_DESC rootSigDesc{.NumParameters = RootParams::Count, .pParameters = rootParams, .NumStaticSamplers = 0, .pStaticSamplers = nullptr, .Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE};
 

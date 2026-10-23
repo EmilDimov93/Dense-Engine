@@ -25,7 +25,7 @@ namespace DE
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        void tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera);
+        void tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera);
         void draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const;
 
         void createBackBufferViews(const PerFrame<ComPtr<ID3D12Resource>> &backBuffers);
@@ -45,7 +45,10 @@ namespace DE
         ComPtr<ID3D12DescriptorHeap> backBufferViewHeap;
         UINT backBufferViewSize = 0;
 
+        bool isResizingSidebar = false;
+
         void updateCamera(Camera &camera);
         void updateShortcuts(std::optional<commands::Command> &command);
+        void updateSidebarSize(float &sidebarWidthFraction, uint32_t sidebarWidth);
     };
 }

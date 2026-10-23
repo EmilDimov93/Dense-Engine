@@ -10,6 +10,7 @@ namespace DE
     struct ClientState
     {
         int32_t selectedSceneComponentHandle = -1;
+        uint32_t ssaaSamples = 4u;
         float time = 0.f;
     };
 }

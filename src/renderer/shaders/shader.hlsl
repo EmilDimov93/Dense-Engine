@@ -83,6 +83,7 @@ ConstantBuffer<Camera> camera : register(b2);
 struct ClientState
 {
     int selectedSceneComponentHandle;
+    uint ssaaSamples;
     float time;
 };
 
@@ -124,34 +125,45 @@ void RayGen()
 {
     uint2 pixel = DispatchRaysIndex().xy;
     uint2 dims = DispatchRaysDimensions().xy;
-
-    float2 ndc = (float2(pixel) + 0.5f) / float2(dims) * 2.f - 1.f;
-    const float fovY = radians(camera.fov);
-    const float tanHalfFov = tan(fovY / 2.f);
-
-    ndc.x *= float(dims.x) / float(dims.y);
-    ndc.y = -ndc.y;
-
-    RayDesc ray;
     
-    if(camera.fov < 0.01f)
+    float3 color = {0.f, 0.f, 0.f};
+    for(uint i = 0; i < clientState.ssaaSamples; i++)
     {
-        ray.Origin = camera.position + (camera.right * ndc.x + camera.up * ndc.y) * camera.orthoHalfHeight;
-        ray.Direction = camera.forward;
+        uint side = (uint)sqrt((float)clientState.ssaaSamples);
+        float2 offset = float2((i % side + 0.5f) / side - 0.5f, (i / side + 0.5f) / side - 0.5f);
+
+        float2 ndc = (float2(pixel) + 0.5f + offset) / float2(dims) * 2.f - 1.f;
+        const float fovY = radians(camera.fov);
+        const float tanHalfFov = tan(fovY / 2.f);
+
+        ndc.x *= float(dims.x) / float(dims.y);
+        ndc.y = -ndc.y;
+
+        RayDesc ray;
+        
+        if(camera.fov < 0.01f)
+        {
+            ray.Origin = camera.position + (camera.right * ndc.x + camera.up * ndc.y) * camera.orthoHalfHeight;
+            ray.Direction = camera.forward;
+        }
+        else
+        {
+            ray.Origin = camera.position;
+            ray.Direction = normalize(camera.forward + (camera.right * ndc.x + camera.up * ndc.y) * tanHalfFov);
+        }
+
+        ray.TMin = 0.001f;
+        ray.TMax = 1000.f;
+
+        RayPayload payload = { float3(0.f, 0.f, 0.f), 0 };
+        TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
+
+        color += payload.color;
     }
-    else
-    {
-        ray.Origin = camera.position;
-        ray.Direction = normalize(camera.forward + (camera.right * ndc.x + camera.up * ndc.y) * tanHalfFov);
-    }
 
-    ray.TMin = 0.001f;
-    ray.TMax = 1000.f;
+    color /= float(clientState.ssaaSamples);
 
-    RayPayload payload = { float3(0.f, 0.f, 0.f), 0 };
-    TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
-
-    output[pixel] = float4(linearToSRGB(toneMapACES(payload.color * sceneSettings.exposure)), 1.f);
+    output[pixel] = float4(linearToSRGB(toneMapACES(color * sceneSettings.exposure)), 1.f);
 }
 
 [shader("miss")]

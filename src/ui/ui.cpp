@@ -148,7 +148,7 @@ namespace DE
         ImGui::PopID();
     }
 
-    void UI::tick(uint32_t sidebarWidth, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera)
+    void UI::tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera)
     {
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -180,6 +180,17 @@ namespace DE
         ImGui::BeginChild("FpsBlock", ImVec2(fpsBlockWidth, 0), ImGuiChildFlags_FrameStyle | ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
         ImGui::Text("FPS: %.f", ImGui::GetIO().Framerate);
         ImGui::EndChild();
+
+        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+
+        static constexpr uint32_t ssaaOptions[] = {1, 4, 9, 16};
+        if (ImGui::BeginCombo("SSAA", std::format("{}x", clientState.ssaaSamples).c_str()))
+        {
+            for (uint32_t option : ssaaOptions)
+                if (ImGui::Selectable(std::format("{}x", option).c_str(), clientState.ssaaSamples == option))
+                    clientState.ssaaSamples = option;
+            ImGui::EndCombo();
+        }
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
@@ -450,6 +461,7 @@ namespace DE
 
         updateCamera(camera);
         updateShortcuts(command);
+        updateSidebarSize(sidebarWidthFraction, sidebarWidth);
 
         ImGui::End();
 
@@ -520,5 +532,28 @@ namespace DE
     {
         if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_S))
             command = commands::SaveSceneCommand();
+    }
+
+    void UI::updateSidebarSize(float &sidebarWidthFraction, uint32_t sidebarWidth)
+    {
+        const ImGuiIO &io = ImGui::GetIO();
+
+        float cursorX = io.MousePos.x;
+
+        const bool isHoveringEdge = std::abs(cursorX - static_cast<float>(sidebarWidth)) < 5.f;
+
+        if (isHoveringEdge && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            isResizingSidebar = true;
+        if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+            isResizingSidebar = false;
+
+        if (isHoveringEdge || isResizingSidebar)
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+
+        if (isResizingSidebar)
+        {
+            sidebarWidthFraction = cursorX / io.DisplaySize.x;
+            sidebarWidthFraction = std::clamp(sidebarWidthFraction, 0.1f, 0.5f);
+        }
     }
 }

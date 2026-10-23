@@ -60,7 +60,7 @@ namespace DE
             }
 
             std::optional<commands::Command> command;
-            ui.tick(makeViewportRect().start.x, sceneDescription, hasSceneChanged, clientState, command, camera);
+            ui.tick(makeViewportRect().start.x, sidebarWidthFraction, sceneDescription, hasSceneChanged, clientState, command, camera);
             if (command)
             {
                 if (const commands::AddModelCommand *addModelCommand = std::get_if<commands::AddModelCommand>(&*command))
