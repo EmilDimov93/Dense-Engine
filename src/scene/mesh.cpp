@@ -16,31 +16,9 @@ namespace DE
         if (vertexCount == 0 || indexCount == 0 || indexCount % 3 != 0)
             fatal("Invalid mesh upload data");
 
-        {
-            size_t size = sizeof(Vertex) * meshUploadData.vertices.size();
-            vertexBuffer = createBuffer(device, size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
-
-            void *mappedData = nullptr;
-            const D3D12_RANGE noCpuReadRange{0, 0};
-
-            dxa(vertexBuffer->Map(0, &noCpuReadRange, &mappedData), "Failed to map buffer");
-
-            std::memcpy(mappedData, meshUploadData.vertices.data(), size);
-            vertexBuffer->Unmap(0, nullptr);
-        }
-
-        {
-            size_t size = sizeof(uint32_t) * meshUploadData.indices.size();
-            indexBuffer = createBuffer(device, size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
-
-            void *mappedData = nullptr;
-            const D3D12_RANGE noCpuReadRange{0, 0};
-
-            dxa(indexBuffer->Map(0, &noCpuReadRange, &mappedData), "Failed to map buffer");
-
-            std::memcpy(mappedData, meshUploadData.indices.data(), size);
-            indexBuffer->Unmap(0, nullptr);
-        }
+        vertexBuffer = createUploadBuffer<Vertex>(device, meshUploadData.vertices);
+        
+        indexBuffer = createUploadBuffer<uint32_t>(device, meshUploadData.indices);
 
         D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc{};
         geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;

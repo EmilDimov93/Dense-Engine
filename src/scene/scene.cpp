@@ -140,18 +140,7 @@ namespace DE
             materials.insert(materials.end(), model.materials.begin(), model.materials.end());
         }
 
-        {
-            const uint64_t size = sizeof(Material) * materials.size();
-            materialBuffer = createBuffer(device, size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
-
-            void *mappedData = nullptr;
-            const D3D12_RANGE noCpuReadRange{0, 0};
-
-            dxa(materialBuffer->Map(0, &noCpuReadRange, &mappedData), "Failed to map buffer");
-
-            std::memcpy(mappedData, materials.data(), size);
-            materialBuffer->Unmap(0, nullptr);
-        }
+        materialBuffer = createUploadBuffer<Material>(device, materials);
     }
 
     void Scene::uploadLights()
@@ -165,19 +154,7 @@ namespace DE
             pointLightsVector.push_back(pointLight);
         }
 
-        {
-            const uint64_t dataSize = sizeof(PointLight) * pointLightsVector.size();
-            const uint64_t bufferSize = std::max<uint64_t>(dataSize, sizeof(PointLight));
-            pointLightBuffer = createBuffer(device, bufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
-
-            void *mappedData = nullptr;
-            const D3D12_RANGE noCpuReadRange{0, 0};
-
-            dxa(pointLightBuffer->Map(0, &noCpuReadRange, &mappedData), "Failed to map buffer");
-
-            std::memcpy(mappedData, pointLightsVector.data(), dataSize);
-            pointLightBuffer->Unmap(0, nullptr);
-        }
+        pointLightBuffer = createUploadBuffer<PointLight>(device, pointLightsVector);
 
         // Directional Lights
         std::vector<DirectionalLight> directionalLightsVector;
@@ -188,18 +165,6 @@ namespace DE
             directionalLightsVector.push_back(directionalLight);
         }
 
-        {
-            const uint64_t dataSize = sizeof(DirectionalLight) * directionalLightsVector.size();
-            const uint64_t bufferSize = std::max<uint64_t>(dataSize, sizeof(DirectionalLight));
-            directionalLightBuffer = createBuffer(device, bufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
-
-            void *mappedData = nullptr;
-            const D3D12_RANGE noCpuReadRange{0, 0};
-
-            dxa(directionalLightBuffer->Map(0, &noCpuReadRange, &mappedData), "Failed to map buffer");
-
-            std::memcpy(mappedData, directionalLightsVector.data(), dataSize);
-            directionalLightBuffer->Unmap(0, nullptr);
-        }
+        directionalLightBuffer = createUploadBuffer<DirectionalLight>(device, directionalLightsVector);
     }
 }

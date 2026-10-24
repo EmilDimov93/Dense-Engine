@@ -6,6 +6,10 @@
 #include "core/dxcommon.hpp"
 #include "core/assertions.hpp"
 
+#include <algorithm>
+#include <cstring>
+#include <span>
+
 namespace DE
 {
     inline uint64_t alignUp(uint64_t sizeBytes, uint64_t alignmentBytes)
@@ -44,5 +48,23 @@ namespace DE
         barrier.Transition.StateBefore = before;
         barrier.Transition.StateAfter = after;
         return barrier;
+    }
+
+    template <typename T>
+    [[nodiscard]] inline ComPtr<ID3D12Resource> createUploadBuffer(ID3D12Device5 *device, std::span<const T> elements)
+    {
+        const UINT64 dataSizeBytes = static_cast<UINT64>(sizeof(T)) * elements.size();
+        const UINT64 bufferSizeBytes = std::max<UINT64>(dataSizeBytes, sizeof(T));
+        ComPtr<ID3D12Resource> uploadBuffer = createBuffer(device, bufferSizeBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
+
+        void *mappedData = nullptr;
+        const D3D12_RANGE noCpuReadRange{0, 0};
+
+        dxa(uploadBuffer->Map(0, &noCpuReadRange, &mappedData), "Failed to map upload buffer");
+
+        std::memcpy(mappedData, elements.data(), dataSizeBytes);
+        uploadBuffer->Unmap(0, nullptr);
+
+        return uploadBuffer;
     }
 }
