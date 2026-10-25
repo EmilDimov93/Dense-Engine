@@ -3,12 +3,12 @@
 
 #pragma once
 
+#include "shader.h"
+
 #include "core/dxcommon.hpp"
 #include "core/assertions.hpp"
 
 #include <cstring>
-#include <fstream>
-#include <vector>
 
 namespace DE::dxabstractions
 {
@@ -35,16 +35,8 @@ namespace DE::dxabstractions
         ComPtr<ID3D12StateObject> stateObject;
         ComPtr<ID3D12Resource> shaderTable;
 
-        Pipeline(ID3D12Device5 *device, const char *shaderFilePath)
+        Pipeline(ID3D12Device5 *device)
         {
-            std::ifstream file(shaderFilePath, std::ios::binary | std::ios::ate);
-            if (!file)
-                fatal("Failed to open shader file");
-            
-            std::vector<char> bytecode(static_cast<size_t>(file.tellg()));
-            file.seekg(0);
-            file.read(bytecode.data(), bytecode.size());
-
             D3D12_DESCRIPTOR_RANGE uavRange{
                 .RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV,
                 .NumDescriptors = 1,
@@ -105,7 +97,7 @@ namespace DE::dxabstractions
             dxa(device->CreateRootSignature(0, serialized->GetBufferPointer(), serialized->GetBufferSize(), IID_PPV_ARGS(&globalRootSignature)), "Failed to create root signature");
 
             D3D12_DXIL_LIBRARY_DESC dxilLib{
-                .DXILLibrary = {bytecode.data(), bytecode.size()},
+                .DXILLibrary = {shaderBytecode, sizeof(shaderBytecode)},
                 .NumExports = 0,
                 .pExports = nullptr};
 

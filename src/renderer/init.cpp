@@ -9,7 +9,7 @@ namespace DE
 {
     Renderer::Renderer(HWND window, XMUINT2 windowSize) : commands(device),
                                                           swapChain(device.factory.Get(), commands.queue.Get(), window, windowSize.x, windowSize.y),
-                                                          pipeline(device, "shaders/shader.cso"),
+                                                          pipeline(device),
                                                           scene(device, commands.list.Get()),
                                                           renderTarget(device, windowSize.x, windowSize.y)
     {

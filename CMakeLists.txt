@@ -64,9 +64,16 @@ target_link_libraries(DenseEngine PRIVATE
 
 find_program(DXC_EXECUTABLE dxc REQUIRED)
 
+set(SHADER_SOURCE ${CMAKE_SOURCE_DIR}/src/renderer/shaders/shader.hlsl)
+set(SHADER_HEADER ${CMAKE_BINARY_DIR}/generated/shader.h)
+
 add_custom_command(
-    TARGET DenseEngine POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:DenseEngine>/shaders
-    COMMAND ${DXC_EXECUTABLE} -T lib_6_3 -Fo $<TARGET_FILE_DIR:DenseEngine>/shaders/shader.cso ${CMAKE_SOURCE_DIR}/src/renderer/shaders/shader.hlsl
+    OUTPUT ${SHADER_HEADER}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/generated
+    COMMAND ${DXC_EXECUTABLE} -T lib_6_3 -Fh ${SHADER_HEADER} -Vn shaderBytecode ${SHADER_SOURCE}
+    DEPENDS ${SHADER_SOURCE}
     COMMENT "Compiling raytracing shaders"
 )
+
+target_sources(DenseEngine PRIVATE ${SHADER_HEADER})
+target_include_directories(DenseEngine PRIVATE ${CMAKE_BINARY_DIR}/generated)
