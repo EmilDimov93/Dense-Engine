@@ -12,5 +12,6 @@ namespace DE
         int32_t selectedSceneComponentHandle = -1;
         uint32_t ssaaSamples = 4u;
         float time = 0.f;
+        uint32_t lowerQuality = 0u;
     };
 }

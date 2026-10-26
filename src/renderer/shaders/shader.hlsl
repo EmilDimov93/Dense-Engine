@@ -85,6 +85,7 @@ struct ClientState
     int selectedSceneComponentHandle;
     uint ssaaSamples;
     float time;
+    bool lowerQuality;
 };
 
 ConstantBuffer<ClientState> clientState : register(b3);
@@ -125,11 +126,13 @@ void RayGen()
 {
     uint2 pixel = DispatchRaysIndex().xy;
     uint2 dims = DispatchRaysDimensions().xy;
+
+    uint ssaaSamples = (clientState.lowerQuality ? 1 : clientState.ssaaSamples);
     
     float3 color = {0.f, 0.f, 0.f};
-    for(uint i = 0; i < clientState.ssaaSamples; i++)
+    for(uint i = 0; i < ssaaSamples; i++)
     {
-        uint side = (uint)sqrt((float)clientState.ssaaSamples);
+        uint side = (uint)sqrt((float)ssaaSamples);
         float2 offset = float2((i % side + 0.5f) / side - 0.5f, (i / side + 0.5f) / side - 0.5f);
 
         float2 ndc = (float2(pixel) + 0.5f + offset) / float2(dims) * 2.f - 1.f;
@@ -161,7 +164,7 @@ void RayGen()
         color += payload.color;
     }
 
-    color /= float(clientState.ssaaSamples);
+    color /= float(ssaaSamples);
 
     output[pixel] = float4(linearToSRGB(toneMapACES(color * sceneSettings.exposure)), 1.f);
 }
@@ -206,7 +209,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         faceNormalWorld = -faceNormalWorld;
 
     float3 reflectedColor = sceneSettings.clearColor;
-    if(payload.depth < MAX_BOUNCES)
+    if(payload.depth < MAX_BOUNCES && !clientState.lowerQuality)
     {
         RayDesc reflectionRay;
         reflectionRay.Origin = hitPos - WorldRayDirection() * 0.001f;

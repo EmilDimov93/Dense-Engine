@@ -14,6 +14,7 @@
 
 #include <filesystem>
 #include <array>
+#include <cmath>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -146,6 +147,24 @@ namespace DE
             ImGui::PopID();
         }
         ImGui::PopID();
+    }
+
+    std::optional<ImVec2> worldToScreen(const Camera &camera, const XMFLOAT3 &worldPos, ImVec2 viewportMin, ImVec2 viewportSize)
+    {
+        const CameraConstants constants = camera.toConstants();
+
+        const XMVECTOR offset = XMLoadFloat3(&worldPos) - XMLoadFloat3(&camera.pos);
+        const float x = XMVectorGetX(XMVector3Dot(offset, XMLoadFloat3(&constants.right)));
+        const float y = XMVectorGetX(XMVector3Dot(offset, XMLoadFloat3(&constants.up)));
+        const float z = XMVectorGetX(XMVector3Dot(offset, XMLoadFloat3(&constants.forward)));
+
+        if (z <= 0.f)
+            return std::nullopt;
+
+        const float halfHeight = (camera.fov < 0.01f) ? constants.orthoHalfHeight : z * std::tan(XMConvertToRadians(camera.fov) * 0.5f);
+        const float scale = viewportSize.y * 0.5f / halfHeight;
+
+        return ImVec2{viewportMin.x + viewportSize.x * 0.5f + x * scale, viewportMin.y + viewportSize.y * 0.5f - y * scale};
     }
 
     void UI::tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera)
@@ -449,6 +468,16 @@ namespace DE
                 ImGui::EndPopup();
             }
 
+            const ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+            const ImVec2 viewportMin{static_cast<float>(sidebarWidth), 0.f};
+            const ImVec2 viewportSize{displaySize.x - viewportMin.x, displaySize.y};
+
+            if (const auto lightScreenPos = worldToScreen(camera, pointLight.pos, viewportMin, viewportSize))
+            {
+                const ImVec4 markerColor{pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.8f};
+                ImGui::GetBackgroundDrawList()->AddCircleFilled(*lightScreenPos, 5.f, ImGui::ColorConvertFloat4ToU32(markerColor));
+            }
+
             ImGui::PopID();
 
             ImGui::TableNextColumn();
@@ -466,6 +495,8 @@ namespace DE
         ImGui::End();
 
         ImGui::Render();
+
+        clientState.lowerQuality = ImGui::IsAnyItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsMouseClicked(ImGuiMouseButton_Left);
     }
 
     void UI::draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const
