@@ -13,8 +13,8 @@ namespace DE::dxabstractions
     class CommandContext
     {
     public:
-        ComPtr<ID3D12CommandQueue> queue;
-        ComPtr<ID3D12GraphicsCommandList4> list;
+        ID3D12CommandQueuePtr queue;
+        ID3D12GraphicsCommandList4Ptr list;
 
         explicit CommandContext(ID3D12Device5 *device) : fences{Fence(device), Fence(device)}
         {
@@ -36,7 +36,7 @@ namespace DE::dxabstractions
         {
             fences[frameIndex].wait();
 
-            ID3D12CommandAllocator *allocator = allocators[frameIndex].Get();
+            ID3D12CommandAllocator *allocator = allocators[frameIndex];
             dxa(allocator->Reset(), "Failed to reset command allocator");
             dxa(list->Reset(allocator, nullptr), "Failed to reset command list");
         }
@@ -45,10 +45,10 @@ namespace DE::dxabstractions
         {
             dxa(list->Close(), "Failed to close command list");
 
-            ID3D12CommandList *commandListsToExecute[] = {list.Get()};
+            ID3D12CommandList *commandListsToExecute[] = {list};
             queue->ExecuteCommandLists(static_cast<UINT>(std::size(commandListsToExecute)), commandListsToExecute);
 
-            fences[frameIndex].signal(queue.Get());
+            fences[frameIndex].signal(queue);
         }
 
         void waitIdle()
@@ -59,12 +59,12 @@ namespace DE::dxabstractions
 
         void flush()
         {
-            fences[0].signal(queue.Get());
+            fences[0].signal(queue);
             fences[0].wait();
         }
 
     private:
-        PerFrame<ComPtr<ID3D12CommandAllocator>> allocators;
+        PerFrame<ID3D12CommandAllocatorPtr> allocators;
 
         PerFrame<Fence> fences;
     };

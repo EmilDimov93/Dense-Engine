@@ -35,14 +35,14 @@ namespace DE::dxabstractions
 
             D3D12_RESOURCE_BARRIER uavBarrier{};
             uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-            uavBarrier.UAV.pResource = buffer.Get();
+            uavBarrier.UAV.pResource = buffer;
             commandList->ResourceBarrier(1, &uavBarrier);
         }
 
         D3D12_GPU_VIRTUAL_ADDRESS getAddress() const { return buffer->GetGPUVirtualAddress(); }
 
     private:
-        ComPtr<ID3D12Resource> buffer;
-        ComPtr<ID3D12Resource> scratchBuffer;
+        ID3D12ResourcePtr buffer;
+        ID3D12ResourcePtr scratchBuffer;
     };
 }

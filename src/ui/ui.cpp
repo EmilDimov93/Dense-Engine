@@ -20,7 +20,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 namespace DE
 {
-    UI::UI(HWND windowHandle, ID3D12Device *device, ID3D12CommandQueue *queue, const PerFrame<ComPtr<ID3D12Resource>> &backBuffers) : windowHandle(windowHandle), device(device)
+    UI::UI(HWND windowHandle, ID3D12Device *device, ID3D12CommandQueue *queue, const PerFrame<ID3D12ResourcePtr> &backBuffers) : windowHandle(windowHandle), device(device)
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -82,7 +82,7 @@ namespace DE
         initInfo.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
         initInfo.DSVFormat = DXGI_FORMAT_UNKNOWN;
         initInfo.UserData = this;
-        initInfo.SrvDescriptorHeap = textureHeap.Get();
+        initInfo.SrvDescriptorHeap = textureHeap;
         initInfo.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo *info, D3D12_CPU_DESCRIPTOR_HANDLE *cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE *gpuHandle)
         {
             UI *ui = static_cast<UI *>(info->UserData);
@@ -504,16 +504,16 @@ namespace DE
         const D3D12_CPU_DESCRIPTOR_HANDLE target = backBufferView(frameIndex);
         list->OMSetRenderTargets(1, &target, FALSE, nullptr);
 
-        ID3D12DescriptorHeap *descriptorHeaps[] = {textureHeap.Get()};
+        ID3D12DescriptorHeap *descriptorHeaps[] = {textureHeap};
         list->SetDescriptorHeaps(static_cast<UINT>(std::size(descriptorHeaps)), descriptorHeaps);
 
         ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), list);
     }
 
-    void UI::createBackBufferViews(const PerFrame<ComPtr<ID3D12Resource>> &backBuffers)
+    void UI::createBackBufferViews(const PerFrame<ID3D12ResourcePtr> &backBuffers)
     {
         for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
-            device->CreateRenderTargetView(backBuffers[bufferIndex].Get(), nullptr, backBufferView(bufferIndex));
+            device->CreateRenderTargetView(backBuffers[bufferIndex], nullptr, backBufferView(bufferIndex));
     }
 
     D3D12_CPU_DESCRIPTOR_HANDLE UI::backBufferView(UINT frameIndex) const

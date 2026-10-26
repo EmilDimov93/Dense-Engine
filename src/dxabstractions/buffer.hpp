@@ -17,7 +17,7 @@ namespace DE
         return (sizeBytes + alignmentBytes - 1) & ~(alignmentBytes - 1);
     }
 
-    inline ComPtr<ID3D12Resource> createBuffer(ID3D12Device5 *device, UINT64 size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE)
+    inline ID3D12ResourcePtr createBuffer(ID3D12Device5 *device, UINT64 size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE)
     {
         D3D12_HEAP_PROPERTIES heapProps{.Type = heapType};
 
@@ -33,7 +33,7 @@ namespace DE
             .Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
             .Flags = flags};
 
-        ComPtr<ID3D12Resource> buffer;
+        ID3D12ResourcePtr buffer;
         dxa(device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &bufferDesc, initialState, nullptr, IID_PPV_ARGS(&buffer)), "Failed to create buffer");
         return buffer;
     }
@@ -51,11 +51,11 @@ namespace DE
     }
 
     template <typename T>
-    [[nodiscard]] inline ComPtr<ID3D12Resource> createUploadBuffer(ID3D12Device5 *device, std::span<const T> elements)
+    [[nodiscard]] inline ID3D12ResourcePtr createUploadBuffer(ID3D12Device5 *device, std::span<const T> elements)
     {
         const UINT64 dataSizeBytes = static_cast<UINT64>(sizeof(T)) * elements.size();
         const UINT64 bufferSizeBytes = std::max<UINT64>(dataSizeBytes, sizeof(T));
-        ComPtr<ID3D12Resource> uploadBuffer = createBuffer(device, bufferSizeBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
+        ID3D12ResourcePtr uploadBuffer = createBuffer(device, bufferSizeBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
 
         void *mappedData = nullptr;
         const D3D12_RANGE noCpuReadRange{0, 0};

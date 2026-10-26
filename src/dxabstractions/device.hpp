@@ -11,8 +11,8 @@ namespace DE::dxabstractions
     class Device
     {
     public:
-        ComPtr<IDXGIFactory6> factory;
-        ComPtr<ID3D12Device5> device;
+        IDXGIFactory6Ptr factory;
+        ID3D12Device5Ptr device;
 
         Device()
         {
@@ -21,7 +21,7 @@ namespace DE::dxabstractions
             {
                 factoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 
-                ComPtr<ID3D12Debug> debugController;
+                ID3D12DebugPtr debugController;
                 if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
                     debugController->EnableDebugLayer();
             }
@@ -36,29 +36,22 @@ namespace DE::dxabstractions
                 if (adapterDesc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
                     continue;
 
-                if (FAILED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&device))))
+                if (FAILED(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&device))))
                     continue;
 
                 D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5{};
                 if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options5, sizeof(options5))) && options5.RaytracingTier >= D3D12_RAYTRACING_TIER_1_0)
                     break;
 
-                device.Reset();
+                device = nullptr;
             }
 
             ptra(device, "Failed to find suitable adapter");
         }
 
-        ~Device()
-        {
-            device.Reset();
-            adapter.Reset();
-            factory.Reset();
-        }
-
-        operator ID3D12Device5 *() const { return device.Get(); }
+        operator ID3D12Device5 *() const { return device; }
 
     private:
-        ComPtr<IDXGIAdapter1> adapter = nullptr;
+        IDXGIAdapter1Ptr adapter = nullptr;
     };
 }

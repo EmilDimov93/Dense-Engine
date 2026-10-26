@@ -22,9 +22,9 @@ namespace DE
     class Mesh
     {
     public:
-        ComPtr<ID3D12Resource> vertexBuffer;
+        ID3D12ResourcePtr vertexBuffer;
         uint32_t vertexCount;
-        ComPtr<ID3D12Resource> indexBuffer;
+        ID3D12ResourcePtr indexBuffer;
         uint32_t indexCount;
         
         dxabstractions::AccelerationStructure blas;

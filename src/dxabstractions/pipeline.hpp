@@ -32,8 +32,8 @@ namespace DE::dxabstractions
     class Pipeline
     {
     public:
-        ComPtr<ID3D12RootSignature> globalRootSignature;
-        ComPtr<ID3D12StateObject> stateObject;
+        ID3D12RootSignaturePtr globalRootSignature;
+        ID3D12StateObjectPtr stateObject;
 
         Pipeline(ID3D12Device5 *device)
         {
@@ -92,7 +92,7 @@ namespace DE::dxabstractions
 
             D3D12_ROOT_SIGNATURE_DESC rootSigDesc{.NumParameters = RootParams::Count, .pParameters = rootParams, .NumStaticSamplers = 0, .pStaticSamplers = nullptr, .Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE};
 
-            ComPtr<ID3DBlob> serialized, error;
+            ID3DBlobPtr serialized, error;
             dxa(D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1, &serialized, &error), "Failed to serialize root signature");
             dxa(device->CreateRootSignature(0, serialized->GetBufferPointer(), serialized->GetBufferSize(), IID_PPV_ARGS(&globalRootSignature)), "Failed to create root signature");
 
@@ -110,7 +110,7 @@ namespace DE::dxabstractions
                 .MaxPayloadSizeInBytes = 3 * sizeof(float) + sizeof(uint32_t),
                 .MaxAttributeSizeInBytes = 2 * sizeof(float)};
 
-            D3D12_GLOBAL_ROOT_SIGNATURE globalSig{globalRootSignature.Get()};
+            D3D12_GLOBAL_ROOT_SIGNATURE globalSig{globalRootSignature};
 
             D3D12_RAYTRACING_PIPELINE_CONFIG pipelineConfig{.MaxTraceRecursionDepth = 3};
 
@@ -129,8 +129,8 @@ namespace DE::dxabstractions
 
             dxa(device->CreateStateObject(&stateObjectDesc, IID_PPV_ARGS(&stateObject)), "Failed to create raytracing state object");
 
-            ComPtr<ID3D12StateObjectProperties> props;
-            dxa(stateObject.As(&props), "Failed to get state object properties");
+            ID3D12StateObjectPropertiesPtr props;
+            dxa(stateObject->QueryInterface(IID_PPV_ARGS(&props)), "Failed to get state object properties");
 
             {
                 D3D12_HEAP_PROPERTIES heapProps{.Type = D3D12_HEAP_TYPE_UPLOAD};
@@ -147,7 +147,7 @@ namespace DE::dxabstractions
                     .Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
                     .Flags = D3D12_RESOURCE_FLAG_NONE};
 
-                ComPtr<ID3D12Resource> buffer;
+                ID3D12ResourcePtr buffer;
                 dxa(device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &bufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&buffer)), "Failed to create buffer");
                 shaderTable = buffer;
             }
@@ -185,6 +185,6 @@ namespace DE::dxabstractions
         D3D12_GPU_VIRTUAL_ADDRESS HitGroup() const { return shaderTable->GetGPUVirtualAddress() + 3 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }
 
     private:
-        ComPtr<ID3D12Resource> shaderTable;
+        ID3D12ResourcePtr shaderTable;
     };
 }

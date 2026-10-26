@@ -10,8 +10,8 @@ namespace DE::dxabstractions
 {
     struct RenderTarget
     {
-        ComPtr<ID3D12Resource> texture;
-        ComPtr<ID3D12DescriptorHeap> descriptorHeap;
+        ID3D12ResourcePtr texture;
+        ID3D12DescriptorHeapPtr descriptorHeap;
 
         RenderTarget(ID3D12Device5 *device, UINT width, UINT height)
         {
@@ -44,7 +44,7 @@ namespace DE::dxabstractions
                 .ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D,
                 .Texture2D = {0, 0}};
 
-            device->CreateUnorderedAccessView(texture.Get(), nullptr, &uavDesc, descriptorHeap->GetCPUDescriptorHandleForHeapStart());
+            device->CreateUnorderedAccessView(texture, nullptr, &uavDesc, descriptorHeap->GetCPUDescriptorHandleForHeapStart());
         }
     };
 }

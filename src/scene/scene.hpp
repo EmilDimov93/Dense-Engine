@@ -70,21 +70,21 @@ namespace DE
 
         SceneSettings sceneSettings;
 
-        ComPtr<ID3D12Resource> instanceBuffer;
+        ID3D12ResourcePtr instanceBuffer;
 
-        ComPtr<ID3D12Resource> materialBuffer;
+        ID3D12ResourcePtr materialBuffer;
 
-        ComPtr<ID3D12Resource> pointLightBuffer;
-        ComPtr<ID3D12Resource> directionalLightBuffer;
+        ID3D12ResourcePtr pointLightBuffer;
+        ID3D12ResourcePtr directionalLightBuffer;
 
         dxabstractions::AccelerationStructure tlas;
 
         ID3D12Device5 *device;
         ID3D12GraphicsCommandList4 *commandList;
 
-        ComPtr<ID3D12Resource> vertexBuffer;
-        ComPtr<ID3D12Resource> indexBuffer;
-        ComPtr<ID3D12Resource> tlasInstanceDataBuffer;
+        ID3D12ResourcePtr vertexBuffer;
+        ID3D12ResourcePtr indexBuffer;
+        ID3D12ResourcePtr tlasInstanceDataBuffer;
 
         void uploadGeometry();
         void uploadMaterials();

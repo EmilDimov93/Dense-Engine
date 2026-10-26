@@ -11,7 +11,7 @@ namespace DE::dxabstractions
     class SwapChain
     {
     public:
-        PerFrame<ComPtr<ID3D12Resource>> backBuffers;
+        PerFrame<ID3D12ResourcePtr> backBuffers;
 
         SwapChain(IDXGIFactory6 *factory, ID3D12CommandQueue *graphicsQueue, HWND windowHandle, UINT width, UINT height)
         {
@@ -28,25 +28,17 @@ namespace DE::dxabstractions
             swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
             swapChainDesc.Flags = 0;
 
-            ComPtr<IDXGISwapChain1> swapChain1;
+            IDXGISwapChain1Ptr swapChain1;
             dxa(factory->CreateSwapChainForHwnd(graphicsQueue, windowHandle, &swapChainDesc, nullptr, nullptr, &swapChain1), "Failed to create swap chain");
 
             dxa(factory->MakeWindowAssociation(windowHandle, DXGI_MWA_NO_ALT_ENTER), "Failed to make window association");
-            dxa(swapChain1.As(&swapChain), "Failed to copy swap chain");
+            dxa(swapChain1->QueryInterface(IID_PPV_ARGS(&swapChain)), "Failed to copy swap chain");
 
             for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
                 dxa(swapChain->GetBuffer(bufferIndex, IID_PPV_ARGS(&backBuffers[bufferIndex])), "Failed to get swap chain buffer");
 
             size.x = width;
             size.y = height;
-        }
-
-        ~SwapChain()
-        {
-            for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
-                backBuffers[bufferIndex].Reset();
-
-            swapChain.Reset();
         }
 
         void present()
@@ -57,7 +49,7 @@ namespace DE::dxabstractions
         void resize(XMUINT2 newSize)
         {
             for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
-                backBuffers[bufferIndex].Reset();
+                backBuffers[bufferIndex] = nullptr;
 
             dxa(swapChain->ResizeBuffers(FRAMES_IN_FLIGHT, newSize.x, newSize.y, DXGI_FORMAT_UNKNOWN, 0), "Failed to resize swap chain");
 
@@ -78,7 +70,7 @@ namespace DE::dxabstractions
         }
 
     private:
-        ComPtr<IDXGISwapChain4> swapChain;
+        IDXGISwapChain4Ptr swapChain;
         XMUINT2 size{};
     };
 }

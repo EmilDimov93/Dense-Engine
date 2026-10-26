@@ -50,17 +50,15 @@ namespace DE
     }
 
     /**
-     * @brief Pointer Assert - Prints message and aborts if ComPtr is nullptr
-     * @param comPtr ComPtr to evaluate
+     * @brief Pointer Assert - Prints message and aborts if pointer is nullptr
+     * @param ptr Pointer to evaluate
      * @param msg Message to print on failure
      */
     template <typename T>
-    void ptra(const ComPtr<T> &comPtr, std::string_view msg)
+    void ptra(const T &ptr, std::string_view msg)
     {
-        if (!comPtr)
-        {
+        if (!ptr)
             fatal(msg);
-        }
     }
 
     /**

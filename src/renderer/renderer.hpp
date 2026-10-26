@@ -41,8 +41,8 @@ namespace DE
         void setViewportRect(Rect rect);
 
         ID3D12Device5 *getDevice() const { return device; }
-        ID3D12CommandQueue *getQueue() const { return commands.queue.Get(); }
-        const PerFrame<ComPtr<ID3D12Resource>> &getBackBuffers() const { return swapChain.backBuffers; }
+        ID3D12CommandQueue *getQueue() const { return commands.queue; }
+        const PerFrame<ID3D12ResourcePtr> &getBackBuffers() const { return swapChain.backBuffers; }
 
     private:
         dxabstractions::Device device;

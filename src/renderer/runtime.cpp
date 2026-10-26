@@ -16,10 +16,10 @@ namespace DE
 
         commands.begin(frameIndex);
 
-        ID3D12Resource *backBuffer = swapChain.backBuffers[frameIndex].Get();
-        ID3D12Resource *output = renderTarget.texture.Get();
+        ID3D12Resource *backBuffer = swapChain.backBuffers[frameIndex];
+        ID3D12Resource *output = renderTarget.texture;
 
-        ID3D12DescriptorHeap *descriptorHeaps[] = {renderTarget.descriptorHeap.Get()};
+        ID3D12DescriptorHeap *descriptorHeaps[] = {renderTarget.descriptorHeap};
         commands.list->SetDescriptorHeaps(static_cast<UINT>(std::size(descriptorHeaps)), descriptorHeaps);
 
         SceneSettings sceneSettings = scene.getSceneSettings();
@@ -28,7 +28,7 @@ namespace DE
         {
             LightCounts lightCounts = scene.getLightCounts();
             
-            commands.list->SetComputeRootSignature(pipeline.globalRootSignature.Get());
+            commands.list->SetComputeRootSignature(pipeline.globalRootSignature);
             commands.list->SetComputeRootDescriptorTable(dxabstractions::RootParams::OutputTexture, renderTarget.descriptorHeap->GetGPUDescriptorHandleForHeapStart());
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLAS, scene.getTLASAddress());
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::MaterialBuffer, scene.getMaterialBufferAddress());
@@ -41,7 +41,7 @@ namespace DE
             commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::SceneSettings, sizeof(SceneSettings) / 4, &sceneSettings, 0);
             commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::Camera, sizeof(CameraConstants) / 4, &cameraConstants, 0);
             commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::ClientState, sizeof(ClientState) / 4, &clientState, 0);
-            commands.list->SetPipelineState1(pipeline.stateObject.Get());
+            commands.list->SetPipelineState1(pipeline.stateObject);
 
             D3D12_DISPATCH_RAYS_DESC dispatchDesc = pipeline.dispatchDesc(viewportRect.size);
 
@@ -87,7 +87,7 @@ namespace DE
             transition(backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET)};
         commands.list->ResourceBarrier(static_cast<UINT>(std::size(toGuiBarriers)), toGuiBarriers);
 
-        ui.draw(commands.list.Get(), frameIndex);
+        ui.draw(commands.list, frameIndex);
 
         const D3D12_RESOURCE_BARRIER toPresentBarrier = transition(backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
         commands.list->ResourceBarrier(1, &toPresentBarrier);

@@ -30,7 +30,7 @@ namespace DE::dxabstractions
 
         void signal(ID3D12CommandQueue *queue)
         {
-            dxa(queue->Signal(fence.Get(), ++signaledValue), "Failed to signal fence");
+            dxa(queue->Signal(fence, ++signaledValue), "Failed to signal fence");
         }
 
         void wait()
@@ -43,7 +43,7 @@ namespace DE::dxabstractions
         }
 
     private:
-        ComPtr<ID3D12Fence> fence;
+        ID3D12FencePtr fence;
         HANDLE fenceEvent = nullptr;
         UINT64 signaledValue = 0;
     };

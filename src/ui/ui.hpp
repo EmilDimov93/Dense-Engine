@@ -20,7 +20,7 @@ namespace DE
     class UI
     {
     public:
-        UI(HWND windowHandle, ID3D12Device *device, ID3D12CommandQueue *queue, const PerFrame<ComPtr<ID3D12Resource>> &backBuffers);
+        UI(HWND windowHandle, ID3D12Device *device, ID3D12CommandQueue *queue, const PerFrame<ID3D12ResourcePtr> &backBuffers);
         ~UI();
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -28,7 +28,7 @@ namespace DE
         void tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera);
         void draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const;
 
-        void createBackBufferViews(const PerFrame<ComPtr<ID3D12Resource>> &backBuffers);
+        void createBackBufferViews(const PerFrame<ID3D12ResourcePtr> &backBuffers);
         D3D12_CPU_DESCRIPTOR_HANDLE backBufferView(UINT frameIndex) const;
 
     private:
@@ -38,11 +38,11 @@ namespace DE
 
         HWND windowHandle = nullptr;
 
-        ComPtr<ID3D12DescriptorHeap> textureHeap;
+        ID3D12DescriptorHeapPtr textureHeap;
         UINT textureDescriptorSize = 0;
         std::vector<UINT> freeTextureSlots;
 
-        ComPtr<ID3D12DescriptorHeap> backBufferViewHeap;
+        ID3D12DescriptorHeapPtr backBufferViewHeap;
         UINT backBufferViewSize = 0;
 
         bool isResizingSidebar = false;

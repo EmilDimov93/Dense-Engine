@@ -90,13 +90,13 @@ namespace DE
         directionalLights.clear();
         modelMaterialArrayOffsets.clear();
 
-        vertexBuffer.Reset();
-        indexBuffer.Reset();
-        materialBuffer.Reset();
-        tlasInstanceDataBuffer.Reset();
-        instanceBuffer.Reset();
-        pointLightBuffer.Reset();
-        directionalLightBuffer.Reset();
+        vertexBuffer = nullptr;
+        indexBuffer = nullptr;
+        materialBuffer = nullptr;
+        tlasInstanceDataBuffer = nullptr;
+        instanceBuffer = nullptr;
+        pointLightBuffer = nullptr;
+        directionalLightBuffer = nullptr;
         tlas = {};
     }
 
@@ -120,13 +120,13 @@ namespace DE
         for (const auto &[handle, model] : models)
             for (const Mesh &mesh : model.meshes)
             {
-                commandList->CopyBufferRegion(vertexBuffer.Get(), sizeof(Vertex) * mesh.vertexOffset, mesh.vertexBuffer.Get(), 0, sizeof(Vertex) * mesh.vertexCount);
-                commandList->CopyBufferRegion(indexBuffer.Get(), sizeof(uint32_t) * mesh.indexOffset, mesh.indexBuffer.Get(), 0, sizeof(uint32_t) * mesh.indexCount);
+                commandList->CopyBufferRegion(vertexBuffer, sizeof(Vertex) * mesh.vertexOffset, mesh.vertexBuffer, 0, sizeof(Vertex) * mesh.vertexCount);
+                commandList->CopyBufferRegion(indexBuffer, sizeof(uint32_t) * mesh.indexOffset, mesh.indexBuffer, 0, sizeof(uint32_t) * mesh.indexCount);
             }
 
         const D3D12_RESOURCE_BARRIER barriers[] = {
-            transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-            transition(indexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)};
+            transition(vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+            transition(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)};
         commandList->ResourceBarrier(static_cast<UINT>(std::size(barriers)), barriers);
     }
 
