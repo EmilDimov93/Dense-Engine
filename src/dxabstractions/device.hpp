@@ -8,11 +8,11 @@
 
 namespace DE::dxabstractions
 {
-    struct Device
+    class Device
     {
-        ComPtr<IDXGIFactory6> factory = nullptr;
-        ComPtr<IDXGIAdapter1> adapter = nullptr;
-        ComPtr<ID3D12Device5> device = nullptr;
+    public:
+        ComPtr<IDXGIFactory6> factory;
+        ComPtr<ID3D12Device5> device;
 
         Device()
         {
@@ -57,5 +57,8 @@ namespace DE::dxabstractions
         }
 
         operator ID3D12Device5 *() const { return device.Get(); }
+
+    private:
+        ComPtr<IDXGIAdapter1> adapter = nullptr;
     };
 }

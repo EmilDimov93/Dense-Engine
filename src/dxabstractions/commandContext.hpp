@@ -10,13 +10,11 @@
 
 namespace DE::dxabstractions
 {
-    struct CommandContext
+    class CommandContext
     {
-        ComPtr<ID3D12CommandQueue> queue = nullptr;
-        PerFrame<ComPtr<ID3D12CommandAllocator>> allocators;
-        ComPtr<ID3D12GraphicsCommandList4> list = nullptr;
-
-        PerFrame<Fence> fences;
+    public:
+        ComPtr<ID3D12CommandQueue> queue;
+        ComPtr<ID3D12GraphicsCommandList4> list;
 
         explicit CommandContext(ID3D12Device5 *device) : fences{Fence(device), Fence(device)}
         {
@@ -58,5 +56,16 @@ namespace DE::dxabstractions
             for (dxabstractions::Fence &fence : fences)
                 fence.wait();
         }
+
+        void flush()
+        {
+            fences[0].signal(queue.Get());
+            fences[0].wait();
+        }
+
+    private:
+        PerFrame<ComPtr<ID3D12CommandAllocator>> allocators;
+
+        PerFrame<Fence> fences;
     };
 }

@@ -10,8 +10,8 @@ namespace DE
     Renderer::Renderer(HWND window, XMUINT2 windowSize) : commands(device),
                                                           swapChain(device.factory.Get(), commands.queue.Get(), window, windowSize.x, windowSize.y),
                                                           pipeline(device),
-                                                          scene(device, commands.list.Get()),
-                                                          renderTarget(device, windowSize.x, windowSize.y)
+                                                          renderTarget(device, windowSize.x, windowSize.y),
+                                                          scene(device, commands.list.Get())
     {
     }
 
@@ -22,10 +22,6 @@ namespace DE
 
     void Renderer::waitForGpu()
     {
-        for (dxabstractions::Fence &fence : commands.fences)
-        {
-            fence.signal(commands.queue.Get());
-            fence.wait();
-        }
+        commands.flush();
     }
 }

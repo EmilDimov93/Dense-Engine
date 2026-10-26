@@ -12,7 +12,7 @@ namespace DE
 {
     void Renderer::tick(const UI &ui, const ClientState &clientState, const CameraConstants &cameraConstants)
     {
-        const UINT frameIndex = swapChain.swapchain->GetCurrentBackBufferIndex();
+        const UINT frameIndex = swapChain.getCurrentBackBufferIndex();
 
         commands.begin(frameIndex);
 
@@ -71,11 +71,12 @@ namespace DE
         src.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
         src.SubresourceIndex = 0;
 
-        if (!scene.empty() && viewportRect.start.x < swapChain.size.x && viewportRect.start.y < swapChain.size.y)
+        const XMUINT2 swapChainSize = swapChain.getSize();
+        if (!scene.empty() && viewportRect.start.x < swapChainSize.x && viewportRect.start.y < swapChainSize.y)
         {
             D3D12_BOX srcBox{};
-            srcBox.right = std::min(viewportRect.size.x, swapChain.size.x - viewportRect.start.x);
-            srcBox.bottom = std::min(viewportRect.size.y, swapChain.size.y - viewportRect.start.y);
+            srcBox.right = std::min(viewportRect.size.x, swapChainSize.x - viewportRect.start.x);
+            srcBox.bottom = std::min(viewportRect.size.y, swapChainSize.y - viewportRect.start.y);
             srcBox.back = 1;
 
             commands.list->CopyTextureRegion(&dst, viewportRect.start.x, viewportRect.start.y, 0, &src, &srcBox);
@@ -93,7 +94,7 @@ namespace DE
 
         commands.execute(frameIndex);
 
-        dxa(swapChain.swapchain->Present(1, 0), "Failed to present");
+        swapChain.present();
     }
 
     void Renderer::loadScene(const SceneDescription &sceneDescription)
@@ -112,12 +113,12 @@ namespace DE
         scene.upload(sceneDescription);
 
         commands.execute(0);
-        commands.fences[0].wait();
+        commands.waitIdle();
     }
 
     XMUINT2 Renderer::getSwapChainSize() const
     {
-        return swapChain.size;
+        return swapChain.getSize();
     }
 
     void Renderer::resizeSwapChain(XMUINT2 size)

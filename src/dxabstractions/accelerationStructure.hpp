@@ -8,15 +8,11 @@
 
 #include "buffer.hpp"
 
-#include "fence.hpp"
-
 namespace DE::dxabstractions
 {
-    struct AccelerationStructure
+    class AccelerationStructure
     {
-        ComPtr<ID3D12Resource> buffer;
-        ComPtr<ID3D12Resource> scratchBuffer;
-
+    public:
         void build(ID3D12Device5 *device, ID3D12GraphicsCommandList4 *commandList, const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS &inputs)
         {
             D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo{};
@@ -44,5 +40,9 @@ namespace DE::dxabstractions
         }
 
         D3D12_GPU_VIRTUAL_ADDRESS getAddress() const { return buffer->GetGPUVirtualAddress(); }
+
+    private:
+        ComPtr<ID3D12Resource> buffer;
+        ComPtr<ID3D12Resource> scratchBuffer;
     };
 }

@@ -29,11 +29,11 @@ namespace DE::dxabstractions
         Count
     };
 
-    struct Pipeline
+    class Pipeline
     {
+    public:
         ComPtr<ID3D12RootSignature> globalRootSignature;
         ComPtr<ID3D12StateObject> stateObject;
-        ComPtr<ID3D12Resource> shaderTable;
 
         Pipeline(ID3D12Device5 *device)
         {
@@ -183,5 +183,8 @@ namespace DE::dxabstractions
         D3D12_GPU_VIRTUAL_ADDRESS Miss() const { return shaderTable->GetGPUVirtualAddress() + D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }
         D3D12_GPU_VIRTUAL_ADDRESS ShadowMiss() const { return shaderTable->GetGPUVirtualAddress() + 2 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }
         D3D12_GPU_VIRTUAL_ADDRESS HitGroup() const { return shaderTable->GetGPUVirtualAddress() + 3 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT; }
+
+    private:
+        ComPtr<ID3D12Resource> shaderTable;
     };
 }

@@ -8,12 +8,9 @@
 
 namespace DE::dxabstractions
 {
-    struct Fence
+    class Fence
     {
-        ComPtr<ID3D12Fence> fence = nullptr;
-        HANDLE fenceEvent = nullptr;
-        UINT64 signaledValue = 0;
-
+    public:
         explicit Fence(ID3D12Device5 *device)
         {
             dxa(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create fence");
@@ -24,7 +21,7 @@ namespace DE::dxabstractions
 
         ~Fence()
         {
-            if(fenceEvent)
+            if (fenceEvent)
                 CloseHandle(fenceEvent);
         }
 
@@ -44,5 +41,10 @@ namespace DE::dxabstractions
             dxa(fence->SetEventOnCompletion(signaledValue, fenceEvent), "Failed to set fence event");
             WaitForSingleObject(fenceEvent, INFINITE);
         }
+
+    private:
+        ComPtr<ID3D12Fence> fence;
+        HANDLE fenceEvent = nullptr;
+        UINT64 signaledValue = 0;
     };
 }
