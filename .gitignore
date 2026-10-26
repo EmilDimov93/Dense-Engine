@@ -2,7 +2,7 @@
 build/
 logo/
 early_dev/
-exampleAssets/
+example/
 git.ps1
 lines.ps1
 conventions.md

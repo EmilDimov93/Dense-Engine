@@ -26,6 +26,7 @@ namespace DE
                 handleGenerator.setLast(lastHandle);
                 hasSceneChanged = true;
                 renderer.loadScene(sceneDescription);
+                this->sceneFilePath = sceneFilePath;
             }
         }
     }
@@ -86,11 +87,12 @@ namespace DE
                         handleGenerator.setLast(lastHandle);
                         hasSceneChanged = true;
                         renderer.loadScene(sceneDescription);
+                        this->sceneFilePath = loadSceneCommand->filePath;
                     }
                 }
                 else if (const commands::SaveSceneCommand *saveSceneCommand = std::get_if<commands::SaveSceneCommand>(&*command))
                 {
-                    saveScene("scene.descene", sceneDescription);
+                    saveScene(this->sceneFilePath, sceneDescription);
                 }
             }
 

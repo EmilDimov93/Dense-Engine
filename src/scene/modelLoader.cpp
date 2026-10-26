@@ -253,7 +253,7 @@ namespace DE
         }
         else
         {
-            fatal("Failed to load model: extension not supported");
+            fatal("Failed to load model: extension not supported (" + ext + ")");
             return data;
         }
 

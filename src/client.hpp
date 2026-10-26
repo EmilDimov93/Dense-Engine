@@ -12,6 +12,7 @@
 #include "camera.hpp"
 
 #include <chrono>
+#include <string>
 
 namespace DE
 {
@@ -39,6 +40,8 @@ namespace DE
         Camera camera;
 
         float sidebarWidthFraction = 0.25f;
+
+        std::string sceneFilePath;
 
         const std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 

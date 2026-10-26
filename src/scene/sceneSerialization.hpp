@@ -37,8 +37,12 @@ namespace DE
 
         for (const ModelDescription &modelDescription : sceneDescription.modelDescriptions)
         {
+            std::filesystem::path relativeFilePath = std::filesystem::relative(modelDescription.filePath, filePath.parent_path());
+            if (relativeFilePath.empty())
+                relativeFilePath = modelDescription.filePath;
+
             outputFile << modelDescription.handle << '\n'
-                       << modelDescription.filePath << '\n'
+                       << relativeFilePath.generic_string() << '\n'
                        << endOfObject << '\n';
         }
 
@@ -204,7 +208,7 @@ namespace DE
                             currModel.handle = stoul(line);
                             break;
                         case 1:
-                            currModel.filePath = line;
+                            currModel.filePath = (filePath.parent_path() / line).string();
                             break;
                         }
                     }
