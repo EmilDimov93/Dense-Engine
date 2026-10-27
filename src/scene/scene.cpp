@@ -29,7 +29,7 @@ namespace DE
 
                 model.materials.reserve(modelUploadData.materials.size());
                 for (const MaterialUploadData &materialUpload : modelUploadData.materials)
-                    model.materials.emplace_back(materialUpload.diffuse, materialUpload.metallic, materialUpload.roughness, -1);
+                    model.materials.emplace_back(materialUpload.diffuse, materialUpload.metallic, materialUpload.roughness, materialUpload.ior, -1);
 
                 models.emplace(modelDescription.handle, std::move(model));
 

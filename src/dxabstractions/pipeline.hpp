@@ -107,12 +107,12 @@ namespace DE::dxabstractions
                 .ClosestHitShaderImport = L"ClosestHit"};
 
             D3D12_RAYTRACING_SHADER_CONFIG shaderConfig{
-                .MaxPayloadSizeInBytes = 3 * sizeof(float) + sizeof(uint32_t),
+                .MaxPayloadSizeInBytes = 4 * sizeof(float) + sizeof(uint32_t),
                 .MaxAttributeSizeInBytes = 2 * sizeof(float)};
 
             D3D12_GLOBAL_ROOT_SIGNATURE globalSig{globalRootSignature};
 
-            D3D12_RAYTRACING_PIPELINE_CONFIG pipelineConfig{.MaxTraceRecursionDepth = 3};
+            D3D12_RAYTRACING_PIPELINE_CONFIG pipelineConfig{.MaxTraceRecursionDepth = 6};
 
             const D3D12_STATE_SUBOBJECT subobjects[] =
                 {

@@ -104,6 +104,8 @@ namespace DE
                     ss >> currentMaterial->metallic;
                 else if (keyword == "Pr")
                     ss >> currentMaterial->roughness;
+                else if (keyword == "Ni")
+                    ss >> currentMaterial->ior;
             }
         };
 

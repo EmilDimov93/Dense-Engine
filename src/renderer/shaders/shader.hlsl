@@ -12,6 +12,7 @@ struct Material
     float4 diffuse;
     float metallic;
     float roughness;
+    float ior;
     int textureIndex;
 };
 StructuredBuffer<Material> materials : register(t1);
@@ -92,7 +93,10 @@ ConstantBuffer<ClientState> clientState : register(b3);
 
 // Constants
 
-static const uint MAX_BOUNCES = 1;
+static const uint MAX_REFLECTION_BOUNCES = 1;
+static const uint MAX_REFRACTION_DEPTH = 4;
+
+static const float AIR_IOR = 1.0003f;
 
 // Helpers
 
@@ -112,7 +116,7 @@ float3 toneMapACES(float3 x)
 
 struct RayPayload
 {
-    float3 color;
+    float4 color;
     uint depth;
 };
 
@@ -158,10 +162,10 @@ void RayGen()
         ray.TMin = 0.001f;
         ray.TMax = 1000.f;
 
-        RayPayload payload = { float3(0.f, 0.f, 0.f), 0 };
+        RayPayload payload = { float4(0.f, 0.f, 0.f, 0.f), 0 };
         TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
 
-        color += payload.color;
+        color += payload.color.xyz;
     }
 
     color /= float(ssaaSamples);
@@ -172,7 +176,7 @@ void RayGen()
 [shader("miss")]
 void Miss(inout RayPayload payload)
 {
-    payload.color = sceneSettings.clearColor;
+    payload.color = float4(sceneSettings.clearColor, 1.f);
 }
 
 [shader("miss")]
@@ -205,11 +209,15 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
 
     float3 hitPos = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 
+    bool hitTriangleFrontSide = true;
     if (dot(faceNormalWorld, WorldRayDirection()) > 0.f)
+    {
         faceNormalWorld = -faceNormalWorld;
+        hitTriangleFrontSide = false;
+    }
 
     float3 reflectedColor = sceneSettings.clearColor;
-    if(payload.depth < MAX_BOUNCES && !clientState.lowerQuality)
+    if(payload.depth < MAX_REFLECTION_BOUNCES && !clientState.lowerQuality)
     {
         RayDesc reflectionRay;
         reflectionRay.Origin = hitPos - WorldRayDirection() * 0.001f;
@@ -217,10 +225,10 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         reflectionRay.TMin = 0.001f;
         reflectionRay.TMax = 1000.f;
 
-        RayPayload reflectionPayload = {sceneSettings.clearColor, payload.depth + 1};
+        RayPayload reflectionPayload = {float4(sceneSettings.clearColor, 1.f), payload.depth + 1};
         TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, reflectionRay, reflectionPayload);
 
-        reflectedColor = reflectionPayload.color;
+        reflectedColor = reflectionPayload.color.xyz;
     }
 
     float3 fresnel;
@@ -286,8 +294,27 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
     const float smoothness = 1.f - hitMaterial.roughness;
     const float3 specularColor = fresnel * reflectedColor * smoothness * smoothness;
 
-    payload.color = diffuseColor + specularColor;
+    payload.color = float4(diffuseColor + specularColor, 1.f);
+
+    if(hitMaterial.diffuse.a < 1.f && payload.depth < MAX_REFRACTION_DEPTH && !clientState.lowerQuality)
+    {
+        RayDesc refractedRay;
+        refractedRay.Origin = hitPos - faceNormalWorld * 0.001f;
+        refractedRay.Direction = refract(WorldRayDirection(), faceNormalWorld, hitTriangleFrontSide ? AIR_IOR / hitMaterial.ior : hitMaterial.ior / AIR_IOR);
+        if (dot(refractedRay.Direction, refractedRay.Direction) == 0.f)
+        {
+            refractedRay.Direction = reflect(WorldRayDirection(), faceNormalWorld);
+            refractedRay.Origin = hitPos + faceNormalWorld * 0.001f;
+        }
+        refractedRay.TMin = 0.001f;
+        refractedRay.TMax = 1000.f;
+
+        RayPayload refractedPayload = {float4(sceneSettings.clearColor, 1.f), payload.depth + 1};
+        TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, refractedRay, refractedPayload);
+
+        payload.color.rgb = lerp(refractedPayload.color.rgb, payload.color.rgb, hitTriangleFrontSide ? hitMaterial.diffuse.a : 0.f);
+    }
 
     if(InstanceID() == clientState.selectedSceneComponentHandle && payload.depth == 0)
-        payload.color += float3(0.8f, 0.8f, 0.f) * (1.f - clamp((abs(sin((hitPos.x * hitPos.z) * 2.f + clientState.time * 5.f)) + 0.2f), 0.f, 1.f));
+        payload.color += float4(float3(0.8f, 0.8f, 0.f) * (1.f - clamp((abs(sin((hitPos.x * hitPos.z) * 2.f + clientState.time * 5.f)) + 0.2f), 0.f, 1.f)), 1.f);
 }
