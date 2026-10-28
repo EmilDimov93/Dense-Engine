@@ -41,6 +41,8 @@ namespace DE
             commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::SceneSettings, sizeof(SceneSettings) / 4, &sceneSettings, 0);
             commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::Camera, sizeof(CameraConstants) / 4, &cameraConstants, 0);
             commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::ClientState, sizeof(ClientState) / 4, &clientState, 0);
+            commands.list->SetComputeRootDescriptorTable(dxabstractions::RootParams::Textures, descriptorHeap.gpuHandle(dxabstractions::DESCRIPTOR_HEAP_FIRST_TEXTURE_INDEX));
+
             commands.list->SetPipelineState1(pipeline.stateObject);
 
             D3D12_DISPATCH_RAYS_DESC dispatchDesc = pipeline.dispatchDesc(viewportRect.size);

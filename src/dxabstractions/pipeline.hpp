@@ -26,6 +26,7 @@ namespace DE::dxabstractions
         SceneSettings = 9,
         Camera = 10,
         ClientState = 11,
+        Textures = 12,
         Count
     };
 
@@ -42,6 +43,13 @@ namespace DE::dxabstractions
                 .NumDescriptors = 1,
                 .BaseShaderRegister = 0,
                 .RegisterSpace = 0,
+                .OffsetInDescriptorsFromTableStart = 0};
+
+            D3D12_DESCRIPTOR_RANGE textureRange{
+                .RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
+                .NumDescriptors = MAX_TEXTURES,
+                .BaseShaderRegister = 0,
+                .RegisterSpace = 1,
                 .OffsetInDescriptorsFromTableStart = 0};
 
             D3D12_ROOT_PARAMETER rootParams[RootParams::Count] = {};
@@ -89,8 +97,26 @@ namespace DE::dxabstractions
                 .ShaderRegister = 3,
                 .RegisterSpace = 0,
                 .Num32BitValues = 4};
+            rootParams[RootParams::Textures].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+            rootParams[RootParams::Textures].DescriptorTable = {1, &textureRange};
+            rootParams[RootParams::Textures].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-            D3D12_ROOT_SIGNATURE_DESC rootSigDesc{.NumParameters = RootParams::Count, .pParameters = rootParams, .NumStaticSamplers = 0, .pStaticSamplers = nullptr, .Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE};
+            const D3D12_STATIC_SAMPLER_DESC linearWrapSampler{
+                .Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+                .AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+                .AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+                .AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+                .MipLODBias = 0.f,
+                .MaxAnisotropy = 1,
+                .ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER,
+                .BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK,
+                .MinLOD = 0.f,
+                .MaxLOD = D3D12_FLOAT32_MAX,
+                .ShaderRegister = 0,
+                .RegisterSpace = 0,
+                .ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL};
+
+            D3D12_ROOT_SIGNATURE_DESC rootSigDesc{.NumParameters = RootParams::Count, .pParameters = rootParams, .NumStaticSamplers = 1, .pStaticSamplers = &linearWrapSampler, .Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE};
 
             ID3DBlobPtr serialized, error;
             dxa(D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1, &serialized, &error), "Failed to serialize root signature");

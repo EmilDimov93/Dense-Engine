@@ -91,6 +91,9 @@ struct ClientState
 
 ConstantBuffer<ClientState> clientState : register(b3);
 
+Texture2D<float4> textures[] : register(t0, space1);
+SamplerState linearWrapSampler : register(s0);
+
 // Constants
 
 static const uint MAX_REFLECTION_BOUNCES = 1;
@@ -193,19 +196,26 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
     Material hitMaterial = materials[instanceData.materialIndex];
 
     float3 faceNormalWorld;
+    float2 uv;
     {
         uint baseIndex = instanceData.indexOffset + PrimitiveIndex() * 3;
-        float3 vertex0NormalLocal = vertices[instanceData.vertexOffset + indices[baseIndex + 0]].normal;
-        float3 vertex1NormalLocal = vertices[instanceData.vertexOffset + indices[baseIndex + 1]].normal;
-        float3 vertex2NormalLocal = vertices[instanceData.vertexOffset + indices[baseIndex + 2]].normal;
+        Vertex vertex0 = vertices[instanceData.vertexOffset + indices[baseIndex + 0]];
+        Vertex vertex1 = vertices[instanceData.vertexOffset + indices[baseIndex + 1]];
+        Vertex vertex2 = vertices[instanceData.vertexOffset + indices[baseIndex + 2]];
 
         const float3 barycentricWeights = float3(1.f - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 
-        float3 faceNormalLocal = vertex0NormalLocal * barycentricWeights.x + 
-                                    vertex1NormalLocal * barycentricWeights.y + 
-                                    vertex2NormalLocal * barycentricWeights.z;
-        faceNormalWorld = normalize(mul(faceNormalLocal, (float3x3)WorldToObject3x4()));
+        float3 faceNormal = vertex0.normal * barycentricWeights.x + 
+                                    vertex1.normal * barycentricWeights.y + 
+                                    vertex2.normal * barycentricWeights.z;
+        faceNormalWorld = normalize(mul(faceNormal, (float3x3)WorldToObject3x4()));
+
+        uv = vertex0.tex * barycentricWeights.x + vertex1.tex * barycentricWeights.y + vertex2.tex * barycentricWeights.z;
     }
+
+    float4 albedo = hitMaterial.diffuse;
+    if (hitMaterial.textureIndex >= 0)
+        albedo *= textures[NonUniformResourceIndex(hitMaterial.textureIndex)].SampleLevel(linearWrapSampler, uv, 0.f);
 
     float3 hitPos = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 
@@ -233,7 +243,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
 
     float3 fresnel;
     {
-        const float3 specularF0 = lerp(float3(0.04f, 0.04f, 0.04f), hitMaterial.diffuse.rgb, hitMaterial.metallic);
+        const float3 specularF0 = lerp(float3(0.04f, 0.04f, 0.04f), albedo.rgb, hitMaterial.metallic);
 
         const float cosViewNormal = clamp(dot(-WorldRayDirection(), faceNormalWorld), 0.f, 1.f);
         fresnel = specularF0 + (1.f - specularF0) * pow(1.f - cosViewNormal, 5.f);
@@ -288,7 +298,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         totalDirectLighting += pointLights[i].color * lightAmount;
     }
 
-    const float3 diffuseAlbedo = hitMaterial.diffuse.rgb * (1.f - hitMaterial.metallic);
+    const float3 diffuseAlbedo = albedo.rgb * (1.f - hitMaterial.metallic);
     const float3 diffuseColor = (1.f - fresnel) * diffuseAlbedo * (sceneSettings.ambient + totalDirectLighting);
 
     const float smoothness = 1.f - hitMaterial.roughness;
@@ -296,7 +306,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
 
     payload.color = float4(diffuseColor + specularColor, 1.f);
 
-    if(hitMaterial.diffuse.a < 1.f && payload.depth < MAX_REFRACTION_DEPTH && !clientState.lowerQuality)
+    if(albedo.a < 1.f && payload.depth < MAX_REFRACTION_DEPTH && !clientState.lowerQuality)
     {
         RayDesc refractedRay;
         refractedRay.Origin = hitPos - faceNormalWorld * 0.001f;
@@ -312,7 +322,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         RayPayload refractedPayload = {float4(sceneSettings.clearColor, 1.f), payload.depth + 1};
         TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, refractedRay, refractedPayload);
 
-        payload.color.rgb = lerp(refractedPayload.color.rgb, payload.color.rgb, hitTriangleFrontSide ? hitMaterial.diffuse.a : 0.f);
+        payload.color.rgb = lerp(refractedPayload.color.rgb, payload.color.rgb, hitTriangleFrontSide ? albedo.a : 0.f);
     }
 
     if(InstanceID() == clientState.selectedSceneComponentHandle && payload.depth == 0)
