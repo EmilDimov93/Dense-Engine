@@ -7,6 +7,8 @@
 
 #include "scene/sceneSerialization.hpp"
 
+#include "ui/fileDialog.hpp"
+
 namespace DE
 {
     Client::Client(const char *sceneFilePath) : window(L"Dense Engine"),
@@ -92,6 +94,13 @@ namespace DE
                 }
                 else if (const commands::SaveSceneCommand *saveSceneCommand = std::get_if<commands::SaveSceneCommand>(&*command))
                 {
+                    if(this->sceneFilePath == "")
+                    {
+                        std::optional<std::filesystem::path> selectedPath = saveFileDialog(window.getHandle());
+                        if(selectedPath)
+                            this->sceneFilePath = selectedPath->string();
+                    }
+
                     saveScene(this->sceneFilePath, sceneDescription);
                 }
             }
