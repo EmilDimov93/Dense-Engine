@@ -28,7 +28,7 @@ namespace DE
         float fov = 60;
 
         float moveSpeed = 5.f;
-        float lookSensitivityRadPerPixel = 0.003f;
+        float lookSensitivityRadPerPixel = 0.01f;
 
         CameraConstants toConstants() const
         {

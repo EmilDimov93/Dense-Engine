@@ -13,6 +13,8 @@
 #include "pointLight.hpp"
 #include "directionalLight.hpp"
 
+#include "dxabstractions/descriptorHeap.hpp"
+
 #include <unordered_map>
 #include <string>
 
@@ -40,7 +42,7 @@ namespace DE
     class Scene
     {
     public:
-        Scene(ID3D12Device5 *device, ID3D12GraphicsCommandList4 *commandList) : device(device), commandList(commandList) {}
+        Scene(ID3D12Device5 *device, ID3D12GraphicsCommandList4 *commandList, const dxabstractions::DescriptorHeap *descriptorHeap) : device(device), commandList(commandList), descriptorHeap(descriptorHeap) {}
 
         void upload(const SceneDescription &sceneDescription);
         D3D12_GPU_VIRTUAL_ADDRESS getMaterialBufferAddress() const { return materialBuffer->GetGPUVirtualAddress(); }
@@ -54,6 +56,8 @@ namespace DE
         [[nodiscard]] bool empty() const { return modelInstances.empty(); }
 
         void clear();
+
+        void releaseUploadBuffers();
 
         [[nodiscard]] LightCounts getLightCounts() const { return LightCounts{static_cast<uint32_t>(pointLights.size()), static_cast<uint32_t>(directionalLights.size())}; }
 
@@ -81,6 +85,7 @@ namespace DE
 
         ID3D12Device5 *device;
         ID3D12GraphicsCommandList4 *commandList;
+        const dxabstractions::DescriptorHeap *descriptorHeap;
 
         ID3D12ResourcePtr vertexBuffer;
         ID3D12ResourcePtr indexBuffer;

@@ -11,9 +11,8 @@ namespace DE::dxabstractions
     struct RenderTarget
     {
         ID3D12ResourcePtr texture;
-        ID3D12DescriptorHeapPtr descriptorHeap;
 
-        RenderTarget(ID3D12Device5 *device, UINT width, UINT height)
+        RenderTarget(ID3D12Device5 *device, D3D12_CPU_DESCRIPTOR_HANDLE descriptorHeapHandle, UINT width, UINT height)
         {
             D3D12_HEAP_PROPERTIES heapProps{.Type = D3D12_HEAP_TYPE_DEFAULT};
 
@@ -31,20 +30,12 @@ namespace DE::dxabstractions
 
             dxa(device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &textureDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&texture)), "Failed to create render target texture");
 
-            D3D12_DESCRIPTOR_HEAP_DESC heapDesc{
-                .Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-                .NumDescriptors = 1,
-                .Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE,
-                .NodeMask = 0};
-
-            dxa(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&descriptorHeap)), "Failed to create descriptor heap");
-
             D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{
                 .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
                 .ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D,
                 .Texture2D = {0, 0}};
 
-            device->CreateUnorderedAccessView(texture, nullptr, &uavDesc, descriptorHeap->GetCPUDescriptorHandleForHeapStart());
+            device->CreateUnorderedAccessView(texture, nullptr, &uavDesc, descriptorHeapHandle);
         }
     };
 }

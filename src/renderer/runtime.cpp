@@ -19,7 +19,7 @@ namespace DE
         ID3D12Resource *backBuffer = swapChain.backBuffers[frameIndex];
         ID3D12Resource *output = renderTarget.texture;
 
-        ID3D12DescriptorHeap *descriptorHeaps[] = {renderTarget.descriptorHeap};
+        ID3D12DescriptorHeap *descriptorHeaps[] = {descriptorHeap.get()};
         commands.list->SetDescriptorHeaps(static_cast<UINT>(std::size(descriptorHeaps)), descriptorHeaps);
 
         SceneSettings sceneSettings = scene.getSceneSettings();
@@ -29,7 +29,7 @@ namespace DE
             LightCounts lightCounts = scene.getLightCounts();
             
             commands.list->SetComputeRootSignature(pipeline.globalRootSignature);
-            commands.list->SetComputeRootDescriptorTable(dxabstractions::RootParams::OutputTexture, renderTarget.descriptorHeap->GetGPUDescriptorHandleForHeapStart());
+            commands.list->SetComputeRootDescriptorTable(dxabstractions::RootParams::OutputTexture, descriptorHeap.gpuHandle(dxabstractions::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX));
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLAS, scene.getTLASAddress());
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::MaterialBuffer, scene.getMaterialBufferAddress());
             commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::VertexBuffer, scene.getVertexBufferAddress());
@@ -114,6 +114,8 @@ namespace DE
 
         commands.execute(0);
         commands.waitIdle();
+
+        scene.releaseUploadBuffers();
     }
 
     XMUINT2 Renderer::getSwapChainSize() const
@@ -135,6 +137,6 @@ namespace DE
         commands.waitIdle();
 
         viewportRect.size = rect.size;
-        renderTarget = dxabstractions::RenderTarget(device, rect.size.x, rect.size.y);
+        renderTarget = dxabstractions::RenderTarget(device, descriptorHeap.cpuHandle(dxabstractions::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX), rect.size.x, rect.size.y);
     }
 }

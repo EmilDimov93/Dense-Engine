@@ -29,7 +29,15 @@ namespace DE
 
                 model.materials.reserve(modelUploadData.materials.size());
                 for (const MaterialUploadData &materialUpload : modelUploadData.materials)
-                    model.materials.emplace_back(materialUpload.diffuse, materialUpload.metallic, materialUpload.roughness, materialUpload.ior, -1);
+                {
+                    int32_t textureIndex = -1;
+                    if (materialUpload.hasTexture())
+                    {
+                        textureIndex = static_cast<int32_t>(model.textures.size());
+                        model.textures.emplace_back(device, commandList, materialUpload.texture, materialUpload.textureSize);
+                    }
+                    model.materials.emplace_back(materialUpload.diffuse, materialUpload.metallic, materialUpload.roughness, materialUpload.ior, textureIndex);
+                }
 
                 models.emplace(modelDescription.handle, std::move(model));
 
@@ -100,6 +108,13 @@ namespace DE
         tlas = {};
     }
 
+    void Scene::releaseUploadBuffers()
+    {
+        for (auto &[handle, model] : models)
+            for (dxabstractions::Texture &texture : model.textures)
+                texture.uploadBuffer = nullptr;
+    }
+
     void Scene::uploadGeometry()
     {
         uint64_t totalVertexCount = 0;
@@ -134,10 +149,37 @@ namespace DE
     {
         std::vector<Material> materials;
 
+        const D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{
+            .Format = dxabstractions::TEXTURE_FORMAT,
+            .ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D,
+            .Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING,
+            .Texture2D = {.MipLevels = 1}};
+
+        uint32_t textureOffset = 0;
         for (auto &[handle, model] : models)
         {
+            bool createMoreTextures = true;
+            if (dxabstractions::MAX_TEXTURES < textureOffset + model.textures.size())
+            {
+                warn("Failed to create texture: texture limit exceeded");
+                createMoreTextures = false;
+            }
+
             modelMaterialArrayOffsets[handle] = static_cast<uint32_t>(materials.size());
-            materials.insert(materials.end(), model.materials.begin(), model.materials.end());
+            for (Material m : model.materials)
+            {
+                if (m.textureIndex >= 0)
+                    m.textureIndex = createMoreTextures ? m.textureIndex + textureOffset : -1;
+                materials.push_back(m);
+            }
+
+            if (createMoreTextures)
+            {
+                for (size_t i = 0; i < model.textures.size(); i++)
+                    device->CreateShaderResourceView(model.textures[i].resource, &srvDesc, descriptorHeap->cpuHandle(static_cast<UINT>(dxabstractions::DESCRIPTOR_HEAP_FIRST_TEXTURE_INDEX + textureOffset + i)));
+
+                textureOffset += static_cast<uint32_t>(model.textures.size());
+            }
         }
 
         materialBuffer = createUploadBuffer<Material>(device, materials);

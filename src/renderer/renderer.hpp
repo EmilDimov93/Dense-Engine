@@ -7,6 +7,7 @@
 #include "dxabstractions/commandContext.hpp"
 #include "dxabstractions/swapChain.hpp"
 #include "dxabstractions/pipeline.hpp"
+#include "dxabstractions/descriptorHeap.hpp"
 #include "dxabstractions/renderTarget.hpp"
 
 #include "scene/scene.hpp"
@@ -49,6 +50,7 @@ namespace DE
         dxabstractions::CommandContext commands;
         dxabstractions::SwapChain swapChain;
         dxabstractions::Pipeline pipeline;
+        dxabstractions::DescriptorHeap descriptorHeap;
         dxabstractions::RenderTarget renderTarget;
 
         Rect viewportRect;
