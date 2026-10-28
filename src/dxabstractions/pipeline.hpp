@@ -8,6 +8,8 @@
 #include "core/dxcommon.hpp"
 #include "core/assertions.hpp"
 
+#include "dxabstractions/descriptorHeap.hpp"
+
 #include <cstring>
 
 namespace DE::dxabstractions
