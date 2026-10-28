@@ -130,7 +130,7 @@ namespace DE
         ImGui::TableHeadersRow();
     }
 
-    void drawTableXYZRow(const char *name, float &x, float &y, float &z, float min, float max, bool &hasSceneChanged)
+    void drawTableXYZRow(const char *name, float &x, float &y, float &z, float min, float max, bool &hasSceneChanged, bool &isDragging)
     {
         ImGui::PushID(name);
         ImGui::TableNextRow();
@@ -144,6 +144,7 @@ namespace DE
             ImGui::PushID(i);
             ImGui::SetNextItemWidth(32.f);
             hasSceneChanged |= ImGui::DragFloat("##value", components[i], 0.01f, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+            isDragging |= ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
             ImGui::PopID();
         }
         ImGui::PopID();
@@ -169,6 +170,8 @@ namespace DE
 
     void UI::tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera)
     {
+        bool isDragging = false;
+        
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
@@ -228,7 +231,7 @@ namespace DE
 
         drawTableXYZHeader("Background");
 
-        drawTableXYZRow("Background", sceneDescription.clearColor.x, sceneDescription.clearColor.y, sceneDescription.clearColor.z, 0.f, 1.f, hasSceneChanged);
+        drawTableXYZRow("Background", sceneDescription.clearColor.x, sceneDescription.clearColor.y, sceneDescription.clearColor.z, 0.f, 1.f, hasSceneChanged, isDragging);
 
         ImGui::EndTable();
 
@@ -300,9 +303,9 @@ namespace DE
             {
                 drawTableXYZHeader("TransformTable");
 
-                drawTableXYZRow("Position", modelInstance.transform.pos.x, modelInstance.transform.pos.y, modelInstance.transform.pos.z, -FLT_MAX, FLT_MAX, hasSceneChanged);
-                drawTableXYZRow("Rotation", modelInstance.transform.rot.x, modelInstance.transform.rot.y, modelInstance.transform.rot.z, -FLT_MAX, FLT_MAX, hasSceneChanged);
-                drawTableXYZRow("Scale", modelInstance.transform.scale.x, modelInstance.transform.scale.y, modelInstance.transform.scale.z, -FLT_MAX, FLT_MAX, hasSceneChanged);
+                drawTableXYZRow("Position", modelInstance.transform.pos.x, modelInstance.transform.pos.y, modelInstance.transform.pos.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
+                drawTableXYZRow("Rotation", modelInstance.transform.rot.x, modelInstance.transform.rot.y, modelInstance.transform.rot.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
+                drawTableXYZRow("Scale", modelInstance.transform.scale.x, modelInstance.transform.scale.y, modelInstance.transform.scale.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
 
                 ImGui::EndTable();
 
@@ -388,7 +391,7 @@ namespace DE
             if (ImGui::BeginPopup("AmbientLightDetailsPopup"))
             {
                 drawTableXYZHeader("ColorTable");
-                drawTableXYZRow("Color", sceneDescription.ambient.x, sceneDescription.ambient.y, sceneDescription.ambient.z, 0.f, 1.f, hasSceneChanged);
+                drawTableXYZRow("Color", sceneDescription.ambient.x, sceneDescription.ambient.y, sceneDescription.ambient.z, 0.f, 1.f, hasSceneChanged, isDragging);
                 ImGui::EndTable();
 
                 ImGui::EndPopup();
@@ -417,8 +420,8 @@ namespace DE
             {
                 drawTableXYZHeader("DirectionAndColorTable");
 
-                drawTableXYZRow("Direction", directionalLight.direction.x, directionalLight.direction.y, directionalLight.direction.z, -FLT_MAX, FLT_MAX, hasSceneChanged);
-                drawTableXYZRow("Color", directionalLight.color.x, directionalLight.color.y, directionalLight.color.z, 0.f, 1.f, hasSceneChanged);
+                drawTableXYZRow("Direction", directionalLight.direction.x, directionalLight.direction.y, directionalLight.direction.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
+                drawTableXYZRow("Color", directionalLight.color.x, directionalLight.color.y, directionalLight.color.z, 0.f, 1.f, hasSceneChanged, isDragging);
                 if (hasSceneChanged)
                 {
                     const float length = std::sqrt(directionalLight.direction.x * directionalLight.direction.x + directionalLight.direction.y * directionalLight.direction.y + directionalLight.direction.z * directionalLight.direction.z);
@@ -457,8 +460,8 @@ namespace DE
             {
                 drawTableXYZHeader("PositionAndColorTable");
 
-                drawTableXYZRow("Position", pointLight.pos.x, pointLight.pos.y, pointLight.pos.z, -FLT_MAX, FLT_MAX, hasSceneChanged);
-                drawTableXYZRow("Color", pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.f, 1.f, hasSceneChanged);
+                drawTableXYZRow("Position", pointLight.pos.x, pointLight.pos.y, pointLight.pos.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
+                drawTableXYZRow("Color", pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.f, 1.f, hasSceneChanged, isDragging);
 
                 ImGui::EndTable();
 
@@ -468,14 +471,17 @@ namespace DE
                 ImGui::EndPopup();
             }
 
-            const ImVec2 displaySize = ImGui::GetIO().DisplaySize;
-            const ImVec2 viewportMin{static_cast<float>(sidebarWidth), 0.f};
-            const ImVec2 viewportSize{displaySize.x - viewportMin.x, displaySize.y};
-
-            if (const auto lightScreenPos = worldToScreen(camera, pointLight.pos, viewportMin, viewportSize))
+            if (clientState.selectedSceneComponentHandle == static_cast<int32_t>(pointLight.handle))
             {
-                const ImVec4 markerColor{pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.8f};
-                ImGui::GetBackgroundDrawList()->AddCircleFilled(*lightScreenPos, 5.f, ImGui::ColorConvertFloat4ToU32(markerColor));
+                const ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+                const ImVec2 viewportMin{static_cast<float>(sidebarWidth), 0.f};
+                const ImVec2 viewportSize{displaySize.x - viewportMin.x, displaySize.y};
+
+                if (const auto lightScreenPos = worldToScreen(camera, pointLight.pos, viewportMin, viewportSize))
+                {
+                    const ImVec4 markerColor{pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.8f};
+                    ImGui::GetBackgroundDrawList()->AddCircleFilled(*lightScreenPos, 5.f, ImGui::ColorConvertFloat4ToU32(markerColor));
+                }
             }
 
             ImGui::PopID();
@@ -496,7 +502,7 @@ namespace DE
 
         ImGui::Render();
 
-        clientState.lowerQuality = ImGui::IsAnyItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+        clientState.lowerQuality = isDragging;
     }
 
     void UI::draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const
