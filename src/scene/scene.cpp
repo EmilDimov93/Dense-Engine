@@ -10,17 +10,48 @@
 #include "dxabstractions/buffer.hpp"
 
 #include <cstring>
+#include <thread>
+#include <atomic>
+#include <algorithm>
 
 namespace DE
 {
     void Scene::upload(const SceneDescription &sceneDescription)
     {
-        models.reserve(sceneDescription.modelDescriptions.size());
+        std::vector<ModelDescription> newModelDescriptions;
+
         for (const ModelDescription &modelDescription : sceneDescription.modelDescriptions)
             if (models.find(modelDescription.handle) == models.end())
-            {
-                ModelUploadData modelUploadData = loadModel(modelDescription.filePath);
+                newModelDescriptions.push_back(modelDescription);
 
+        if (!newModelDescriptions.empty())
+        {
+            std::vector<std::pair<Handle, ModelUploadData>> newModelUploadDatas;
+            newModelUploadDatas.resize(newModelDescriptions.size());
+
+            const uint32_t threadCount = std::min(static_cast<uint32_t>(newModelDescriptions.size()), std::max(1u, std::thread::hardware_concurrency()));
+            std::vector<std::thread> workers;
+            std::atomic<uint32_t> nextModelIndex{0};
+            workers.reserve(threadCount);
+
+            auto loadAndSaveModel = [&]()
+            {
+                for (uint32_t modelIndex = nextModelIndex++; modelIndex < newModelDescriptions.size(); modelIndex = nextModelIndex++)
+                {
+                    newModelUploadDatas[modelIndex].first = newModelDescriptions[modelIndex].handle;
+                    newModelUploadDatas[modelIndex].second = loadModel(newModelDescriptions[modelIndex].filePath);
+                }
+            };
+
+            for (uint32_t i = 0; i < threadCount; i++)
+                workers.emplace_back(loadAndSaveModel);
+
+            for (std::thread &worker : workers)
+                worker.join();
+
+            models.reserve(sceneDescription.modelDescriptions.size());
+            for (const auto &[handle, modelUploadData] : newModelUploadDatas)
+            {
                 Model model;
 
                 model.meshes.reserve(modelUploadData.meshes.size());
@@ -39,10 +70,11 @@ namespace DE
                     model.materials.emplace_back(materialUpload.diffuse, materialUpload.metallic, materialUpload.roughness, materialUpload.ior, textureIndex);
                 }
 
-                models.emplace(modelDescription.handle, std::move(model));
+                models.emplace(handle, std::move(model));
 
-                modelMaterialArrayOffsets.emplace(modelDescription.handle, 0);
+                modelMaterialArrayOffsets.emplace(handle, 0);
             }
+        }
 
         modelInstances.reserve(sceneDescription.modelInstanceDescriptions.size());
         for (const ModelInstanceDescription &modelInstanceDescription : sceneDescription.modelInstanceDescriptions)
