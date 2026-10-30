@@ -76,26 +76,36 @@ namespace DE
             }
         }
 
+        bool haveModelInstancesChanged = false;
         modelInstances.reserve(sceneDescription.modelInstanceDescriptions.size());
         for (const ModelInstanceDescription &modelInstanceDescription : sceneDescription.modelInstanceDescriptions)
         {
             auto found = modelInstances.find(modelInstanceDescription.handle);
             if (found == modelInstances.end())
+            {
                 modelInstances.emplace(modelInstanceDescription.handle, ModelInstance(modelInstanceDescription.modelHandle, modelInstanceDescription.transform));
+                haveModelInstancesChanged = true;
+            }
             else
-                found->second.transform = modelInstanceDescription.transform;
+            {
+                if (found->second.transform != modelInstanceDescription.transform)
+                {
+                    found->second.transform = modelInstanceDescription.transform;
+                    haveModelInstancesChanged = true;
+                }
+            }
+        }
+
+        if (!empty() && haveModelInstancesChanged)
+        {
+            uploadGeometry();
+            uploadMaterials();
+            buildTLAS();
         }
 
         sceneSettings.clearColor = sceneDescription.clearColor;
         sceneSettings.exposure = sceneDescription.exposure;
         sceneSettings.ambient = sceneDescription.ambient;
-
-        if (empty())
-            return;
-
-        uploadGeometry();
-        uploadMaterials();
-        buildTLAS();
 
         pointLights.clear();
         pointLights.reserve(sceneDescription.pointLightDescriptions.size());
