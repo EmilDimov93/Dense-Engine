@@ -168,16 +168,18 @@ namespace DE
         return ImVec2{viewportMin.x + viewportSize.x * 0.5f + x * scale, viewportMin.y + viewportSize.y * 0.5f - y * scale};
     }
 
-    void UI::tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera)
+    void UI::tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, FrameFeedback &frameFeedback)
     {
         bool isDragging = false;
-        
+
+        const ImGuiIO &io = ImGui::GetIO();
+
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
         ImGui::SetNextWindowPos({0.f, 0.f});
-        ImGui::SetNextWindowSize({static_cast<float>(sidebarWidth), ImGui::GetIO().DisplaySize.y});
+        ImGui::SetNextWindowSize({static_cast<float>(sidebarWidth), io.DisplaySize.y});
 
         ImGui::Begin("Sidebar", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration);
 
@@ -188,6 +190,8 @@ namespace DE
                 command = commands::LoadSceneCommand(selectedPath->string());
         }
 
+        const ImVec2 loadBtnSize = ImGui::GetItemRectSize();
+
         ImGui::SameLine();
 
         if (ImGui::Button("Save", ImVec2(0, 0)))
@@ -195,17 +199,17 @@ namespace DE
             command = commands::SaveSceneCommand();
         }
 
+        const ImVec2 saveBtnSize = ImGui::GetItemRectSize();
+
         ImGui::SameLine();
 
-        const float fpsBlockWidth = ImGui::CalcTextSize("FPS: 0000").x + ImGui::GetStyle().FramePadding.x * 2.0f;
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - fpsBlockWidth);
-        ImGui::BeginChild("FpsBlock", ImVec2(fpsBlockWidth, 0), ImGuiChildFlags_FrameStyle | ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
-        ImGui::Text("FPS: %.f", ImGui::GetIO().Framerate);
-        ImGui::EndChild();
+        const float topBarRemainingWidth = sidebarWidth - loadBtnSize.x - saveBtnSize.x - ImGui::GetStyle().ItemSpacing.x * 4;
+
+        performanceMonitor.draw(topBarRemainingWidth, io.Framerate, frameFeedback.rayCount);
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
-        static constexpr uint32_t ssaaOptions[] = {1, 4, 9, 16};
+        const uint32_t ssaaOptions[] = {1, 4, 9, 16};
         if (ImGui::BeginCombo("SSAA", std::format("{}x", clientState.ssaaSamples).c_str()))
         {
             for (uint32_t option : ssaaOptions)
@@ -473,7 +477,7 @@ namespace DE
 
             if (clientState.selectedSceneComponentHandle == static_cast<int32_t>(pointLight.handle))
             {
-                const ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+                const ImVec2 displaySize = io.DisplaySize;
                 const ImVec2 viewportMin{static_cast<float>(sidebarWidth), 0.f};
                 const ImVec2 viewportSize{displaySize.x - viewportMin.x, displaySize.y};
 

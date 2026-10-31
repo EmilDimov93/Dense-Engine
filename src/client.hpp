@@ -43,6 +43,8 @@ namespace DE
 
         std::string sceneFilePath;
 
+        FrameFeedback lastFrameFeedback;
+
         const std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 
         Handle addModel(const std::string &filePath);

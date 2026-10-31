@@ -17,18 +17,19 @@ namespace DE::dxabstractions
     enum RootParams
     {
         OutputTexture = 0,
-        TLAS = 1,
-        MaterialBuffer = 2,
-        VertexBuffer = 3,
-        IndexBuffer = 4,
-        TLASInstanceDataBuffer = 5,
-        PointLightBuffer = 6,
-        DirectionalLightBuffer = 7,
-        LightCounts = 8,
-        SceneSettings = 9,
-        Camera = 10,
-        ClientState = 11,
-        Textures = 12,
+        FrameFeedback = 1,
+        TLAS = 2,
+        MaterialBuffer = 3,
+        VertexBuffer = 4,
+        IndexBuffer = 5,
+        TLASInstanceDataBuffer = 6,
+        PointLightBuffer = 7,
+        DirectionalLightBuffer = 8,
+        Textures = 9,
+        LightCounts = 10,
+        SceneSettings = 11,
+        Camera = 12,
+        ClientState = 13,
         Count
     };
 
@@ -58,6 +59,9 @@ namespace DE::dxabstractions
             rootParams[RootParams::OutputTexture].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
             rootParams[RootParams::OutputTexture].DescriptorTable = {1, &uavRange};
             rootParams[RootParams::OutputTexture].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[RootParams::FrameFeedback].ParameterType = D3D12_ROOT_PARAMETER_TYPE_UAV;
+            rootParams[RootParams::FrameFeedback].Descriptor = {1, 0};
+            rootParams[RootParams::FrameFeedback].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
             rootParams[RootParams::TLAS].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
             rootParams[RootParams::TLAS].Descriptor = {0, 0};
             rootParams[RootParams::TLAS].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
@@ -73,6 +77,9 @@ namespace DE::dxabstractions
             rootParams[RootParams::TLASInstanceDataBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
             rootParams[RootParams::TLASInstanceDataBuffer].Descriptor = {4, 0};
             rootParams[RootParams::TLASInstanceDataBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            rootParams[RootParams::Textures].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+            rootParams[RootParams::Textures].DescriptorTable = {1, &textureRange};
+            rootParams[RootParams::Textures].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
             rootParams[RootParams::PointLightBuffer].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
             rootParams[RootParams::PointLightBuffer].Descriptor = {5, 0};
             rootParams[RootParams::PointLightBuffer].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
@@ -99,9 +106,6 @@ namespace DE::dxabstractions
                 .ShaderRegister = 3,
                 .RegisterSpace = 0,
                 .Num32BitValues = 4};
-            rootParams[RootParams::Textures].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-            rootParams[RootParams::Textures].DescriptorTable = {1, &textureRange};
-            rootParams[RootParams::Textures].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
             const D3D12_STATIC_SAMPLER_DESC linearWrapSampler{
                 .Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR,

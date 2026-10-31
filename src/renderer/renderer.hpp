@@ -17,6 +17,7 @@
 
 #include "clientState.hpp"
 #include "camera.hpp"
+#include "frameFeedback.hpp"
 
 namespace DE
 {
@@ -28,7 +29,7 @@ namespace DE
         Renderer(HWND window, XMUINT2 windowSize);
         ~Renderer();
 
-        void tick(const UI &ui, const ClientState &clientState, const CameraConstants &cameraConstants);
+        FrameFeedback tick(const UI &ui, const ClientState &clientState, const CameraConstants &cameraConstants);
 
         void waitForGpu();
 
@@ -56,5 +57,8 @@ namespace DE
         Rect viewportRect;
 
         Scene scene;
+
+        ID3D12ResourcePtr frameFeedbackBuffer;
+        PerFrame<ID3D12ResourcePtr> frameFeedbackReadbackBuffers;
     };
 }

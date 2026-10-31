@@ -11,6 +11,9 @@
 #include "camera.hpp"
 
 #include "command.hpp"
+#include "frameFeedback.hpp"
+
+#include "performanceMonitor.hpp"
 
 #include <string>
 #include <optional>
@@ -25,7 +28,7 @@ namespace DE
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        void tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera);
+        void tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, FrameFeedback &frameFeedback);
         void draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const;
 
         void createBackBufferViews(const PerFrame<ID3D12ResourcePtr> &backBuffers);
@@ -46,6 +49,8 @@ namespace DE
         UINT backBufferViewSize = 0;
 
         bool isResizingSidebar = false;
+
+        PerformanceMonitor performanceMonitor;
 
         void updateCamera(Camera &camera);
         void updateShortcuts(std::optional<commands::Command> &command);
