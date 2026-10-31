@@ -7,6 +7,7 @@
 #include "core/assertions.hpp"
 
 #include "buffer.hpp"
+#include "resourceBarrier.hpp"
 
 namespace DE::dxabstractions
 {
@@ -64,8 +65,7 @@ namespace DE::dxabstractions
 
             commandList->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
 
-            const D3D12_RESOURCE_BARRIER barrier = transition(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-            commandList->ResourceBarrier(1, &barrier);
+            dxabstractions::barrier(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandList);
         }
     };
 }

@@ -62,32 +62,26 @@ namespace DE
             };
             commands.list->WriteBufferImmediate(_countof(resetParams), resetParams, nullptr);
 
-            const D3D12_RESOURCE_BARRIER toUavBarrier = transition(frameFeedbackBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-            commands.list->ResourceBarrier(1, &toUavBarrier);
+            commands.barrier(frameFeedbackBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
             commands.list->DispatchRays(&dispatchDesc);
 
-            const D3D12_RESOURCE_BARRIER toCopySourceBarrier = transition(frameFeedbackBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
-            commands.list->ResourceBarrier(1, &toCopySourceBarrier);
+            commands.barrier(frameFeedbackBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
             commands.list->CopyResource(frameFeedbackReadbackBuffers[frameIndex], frameFeedbackBuffer);
 
-            const D3D12_RESOURCE_BARRIER toCopyDestBarrier = transition(frameFeedbackBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-            commands.list->ResourceBarrier(1, &toCopyDestBarrier);
+            commands.barrier(frameFeedbackBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
         }
 
-        const D3D12_RESOURCE_BARRIER toClearBarrier = transition(backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-        commands.list->ResourceBarrier(1, &toClearBarrier);
+        commands.barrier(backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
         const D3D12_CPU_DESCRIPTOR_HANDLE backBufferView = ui.backBufferView(frameIndex);
 
         const FLOAT clearColor[4] = {sceneSettings.clearColor.x, sceneSettings.clearColor.y, sceneSettings.clearColor.z, 1.f};
         commands.list->ClearRenderTargetView(backBufferView, clearColor, 0, nullptr);
 
-        const D3D12_RESOURCE_BARRIER toCopyBarriers[] = {
-            transition(output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),
-            transition(backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST)};
-        commands.list->ResourceBarrier(static_cast<UINT>(std::size(toCopyBarriers)), toCopyBarriers);
+        commands.barrier(output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
+        commands.barrier(backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST);
 
         D3D12_TEXTURE_COPY_LOCATION dst{};
         dst.pResource = backBuffer;
@@ -110,15 +104,12 @@ namespace DE
             commands.list->CopyTextureRegion(&dst, viewportRect.start.x, viewportRect.start.y, 0, &src, &srcBox);
         }
 
-        const D3D12_RESOURCE_BARRIER toGuiBarriers[] = {
-            transition(output, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-            transition(backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET)};
-        commands.list->ResourceBarrier(static_cast<UINT>(std::size(toGuiBarriers)), toGuiBarriers);
+        commands.barrier(output, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        commands.barrier(backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
         ui.draw(commands.list, frameIndex);
 
-        const D3D12_RESOURCE_BARRIER toPresentBarrier = transition(backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-        commands.list->ResourceBarrier(1, &toPresentBarrier);
+        commands.barrier(backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
         commands.execute(frameIndex);
 

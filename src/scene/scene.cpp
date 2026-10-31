@@ -8,6 +8,7 @@
 #include "core/assertions.hpp"
 
 #include "dxabstractions/buffer.hpp"
+#include "dxabstractions/resourceBarrier.hpp"
 
 #include <cstring>
 #include <thread>
@@ -181,10 +182,8 @@ namespace DE
                 commandList->CopyBufferRegion(indexBuffer, sizeof(uint32_t) * mesh.indexOffset, mesh.indexBuffer, 0, sizeof(uint32_t) * mesh.indexCount);
             }
 
-        const D3D12_RESOURCE_BARRIER barriers[] = {
-            transition(vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-            transition(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)};
-        commandList->ResourceBarrier(static_cast<UINT>(std::size(barriers)), barriers);
+        dxabstractions::barrier(vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandList);
+        dxabstractions::barrier(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandList);
     }
 
     void Scene::uploadMaterials()
