@@ -97,6 +97,7 @@ struct ClientState
     uint ssaaSamples;
     float time;
     bool lowerQuality;
+    int2 clickedPixel;
 };
 
 ConstantBuffer<ClientState> clientState : register(b3);
@@ -199,6 +200,9 @@ void ShadowMiss(inout ShadowPayload payload)
 [shader("closesthit")]
 void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes attribs)
 {
+    if(payload.depth == 0 && clientState.clickedPixel.x == DispatchRaysIndex().x && clientState.clickedPixel.y == DispatchRaysIndex().y)
+        frameFeedback[0].clickedSceneComponentHandle = InstanceID();
+
     TLASInstanceData instanceData = tlasInstanceData[InstanceIndex()];
 
     Material hitMaterial = materials[instanceData.materialIndex];

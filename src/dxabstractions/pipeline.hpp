@@ -105,7 +105,7 @@ namespace DE::dxabstractions
             rootParams[RootParams::ClientState].Constants = {
                 .ShaderRegister = 3,
                 .RegisterSpace = 0,
-                .Num32BitValues = 4};
+                .Num32BitValues = 6};
 
             const D3D12_STATIC_SAMPLER_DESC linearWrapSampler{
                 .Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR,

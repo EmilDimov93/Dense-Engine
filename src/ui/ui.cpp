@@ -495,14 +495,25 @@ namespace DE
         }
         ImGui::EndTable();
 
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
-            clientState.selectedSceneComponentHandle = -1;
-
         updateCamera(camera);
         updateShortcuts(command);
         updateSidebarSize(sidebarWidthFraction, sidebarWidth);
 
         ImGui::End();
+
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+        {
+            clientState.selectedSceneComponentHandle = -1;
+            if (!io.WantCaptureMouse && ImGui::GetMousePos().x > sidebarWidth)
+                clientState.clickedPixel = XMINT2{static_cast<int32_t>(ImGui::GetMousePos().x - sidebarWidth), static_cast<int32_t>(ImGui::GetMousePos().y)};
+        }
+        else
+        {
+            clientState.clickedPixel = XMINT2{-1, -1};
+        }
+
+        if (frameFeedback.clickedSceneComponentHandle != -1)
+            clientState.selectedSceneComponentHandle = frameFeedback.clickedSceneComponentHandle;
 
         ImGui::Render();
 
@@ -577,6 +588,9 @@ namespace DE
 
     void UI::updateSidebarSize(float &sidebarWidthFraction, uint32_t sidebarWidth)
     {
+        if (ImGui::IsAnyItemActive())
+            return;
+
         const ImGuiIO &io = ImGui::GetIO();
 
         float cursorX = io.MousePos.x;

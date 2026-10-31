@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <cstdint>
+#include "core/dxcommon.hpp"
 
 namespace DE
 {
@@ -13,5 +13,6 @@ namespace DE
         uint32_t ssaaSamples = 4u;
         float time = 0.f;
         uint32_t lowerQuality = 0u;
+        XMINT2 clickedPixel = {-1, -1};
     };
 }
