@@ -28,7 +28,7 @@ namespace DE
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        void tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, FrameFeedback &frameFeedback);
+        void tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, FrameFeedback &frameFeedback, bool &vsync);
         void draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const;
 
         void createBackBufferViews(const PerFrame<ID3D12ResourcePtr> &backBuffers);

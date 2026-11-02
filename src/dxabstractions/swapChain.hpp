@@ -15,6 +15,8 @@ namespace DE::dxabstractions
 
         SwapChain(IDXGIFactory6 *factory, ID3D12CommandQueue *graphicsQueue, HWND windowHandle, UINT width, UINT height)
         {
+            dxa(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &isTearingAllowed, sizeof(isTearingAllowed)), "Failed to check feature support");
+
             DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
             swapChainDesc.Width = width;
             swapChainDesc.Height = height;
@@ -26,7 +28,7 @@ namespace DE::dxabstractions
             swapChainDesc.Scaling = DXGI_SCALING_NONE;
             swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
             swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-            swapChainDesc.Flags = 0;
+            swapChainDesc.Flags = isTearingAllowed ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
             IDXGISwapChain1Ptr swapChain1;
             dxa(factory->CreateSwapChainForHwnd(graphicsQueue, windowHandle, &swapChainDesc, nullptr, nullptr, &swapChain1), "Failed to create swap chain");
@@ -41,9 +43,12 @@ namespace DE::dxabstractions
             size.y = height;
         }
 
-        void present()
+        void present(bool vsync)
         {
-            dxa(swapChain->Present(1, 0), "Failed to present");
+            if (vsync)
+                dxa(swapChain->Present(1, 0), "Failed to present");
+            else
+                dxa(swapChain->Present(0, isTearingAllowed ? DXGI_PRESENT_ALLOW_TEARING : 0), "Failed to present");
         }
 
         void resize(XMUINT2 newSize)
@@ -51,7 +56,7 @@ namespace DE::dxabstractions
             for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
                 backBuffers[bufferIndex] = nullptr;
 
-            dxa(swapChain->ResizeBuffers(FRAMES_IN_FLIGHT, newSize.x, newSize.y, DXGI_FORMAT_UNKNOWN, 0), "Failed to resize swap chain");
+            dxa(swapChain->ResizeBuffers(FRAMES_IN_FLIGHT, newSize.x, newSize.y, DXGI_FORMAT_UNKNOWN, isTearingAllowed ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0), "Failed to resize swap chain");
 
             for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
                 dxa(swapChain->GetBuffer(bufferIndex, IID_PPV_ARGS(&backBuffers[bufferIndex])), "Failed to get swap chain buffer");
@@ -72,5 +77,6 @@ namespace DE::dxabstractions
     private:
         IDXGISwapChain4Ptr swapChain;
         XMUINT2 size{};
+        BOOL isTearingAllowed = FALSE;
     };
 }

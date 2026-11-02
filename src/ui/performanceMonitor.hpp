@@ -28,6 +28,7 @@ namespace DE
             fpsMax = std::max(fpsMax, fpsHistory[historyOffset]);
             rayCountMax = std::max(rayCountMax, rayCountHistory[historyOffset]);
 
+            const uint32_t latestOffset = historyOffset;
             historyOffset = (historyOffset + 1) % historySize;
 
             ImVec2 plotSize(width, 20);
@@ -52,7 +53,7 @@ namespace DE
                                   "Rays per frame\n"
                                   "  Current  %7.2f M\n"
                                   "  Peak     %7.2f M",
-                                  fpsHistory[historyOffset - 1], fpsMax, rayCountHistory[historyOffset - 1], rayCountMax);
+                                  fpsHistory[latestOffset], fpsMax, rayCountHistory[latestOffset], rayCountMax);
         }
     };
 }

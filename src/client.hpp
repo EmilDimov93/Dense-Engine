@@ -45,6 +45,8 @@ namespace DE
 
         FrameFeedback lastFrameFeedback;
 
+        bool vsync = true;
+
         const std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 
         Handle addModel(const std::string &filePath);

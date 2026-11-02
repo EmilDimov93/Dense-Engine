@@ -95,7 +95,7 @@ namespace DE
                        << endOfObject << '\n';
         }
 
-        outputFile << "Settings" << '\n';
+        outputFile << "Environment" << '\n';
 
         outputFile << sceneDescription.clearColor.x << '\n'
                    << sceneDescription.clearColor.y << '\n'
@@ -149,7 +149,7 @@ namespace DE
                 Instances = 2u,
                 PointLights = 3u,
                 DirectionalLights = 4u,
-                Settings = 5u
+                Environment = 5u
             };
             Section currSection = Section::Context;
             uint32_t tokenCounter = 0;
@@ -183,9 +183,9 @@ namespace DE
                     tokenCounter = 0;
                     continue;
                 }
-                else if (line == "Settings")
+                else if (line == "Environment")
                 {
-                    currSection = Section::Settings;
+                    currSection = Section::Environment;
                     tokenCounter = 0;
                     continue;
                 }
@@ -346,7 +346,7 @@ namespace DE
                     }
                     break;
                 }
-                case Section::Settings:
+                case Section::Environment:
                 {
                     switch (tokenCounter)
                     {

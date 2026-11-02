@@ -10,7 +10,7 @@
 
 namespace DE
 {
-    FrameFeedback Renderer::tick(const UI &ui, const ClientState &clientState, const CameraConstants &cameraConstants)
+    FrameFeedback Renderer::tick(const UI &ui, const ClientState &clientState, const CameraConstants &cameraConstants, bool vsync)
     {
         const UINT frameIndex = swapChain.getCurrentBackBufferIndex();
 
@@ -113,7 +113,7 @@ namespace DE
 
         commands.execute(frameIndex);
 
-        swapChain.present();
+        swapChain.present(vsync);
 
         return frameFeedback;
     }

@@ -168,7 +168,7 @@ namespace DE
         return ImVec2{viewportMin.x + viewportSize.x * 0.5f + x * scale, viewportMin.y + viewportSize.y * 0.5f - y * scale};
     }
 
-    void UI::tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, FrameFeedback &frameFeedback)
+    void UI::tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, FrameFeedback &frameFeedback, bool &vsync)
     {
         bool isDragging = false;
 
@@ -210,6 +210,7 @@ namespace DE
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
         const uint32_t ssaaOptions[] = {1, 4, 9, 16};
+        ImGui::SetNextItemWidth(50.f);
         if (ImGui::BeginCombo("SSAA", std::format("{}x", clientState.ssaaSamples).c_str()))
         {
             for (uint32_t option : ssaaOptions)
@@ -217,6 +218,9 @@ namespace DE
                     clientState.ssaaSamples = option;
             ImGui::EndCombo();
         }
+
+        ImGui::SameLine();
+        ImGui::Checkbox("VSync", &vsync);
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
