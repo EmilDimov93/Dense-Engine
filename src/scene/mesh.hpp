@@ -5,7 +5,7 @@
 
 #include "core/dxcommon.hpp"
 
-#include "dxabstractions/accelerationStructure.hpp"
+#include "dxwrap/accelerationStructure.hpp"
 
 #include "vertex.hpp"
 
@@ -27,7 +27,7 @@ namespace DE
         ID3D12ResourcePtr indexBuffer;
         uint32_t indexCount;
         
-        dxabstractions::AccelerationStructure blas;
+        dxwrap::AccelerationStructure blas;
 
         uint32_t materialIndex;
 

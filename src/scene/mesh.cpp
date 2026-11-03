@@ -3,7 +3,7 @@
 
 #include "mesh.hpp"
 
-#include "dxabstractions/buffer.hpp"
+#include "dxwrap/buffer.hpp"
 
 #include "core/assertions.hpp"
 

@@ -8,7 +8,7 @@
 
 #include "buffer.hpp"
 
-namespace DE::dxabstractions
+namespace DE::dxwrap
 {
     class AccelerationStructure
     {

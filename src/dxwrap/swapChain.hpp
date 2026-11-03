@@ -6,7 +6,7 @@
 #include "core/dxcommon.hpp"
 #include "core/assertions.hpp"
 
-namespace DE::dxabstractions
+namespace DE::dxwrap
 {
     class SwapChain
     {

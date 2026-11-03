@@ -5,7 +5,7 @@
 
 #include "core/assertions.hpp"
 
-#include "dxabstractions/buffer.hpp"
+#include "dxwrap/buffer.hpp"
 
 #include <cstring>
 

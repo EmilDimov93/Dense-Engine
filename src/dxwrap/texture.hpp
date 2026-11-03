@@ -9,7 +9,7 @@
 #include "buffer.hpp"
 #include "resourceBarrier.hpp"
 
-namespace DE::dxabstractions
+namespace DE::dxwrap
 {
     constexpr DXGI_FORMAT TEXTURE_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 
@@ -65,7 +65,7 @@ namespace DE::dxabstractions
 
             commandList->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
 
-            dxabstractions::barrier(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandList);
+            barrier(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandList);
         }
     };
 }

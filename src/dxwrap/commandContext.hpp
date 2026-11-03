@@ -9,7 +9,7 @@
 #include "fence.hpp"
 #include "resourceBarrier.hpp"
 
-namespace DE::dxabstractions
+namespace DE::dxwrap
 {
     class CommandContext
     {
@@ -54,7 +54,7 @@ namespace DE::dxabstractions
 
         void waitIdle()
         {
-            for (dxabstractions::Fence &fence : fences)
+            for (dxwrap::Fence &fence : fences)
                 fence.wait();
         }
 
@@ -66,7 +66,7 @@ namespace DE::dxabstractions
 
         void barrier(ID3D12Resource *resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after)
         {
-            dxabstractions::barrier(resource, before, after, list);
+            DE::barrier(resource, before, after, list);
         }
 
     private:

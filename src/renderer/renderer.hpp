@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "dxabstractions/device.hpp"
-#include "dxabstractions/commandContext.hpp"
-#include "dxabstractions/swapChain.hpp"
-#include "dxabstractions/pipeline.hpp"
-#include "dxabstractions/descriptorHeap.hpp"
-#include "dxabstractions/renderTarget.hpp"
+#include "dxwrap/device.hpp"
+#include "dxwrap/commandContext.hpp"
+#include "dxwrap/swapChain.hpp"
+#include "dxwrap/pipeline.hpp"
+#include "dxwrap/descriptorHeap.hpp"
+#include "dxwrap/renderTarget.hpp"
 
 #include "scene/scene.hpp"
 
@@ -47,12 +47,12 @@ namespace DE
         const PerFrame<ID3D12ResourcePtr> &getBackBuffers() const { return swapChain.backBuffers; }
 
     private:
-        dxabstractions::Device device;
-        dxabstractions::CommandContext commands;
-        dxabstractions::SwapChain swapChain;
-        dxabstractions::Pipeline pipeline;
-        dxabstractions::DescriptorHeap descriptorHeap;
-        dxabstractions::RenderTarget renderTarget;
+        dxwrap::Device device;
+        dxwrap::CommandContext commands;
+        dxwrap::SwapChain swapChain;
+        dxwrap::Pipeline pipeline;
+        dxwrap::DescriptorHeap descriptorHeap;
+        dxwrap::RenderTarget renderTarget;
 
         Rect viewportRect;
 

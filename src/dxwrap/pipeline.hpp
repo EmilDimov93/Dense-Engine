@@ -8,11 +8,11 @@
 #include "core/dxcommon.hpp"
 #include "core/assertions.hpp"
 
-#include "dxabstractions/descriptorHeap.hpp"
+#include "dxwrap/descriptorHeap.hpp"
 
 #include <cstring>
 
-namespace DE::dxabstractions
+namespace DE::dxwrap
 {
     enum RootParams
     {

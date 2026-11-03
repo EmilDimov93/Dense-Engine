@@ -15,7 +15,7 @@
 
 #include "environment.hpp"
 
-#include "dxabstractions/descriptorHeap.hpp"
+#include "dxwrap/descriptorHeap.hpp"
 
 #include <unordered_map>
 #include <string>
@@ -40,7 +40,7 @@ namespace DE
     class Scene
     {
     public:
-        Scene(ID3D12Device5 *device, ID3D12GraphicsCommandList4 *commandList, const dxabstractions::DescriptorHeap *descriptorHeap) : device(device), commandList(commandList), descriptorHeap(descriptorHeap) {}
+        Scene(ID3D12Device5 *device, ID3D12GraphicsCommandList4 *commandList, const dxwrap::DescriptorHeap *descriptorHeap) : device(device), commandList(commandList), descriptorHeap(descriptorHeap) {}
 
         void upload(const SceneDescription &sceneDescription);
         D3D12_GPU_VIRTUAL_ADDRESS getMaterialBufferAddress() const { return materialBuffer->GetGPUVirtualAddress(); }
@@ -79,11 +79,11 @@ namespace DE
         ID3D12ResourcePtr pointLightBuffer;
         ID3D12ResourcePtr directionalLightBuffer;
 
-        dxabstractions::AccelerationStructure tlas;
+        dxwrap::AccelerationStructure tlas;
 
         ID3D12Device5 *device;
         ID3D12GraphicsCommandList4 *commandList;
-        const dxabstractions::DescriptorHeap *descriptorHeap;
+        const dxwrap::DescriptorHeap *descriptorHeap;
 
         ID3D12ResourcePtr vertexBuffer;
         ID3D12ResourcePtr indexBuffer;

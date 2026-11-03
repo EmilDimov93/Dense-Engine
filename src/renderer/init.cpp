@@ -11,7 +11,7 @@ namespace DE
                                                           swapChain(device.factory, commands.queue, window, windowSize.x, windowSize.y),
                                                           pipeline(device),
                                                           descriptorHeap(device),
-                                                          renderTarget(device, descriptorHeap.cpuHandle(dxabstractions::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX), windowSize.x, windowSize.y),
+                                                          renderTarget(device, descriptorHeap.cpuHandle(dxwrap::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX), windowSize.x, windowSize.y),
                                                           scene(device, commands.list, &descriptorHeap)
     {
         frameFeedbackBuffer = createBuffer(device, sizeof(gpu::FrameFeedback), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);

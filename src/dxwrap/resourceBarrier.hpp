@@ -5,7 +5,7 @@
 
 #include "core/dxcommon.hpp"
 
-namespace DE::dxabstractions
+namespace DE
 {
     inline void barrier(ID3D12Resource *resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, ID3D12GraphicsCommandList4 *commandList)
     {

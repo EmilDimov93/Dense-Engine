@@ -6,7 +6,7 @@
 #include "core/dxcommon.hpp"
 #include "core/assertions.hpp"
 
-namespace DE::dxabstractions
+namespace DE::dxwrap
 {
     constexpr UINT DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX = 0u;
     constexpr UINT DESCRIPTOR_HEAP_FIRST_TEXTURE_INDEX = 1u;

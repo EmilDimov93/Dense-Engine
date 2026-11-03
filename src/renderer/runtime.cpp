@@ -37,20 +37,20 @@ namespace DE
             gpu::LightCounts lightCounts = scene.getLightCounts();
 
             commands.list->SetComputeRootSignature(pipeline.globalRootSignature);
-            commands.list->SetComputeRootDescriptorTable(dxabstractions::RootParams::OutputTexture, descriptorHeap.gpuHandle(dxabstractions::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX));
-            commands.list->SetComputeRootUnorderedAccessView(dxabstractions::RootParams::FrameFeedback, frameFeedbackBuffer->GetGPUVirtualAddress());
-            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLAS, scene.getTLASAddress());
-            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::MaterialBuffer, scene.getMaterialBufferAddress());
-            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::VertexBuffer, scene.getVertexBufferAddress());
-            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::IndexBuffer, scene.getIndexBufferAddress());
-            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::TLASInstanceDataBuffer, scene.getTLASInstanceDataAddress());
-            commands.list->SetComputeRootDescriptorTable(dxabstractions::RootParams::Textures, descriptorHeap.gpuHandle(dxabstractions::DESCRIPTOR_HEAP_FIRST_TEXTURE_INDEX));
-            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::PointLightBuffer, scene.getPointLightBufferAddress());
-            commands.list->SetComputeRootShaderResourceView(dxabstractions::RootParams::DirectionalLightBuffer, scene.getDirectionalLightBufferAddress());
-            commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::LightCounts, sizeof(gpu::LightCounts) / 4, &lightCounts, 0);
-            commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::Environment, sizeof(gpu::Environment) / 4, &environment, 0);
-            commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::Camera, sizeof(gpu::CameraConstants) / 4, &cameraConstants, 0);
-            commands.list->SetComputeRoot32BitConstants(dxabstractions::RootParams::ClientState, sizeof(gpu::ClientState) / 4, &clientState, 0);
+            commands.list->SetComputeRootDescriptorTable(dxwrap::RootParams::OutputTexture, descriptorHeap.gpuHandle(dxwrap::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX));
+            commands.list->SetComputeRootUnorderedAccessView(dxwrap::RootParams::FrameFeedback, frameFeedbackBuffer->GetGPUVirtualAddress());
+            commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::TLAS, scene.getTLASAddress());
+            commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::MaterialBuffer, scene.getMaterialBufferAddress());
+            commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::VertexBuffer, scene.getVertexBufferAddress());
+            commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::IndexBuffer, scene.getIndexBufferAddress());
+            commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::TLASInstanceDataBuffer, scene.getTLASInstanceDataAddress());
+            commands.list->SetComputeRootDescriptorTable(dxwrap::RootParams::Textures, descriptorHeap.gpuHandle(dxwrap::DESCRIPTOR_HEAP_FIRST_TEXTURE_INDEX));
+            commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::PointLightBuffer, scene.getPointLightBufferAddress());
+            commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::DirectionalLightBuffer, scene.getDirectionalLightBufferAddress());
+            commands.list->SetComputeRoot32BitConstants(dxwrap::RootParams::LightCounts, sizeof(gpu::LightCounts) / 4, &lightCounts, 0);
+            commands.list->SetComputeRoot32BitConstants(dxwrap::RootParams::Environment, sizeof(gpu::Environment) / 4, &environment, 0);
+            commands.list->SetComputeRoot32BitConstants(dxwrap::RootParams::Camera, sizeof(gpu::CameraConstants) / 4, &cameraConstants, 0);
+            commands.list->SetComputeRoot32BitConstants(dxwrap::RootParams::ClientState, sizeof(gpu::ClientState) / 4, &clientState, 0);
 
             commands.list->SetPipelineState1(pipeline.stateObject);
 
@@ -158,6 +158,6 @@ namespace DE
         commands.waitIdle();
 
         viewportRect.size = rect.size;
-        renderTarget = dxabstractions::RenderTarget(device, descriptorHeap.cpuHandle(dxabstractions::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX), rect.size.x, rect.size.y);
+        renderTarget = dxwrap::RenderTarget(device, descriptorHeap.cpuHandle(dxwrap::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX), rect.size.x, rect.size.y);
     }
 }

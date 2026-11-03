@@ -5,7 +5,7 @@
 
 #include "core/dxcommon.hpp"
 
-#include "dxabstractions/texture.hpp"
+#include "dxwrap/texture.hpp"
 
 #include "mesh.hpp"
 #include "material.hpp"
@@ -23,6 +23,6 @@ namespace DE
     public:
         std::vector<Mesh> meshes;
         std::vector<gpu::Material> materials;
-        std::vector<dxabstractions::Texture> textures;
+        std::vector<dxwrap::Texture> textures;
     };
 }

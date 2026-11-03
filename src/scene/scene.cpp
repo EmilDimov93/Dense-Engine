@@ -7,8 +7,8 @@
 
 #include "core/assertions.hpp"
 
-#include "dxabstractions/buffer.hpp"
-#include "dxabstractions/resourceBarrier.hpp"
+#include "dxwrap/buffer.hpp"
+#include "dxwrap/resourceBarrier.hpp"
 
 #include <cstring>
 #include <thread>
@@ -154,7 +154,7 @@ namespace DE
     void Scene::releaseUploadBuffers()
     {
         for (auto &[handle, model] : models)
-            for (dxabstractions::Texture &texture : model.textures)
+            for (dxwrap::Texture &texture : model.textures)
                 texture.uploadBuffer = nullptr;
     }
 
@@ -182,8 +182,8 @@ namespace DE
                 commandList->CopyBufferRegion(indexBuffer, sizeof(uint32_t) * mesh.indexOffset, mesh.indexBuffer, 0, sizeof(uint32_t) * mesh.indexCount);
             }
 
-        dxabstractions::barrier(vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandList);
-        dxabstractions::barrier(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandList);
+        barrier(vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandList);
+        barrier(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandList);
     }
 
     void Scene::uploadMaterials()
@@ -191,7 +191,7 @@ namespace DE
         std::vector<gpu::Material> materials;
 
         const D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{
-            .Format = dxabstractions::TEXTURE_FORMAT,
+            .Format = dxwrap::TEXTURE_FORMAT,
             .ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D,
             .Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING,
             .Texture2D = {.MipLevels = 1}};
@@ -200,7 +200,7 @@ namespace DE
         for (auto &[handle, model] : models)
         {
             bool createMoreTextures = true;
-            if (dxabstractions::MAX_TEXTURES < textureOffset + model.textures.size())
+            if (dxwrap::MAX_TEXTURES < textureOffset + model.textures.size())
             {
                 warn("Failed to create texture: texture limit exceeded");
                 createMoreTextures = false;
@@ -217,7 +217,7 @@ namespace DE
             if (createMoreTextures)
             {
                 for (size_t i = 0; i < model.textures.size(); i++)
-                    device->CreateShaderResourceView(model.textures[i].resource, &srvDesc, descriptorHeap->cpuHandle(static_cast<UINT>(dxabstractions::DESCRIPTOR_HEAP_FIRST_TEXTURE_INDEX + textureOffset + i)));
+                    device->CreateShaderResourceView(model.textures[i].resource, &srvDesc, descriptorHeap->cpuHandle(static_cast<UINT>(dxwrap::DESCRIPTOR_HEAP_FIRST_TEXTURE_INDEX + textureOffset + i)));
 
                 textureOffset += static_cast<uint32_t>(model.textures.size());
             }
