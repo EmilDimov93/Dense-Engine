@@ -27,7 +27,7 @@ namespace DE::dxabstractions
         DirectionalLightBuffer = 8,
         Textures = 9,
         LightCounts = 10,
-        SceneSettings = 11,
+        Environment = 11,
         Camera = 12,
         ClientState = 13,
         Count
@@ -91,8 +91,8 @@ namespace DE::dxabstractions
                 .ShaderRegister = 0,
                 .RegisterSpace = 0,
                 .Num32BitValues = 2};
-            rootParams[RootParams::SceneSettings].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-            rootParams[RootParams::SceneSettings].Constants = {
+            rootParams[RootParams::Environment].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+            rootParams[RootParams::Environment].Constants = {
                 .ShaderRegister = 1,
                 .RegisterSpace = 0,
                 .Num32BitValues = 7};

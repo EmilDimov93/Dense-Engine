@@ -14,10 +14,10 @@ namespace DE
                                                           renderTarget(device, descriptorHeap.cpuHandle(dxabstractions::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX), windowSize.x, windowSize.y),
                                                           scene(device, commands.list, &descriptorHeap)
     {
-        frameFeedbackBuffer = createBuffer(device, sizeof(FrameFeedback), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+        frameFeedbackBuffer = createBuffer(device, sizeof(gpu::FrameFeedback), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
         for (ID3D12ResourcePtr &readback : frameFeedbackReadbackBuffers)
-            readback = createBuffer(device, sizeof(FrameFeedback), D3D12_HEAP_TYPE_READBACK, D3D12_RESOURCE_STATE_COPY_DEST);
+            readback = createBuffer(device, sizeof(gpu::FrameFeedback), D3D12_HEAP_TYPE_READBACK, D3D12_RESOURCE_STATE_COPY_DEST);
     }
 
     Renderer::~Renderer()

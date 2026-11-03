@@ -14,7 +14,7 @@ namespace DE
     void Scene::buildTLAS()
     {
         std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instanceDescs;
-        std::vector<TLASInstanceData> tlasInstanceData;
+        std::vector<gpu::TLASInstanceData> tlasInstanceData;
 
         for (const auto &entry : modelInstances)
         {
@@ -51,7 +51,7 @@ namespace DE
 
         instanceBuffer = createUploadBuffer<D3D12_RAYTRACING_INSTANCE_DESC>(device, instanceDescs);
 
-        tlasInstanceDataBuffer = createUploadBuffer<TLASInstanceData>(device, tlasInstanceData);
+        tlasInstanceDataBuffer = createUploadBuffer<gpu::TLASInstanceData>(device, tlasInstanceData);
 
         D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS tlasInputs{};
         tlasInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;

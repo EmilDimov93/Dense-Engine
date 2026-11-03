@@ -66,22 +66,22 @@ namespace DE
             ui.tick(makeViewportRect().start.x, sidebarWidthFraction, sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync);
             if (command)
             {
-                if (const commands::AddModelCommand *addModelCommand = std::get_if<commands::AddModelCommand>(&*command))
+                if (const commands::AddModel *addModelCommand = std::get_if<commands::AddModel>(&*command))
                 {
                     addModel(addModelCommand->filePath);
                 }
-                else if (const commands::AddInstanceCommand *addInstanceCommand = std::get_if<commands::AddInstanceCommand>(&*command))
+                else if (const commands::AddInstance *addInstanceCommand = std::get_if<commands::AddInstance>(&*command))
                 {
                     addModelInstance(addInstanceCommand->modelHandle);
                 }
-                else if (const commands::AddLightCommand *addLightCommand = std::get_if<commands::AddLightCommand>(&*command))
+                else if (const commands::AddLight *addLightCommand = std::get_if<commands::AddLight>(&*command))
                 {
-                    if(addLightCommand->lightType == commands::AddLightCommand::LightType::Point)
+                    if(addLightCommand->lightType == commands::AddLight::LightType::Point)
                         addPointLight({0.f, 0.f, 0.f}, 1.f, {1.f, 1.f, 1.f}, 5.f);
-                    else if(addLightCommand->lightType == commands::AddLightCommand::LightType::Directional)
+                    else if(addLightCommand->lightType == commands::AddLight::LightType::Directional)
                         addDirectionalLight({0.f, 1.f, 0.f}, 1.f, {1.f, 1.f, 1.f});
                 }
-                else if (const commands::LoadSceneCommand *loadSceneCommand = std::get_if<commands::LoadSceneCommand>(&*command))
+                else if (const commands::LoadScene *loadSceneCommand = std::get_if<commands::LoadScene>(&*command))
                 {
                     Handle lastHandle = 0;
                     if (loadScene(loadSceneCommand->filePath, sceneDescription, lastHandle))
@@ -92,7 +92,7 @@ namespace DE
                         this->sceneFilePath = loadSceneCommand->filePath;
                     }
                 }
-                else if (const commands::SaveSceneCommand *saveSceneCommand = std::get_if<commands::SaveSceneCommand>(&*command))
+                else if (const commands::SaveScene *saveSceneCommand = std::get_if<commands::SaveScene>(&*command))
                 {
                     if(this->sceneFilePath == "")
                     {
@@ -151,15 +151,6 @@ namespace DE
         sceneDescription.directionalLightDescriptions.emplace_back(handle, direction, intensity, color);
 
         return handle;
-    }
-
-    void Client::setSidebarWidthFraction(float fraction)
-    {
-        if (fraction >= 0.f && fraction < 1.f)
-        {
-            sidebarWidthFraction = fraction;
-            renderer.setViewportRect(makeViewportRect());
-        }
     }
 
     Rect Client::makeViewportRect() const

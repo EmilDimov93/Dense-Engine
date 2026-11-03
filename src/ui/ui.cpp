@@ -152,7 +152,7 @@ namespace DE
 
     std::optional<ImVec2> worldToScreen(const Camera &camera, const XMFLOAT3 &worldPos, ImVec2 viewportMin, ImVec2 viewportSize)
     {
-        const CameraConstants constants = camera.toConstants();
+        const gpu::CameraConstants constants = camera.toConstants();
 
         const XMVECTOR offset = XMLoadFloat3(&worldPos) - XMLoadFloat3(&camera.pos);
         const float x = XMVectorGetX(XMVector3Dot(offset, XMLoadFloat3(&constants.right)));
@@ -168,7 +168,7 @@ namespace DE
         return ImVec2{viewportMin.x + viewportSize.x * 0.5f + x * scale, viewportMin.y + viewportSize.y * 0.5f - y * scale};
     }
 
-    void UI::tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, FrameFeedback &frameFeedback, bool &vsync)
+    void UI::tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync)
     {
         bool isDragging = false;
 
@@ -187,7 +187,7 @@ namespace DE
         {
             std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle, {L"DE Scene", L"*.descene"});
             if (selectedPath)
-                command = commands::LoadSceneCommand(selectedPath->string());
+                command = commands::LoadScene(selectedPath->string());
         }
 
         const ImVec2 loadBtnSize = ImGui::GetItemRectSize();
@@ -196,7 +196,7 @@ namespace DE
 
         if (ImGui::Button("Save", ImVec2(0, 0)))
         {
-            command = commands::SaveSceneCommand();
+            command = commands::SaveScene();
         }
 
         const ImVec2 saveBtnSize = ImGui::GetItemRectSize();
@@ -255,7 +255,7 @@ namespace DE
         {
             std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle, {L"3D Models", L"*.obj"});
             if (selectedPath)
-                command = commands::AddModelCommand(selectedPath->string());
+                command = commands::AddModel(selectedPath->string());
         }
 
         ImGui::SeparatorText("Model Instances");
@@ -281,7 +281,7 @@ namespace DE
                 ImGui::PushID(modelIndex);
                 if (ImGui::Selectable(fileName.c_str()))
                 {
-                    command = commands::AddInstanceCommand(modelDescription.handle);
+                    command = commands::AddInstance(modelDescription.handle);
                 }
                 ImGui::PopID();
             }
@@ -352,7 +352,7 @@ namespace DE
             ImGui::PushID(0);
             if (ImGui::Selectable("Point"))
             {
-                command = commands::AddLightCommand(commands::AddLightCommand::LightType::Point);
+                command = commands::AddLight(commands::AddLight::LightType::Point);
             }
             ImGui::PopID();
 
@@ -361,7 +361,7 @@ namespace DE
             ImGui::PushID(1);
             if (ImGui::Selectable("Directional"))
             {
-                command = commands::AddLightCommand(commands::AddLightCommand::LightType::Point);
+                command = commands::AddLight(commands::AddLight::LightType::Directional);
             }
             ImGui::PopID();
 
@@ -574,7 +574,7 @@ namespace DE
         if (dolly == 0.f && truck == 0.f)
             return;
 
-        const CameraConstants constants = camera.toConstants();
+        const gpu::CameraConstants constants = camera.toConstants();
         const XMVECTOR forward = XMLoadFloat3(&constants.forward);
         const XMVECTOR right = XMLoadFloat3(&constants.right);
 
@@ -587,7 +587,7 @@ namespace DE
     void UI::updateShortcuts(std::optional<commands::Command> &command)
     {
         if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_S))
-            command = commands::SaveSceneCommand();
+            command = commands::SaveScene();
     }
 
     void UI::updateSidebarSize(float &sidebarWidthFraction, uint32_t sidebarWidth)

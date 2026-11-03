@@ -31,7 +31,7 @@ namespace DE
         uint32_t currentMaterialIndex = UINT32_MAX;
         uint32_t defaultMaterialIndex = UINT32_MAX;
 
-        std::vector<Vertex> currentMeshVertices;
+        std::vector<gpu::Vertex> currentMeshVertices;
         std::vector<uint32_t> currentMeshIndices;
 
         auto readRestOfLine = [](std::stringstream &ss) -> std::string

@@ -16,7 +16,7 @@ namespace DE
         if (vertexCount == 0 || indexCount == 0 || indexCount % 3 != 0)
             fatal("Invalid mesh upload data");
 
-        vertexBuffer = createUploadBuffer<Vertex>(device, meshUploadData.vertices);
+        vertexBuffer = createUploadBuffer<gpu::Vertex>(device, meshUploadData.vertices);
         
         indexBuffer = createUploadBuffer<uint32_t>(device, meshUploadData.indices);
 
@@ -25,7 +25,7 @@ namespace DE
         geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
         geometryDesc.Triangles.Transform3x4 = 0;
         geometryDesc.Triangles.VertexBuffer.StartAddress = vertexBuffer->GetGPUVirtualAddress();
-        geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
+        geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(gpu::Vertex);
         geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
         geometryDesc.Triangles.VertexCount = vertexCount;
         geometryDesc.Triangles.IndexBuffer = indexBuffer->GetGPUVirtualAddress();

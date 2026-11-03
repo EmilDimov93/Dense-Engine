@@ -22,7 +22,7 @@ namespace DE
     {
     public:
         std::vector<Mesh> meshes;
-        std::vector<Material> materials;
+        std::vector<gpu::Material> materials;
         std::vector<dxabstractions::Texture> textures;
     };
 }

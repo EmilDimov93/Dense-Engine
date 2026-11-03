@@ -13,7 +13,7 @@ namespace DE
 {
     struct MeshUploadData
     {
-        std::vector<Vertex> vertices;
+        std::vector<gpu::Vertex> vertices;
         std::vector<uint32_t> indices;
 
         uint32_t materialIndex;

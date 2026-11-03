@@ -5,20 +5,21 @@
 
 #include "core/dxcommon.hpp"
 
-#include <cstdint>
-
 namespace DE
 {
-    struct CameraConstants
+    namespace gpu
     {
-        XMFLOAT3 position;
-        float fov;
-        XMFLOAT3 right;
-        float orthoHalfHeight;
-        XMFLOAT3 up;
-        float padding;
-        XMFLOAT3 forward;
-    };
+        struct CameraConstants
+        {
+            XMFLOAT3 position;
+            float fov;
+            XMFLOAT3 right;
+            float orthoHalfHeight;
+            XMFLOAT3 up;
+            float padding;
+            XMFLOAT3 forward;
+        };
+    }
 
     struct Camera
     {
@@ -30,11 +31,11 @@ namespace DE
         float moveSpeed = 5.f;
         float lookSensitivityRadPerPixel = 0.01f;
 
-        CameraConstants toConstants() const
+        gpu::CameraConstants toConstants() const
         {
             const XMMATRIX rotation = XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z);
 
-            CameraConstants constants{.position = pos, .fov = fov, .orthoHalfHeight = 2.f, .padding = 0.f};
+            gpu::CameraConstants constants{.position = pos, .fov = fov, .orthoHalfHeight = 2.f, .padding = 0.f};
             XMStoreFloat3(&constants.right, XMVector3TransformNormal(XMVectorSet(1.f, 0.f, 0.f, 0.f), rotation));
             XMStoreFloat3(&constants.up, XMVector3TransformNormal(XMVectorSet(0.f, 1.f, 0.f, 0.f), rotation));
             XMStoreFloat3(&constants.forward, XMVector3TransformNormal(XMVectorSet(0.f, 0.f, 1.f, 0.f), rotation));

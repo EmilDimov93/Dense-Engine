@@ -29,7 +29,7 @@ namespace DE
         Renderer(HWND window, XMUINT2 windowSize);
         ~Renderer();
 
-        FrameFeedback tick(const UI &ui, const ClientState &clientState, const CameraConstants &cameraConstants, bool vsync);
+        gpu::FrameFeedback tick(const UI &ui, const gpu::ClientState &clientState, const gpu::CameraConstants &cameraConstants, bool vsync);
 
         void waitForGpu();
 

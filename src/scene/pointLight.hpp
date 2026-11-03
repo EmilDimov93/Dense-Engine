@@ -5,7 +5,7 @@
 
 #include "core/dxcommon.hpp"
 
-namespace DE
+namespace DE::gpu
 {
     struct PointLight
     {

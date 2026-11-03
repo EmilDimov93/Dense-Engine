@@ -69,14 +69,14 @@ struct LightCounts
 
 ConstantBuffer<LightCounts> lightCounts : register(b0);
 
-struct SceneSettings
+struct Environment
 {
     float3 clearColor;
     float exposure;
     float3 ambient;
 };
 
-ConstantBuffer<SceneSettings> sceneSettings : register(b1);
+ConstantBuffer<Environment> environment : register(b1);
 
 struct Camera
 {
@@ -182,13 +182,13 @@ void RayGen()
 
     color /= float(ssaaSamples);
 
-    output[pixel] = float4(linearToSRGB(toneMapACES(color * sceneSettings.exposure)), 1.f);
+    output[pixel] = float4(linearToSRGB(toneMapACES(color * environment.exposure)), 1.f);
 }
 
 [shader("miss")]
 void Miss(inout RayPayload payload)
 {
-    payload.color = float4(sceneSettings.clearColor, 1.f);
+    payload.color = float4(environment.clearColor, 1.f);
 }
 
 [shader("miss")]
@@ -238,7 +238,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         hitTriangleFrontSide = false;
     }
 
-    float3 reflectedColor = sceneSettings.clearColor;
+    float3 reflectedColor = environment.clearColor;
     if(payload.depth < MAX_REFLECTION_BOUNCES && !clientState.lowerQuality)
     {
         RayDesc reflectionRay;
@@ -247,7 +247,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         reflectionRay.TMin = 0.001f;
         reflectionRay.TMax = 1000.f;
 
-        RayPayload reflectionPayload = {float4(sceneSettings.clearColor, 1.f), payload.depth + 1};
+        RayPayload reflectionPayload = {float4(environment.clearColor, 1.f), payload.depth + 1};
         TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, reflectionRay, reflectionPayload);
         InterlockedAdd(frameFeedback[0].rayCount, 1);
 
@@ -314,7 +314,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
     }
 
     const float3 diffuseAlbedo = albedo.rgb * (1.f - hitMaterial.metallic);
-    const float3 diffuseColor = (1.f - fresnel) * diffuseAlbedo * (sceneSettings.ambient + totalDirectLighting);
+    const float3 diffuseColor = (1.f - fresnel) * diffuseAlbedo * (environment.ambient + totalDirectLighting);
 
     const float smoothness = 1.f - hitMaterial.roughness;
     const float3 specularColor = fresnel * reflectedColor * smoothness * smoothness;
@@ -334,7 +334,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         refractedRay.TMin = 0.001f;
         refractedRay.TMax = 1000.f;
 
-        RayPayload refractedPayload = {float4(sceneSettings.clearColor, 1.f), payload.depth + 1};
+        RayPayload refractedPayload = {float4(environment.clearColor, 1.f), payload.depth + 1};
         TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, refractedRay, refractedPayload);
         InterlockedAdd(frameFeedback[0].rayCount, 1);
 

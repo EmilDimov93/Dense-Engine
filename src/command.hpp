@@ -15,17 +15,17 @@
 
 namespace DE::commands
 {
-    struct AddModelCommand
+    struct AddModel
     {
         std::string filePath;
     };
 
-    struct AddInstanceCommand
+    struct AddInstance
     {
         Handle modelHandle;
     };
 
-    struct AddLightCommand
+    struct AddLight
     {
         enum LightType
         {
@@ -34,14 +34,14 @@ namespace DE::commands
         } lightType;
     };
 
-    struct LoadSceneCommand
+    struct LoadScene
     {
         std::string filePath;
     };
 
-    struct SaveSceneCommand
+    struct SaveScene
     {
     };
 
-    using Command = std::variant<AddModelCommand, AddInstanceCommand, AddLightCommand, LoadSceneCommand, SaveSceneCommand>;
+    using Command = std::variant<AddModel, AddInstance, AddLight, LoadScene, SaveScene>;
 }

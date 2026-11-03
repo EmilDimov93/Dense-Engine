@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-namespace DE
+namespace DE::gpu
 {
     struct FrameFeedback
     {

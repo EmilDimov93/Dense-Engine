@@ -35,7 +35,7 @@ namespace DE
 
         UI ui;
 
-        ClientState clientState;
+        gpu::ClientState clientState;
 
         Camera camera;
 
@@ -43,7 +43,7 @@ namespace DE
 
         std::string sceneFilePath;
 
-        FrameFeedback lastFrameFeedback;
+        gpu::FrameFeedback lastFrameFeedback;
 
         bool vsync = true;
 
@@ -54,8 +54,6 @@ namespace DE
 
         Handle addPointLight(XMFLOAT3 pos, float intensity, XMFLOAT3 color, float range);
         Handle addDirectionalLight(XMFLOAT3 direction, float intensity, XMFLOAT3 color);
-
-        void setSidebarWidthFraction(float fraction);
 
         Rect makeViewportRect() const;
     };

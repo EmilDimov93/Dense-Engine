@@ -23,12 +23,15 @@ namespace DE
         }
     };
 
-    struct Material
+    namespace gpu
     {
-        XMFLOAT4 diffuse;
-        float metallic;
-        float roughness;
-        float ior;
-        int32_t textureIndex;
-    };
+        struct Material
+        {
+            XMFLOAT4 diffuse;
+            float metallic;
+            float roughness;
+            float ior;
+            int32_t textureIndex;
+        };
+    }
 }

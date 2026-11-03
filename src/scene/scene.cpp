@@ -104,9 +104,9 @@ namespace DE
             buildTLAS();
         }
 
-        sceneSettings.clearColor = sceneDescription.clearColor;
-        sceneSettings.exposure = sceneDescription.exposure;
-        sceneSettings.ambient = sceneDescription.ambient;
+        environment.clearColor = sceneDescription.clearColor;
+        environment.exposure = sceneDescription.exposure;
+        environment.ambient = sceneDescription.ambient;
 
         pointLights.clear();
         pointLights.reserve(sceneDescription.pointLightDescriptions.size());
@@ -114,9 +114,9 @@ namespace DE
         {
             auto found = pointLights.find(pointLightDescription.handle);
             if (found == pointLights.end())
-                pointLights.emplace(pointLightDescription.handle, PointLight(pointLightDescription.pos, pointLightDescription.intensity, pointLightDescription.color, pointLightDescription.range));
+                pointLights.emplace(pointLightDescription.handle, gpu::PointLight(pointLightDescription.pos, pointLightDescription.intensity, pointLightDescription.color, pointLightDescription.range));
             else
-                found->second = PointLight(pointLightDescription.pos, pointLightDescription.intensity, pointLightDescription.color, pointLightDescription.range);
+                found->second = gpu::PointLight(pointLightDescription.pos, pointLightDescription.intensity, pointLightDescription.color, pointLightDescription.range);
         }
 
         directionalLights.clear();
@@ -125,9 +125,9 @@ namespace DE
         {
             auto found = directionalLights.find(directionalLightDescription.handle);
             if (found == directionalLights.end())
-                directionalLights.emplace(directionalLightDescription.handle, DirectionalLight(directionalLightDescription.direction, directionalLightDescription.intensity, directionalLightDescription.color));
+                directionalLights.emplace(directionalLightDescription.handle, gpu::DirectionalLight(directionalLightDescription.direction, directionalLightDescription.intensity, directionalLightDescription.color));
             else
-                found->second = DirectionalLight(directionalLightDescription.direction, directionalLightDescription.intensity, directionalLightDescription.color);
+                found->second = gpu::DirectionalLight(directionalLightDescription.direction, directionalLightDescription.intensity, directionalLightDescription.color);
         }
 
         uploadLights();
@@ -172,13 +172,13 @@ namespace DE
                 totalIndexCount += mesh.indexCount;
             }
 
-        vertexBuffer = createBuffer(device, sizeof(Vertex) * totalVertexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_FLAG_NONE);
+        vertexBuffer = createBuffer(device, sizeof(gpu::Vertex) * totalVertexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_FLAG_NONE);
         indexBuffer = createBuffer(device, sizeof(uint32_t) * totalIndexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_FLAG_NONE);
 
         for (const auto &[handle, model] : models)
             for (const Mesh &mesh : model.meshes)
             {
-                commandList->CopyBufferRegion(vertexBuffer, sizeof(Vertex) * mesh.vertexOffset, mesh.vertexBuffer, 0, sizeof(Vertex) * mesh.vertexCount);
+                commandList->CopyBufferRegion(vertexBuffer, sizeof(gpu::Vertex) * mesh.vertexOffset, mesh.vertexBuffer, 0, sizeof(gpu::Vertex) * mesh.vertexCount);
                 commandList->CopyBufferRegion(indexBuffer, sizeof(uint32_t) * mesh.indexOffset, mesh.indexBuffer, 0, sizeof(uint32_t) * mesh.indexCount);
             }
 
@@ -188,7 +188,7 @@ namespace DE
 
     void Scene::uploadMaterials()
     {
-        std::vector<Material> materials;
+        std::vector<gpu::Material> materials;
 
         const D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{
             .Format = dxabstractions::TEXTURE_FORMAT,
@@ -207,7 +207,7 @@ namespace DE
             }
 
             modelMaterialArrayOffsets[handle] = static_cast<uint32_t>(materials.size());
-            for (Material m : model.materials)
+            for (gpu::Material m : model.materials)
             {
                 if (m.textureIndex >= 0)
                     m.textureIndex = createMoreTextures ? m.textureIndex + textureOffset : -1;
@@ -223,13 +223,13 @@ namespace DE
             }
         }
 
-        materialBuffer = createUploadBuffer<Material>(device, materials);
+        materialBuffer = createUploadBuffer<gpu::Material>(device, materials);
     }
 
     void Scene::uploadLights()
     {
         // Point Lights
-        std::vector<PointLight> pointLightsVector;
+        std::vector<gpu::PointLight> pointLightsVector;
         pointLightsVector.reserve(pointLights.size());
 
         for (const auto &[handle, pointLight] : pointLights)
@@ -237,10 +237,10 @@ namespace DE
             pointLightsVector.push_back(pointLight);
         }
 
-        pointLightBuffer = createUploadBuffer<PointLight>(device, pointLightsVector);
+        pointLightBuffer = createUploadBuffer<gpu::PointLight>(device, pointLightsVector);
 
         // Directional Lights
-        std::vector<DirectionalLight> directionalLightsVector;
+        std::vector<gpu::DirectionalLight> directionalLightsVector;
         directionalLightsVector.reserve(directionalLights.size());
 
         for (const auto &[handle, directionalLight] : directionalLights)
@@ -248,6 +248,6 @@ namespace DE
             directionalLightsVector.push_back(directionalLight);
         }
 
-        directionalLightBuffer = createUploadBuffer<DirectionalLight>(device, directionalLightsVector);
+        directionalLightBuffer = createUploadBuffer<gpu::DirectionalLight>(device, directionalLightsVector);
     }
 }

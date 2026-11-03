@@ -13,6 +13,8 @@
 #include "pointLight.hpp"
 #include "directionalLight.hpp"
 
+#include "environment.hpp"
+
 #include "dxabstractions/descriptorHeap.hpp"
 
 #include <unordered_map>
@@ -20,24 +22,20 @@
 
 namespace DE
 {
-    struct TLASInstanceData
+    namespace gpu
     {
-        uint32_t vertexOffset;
-        uint32_t indexOffset;
-        uint32_t materialIndex;
-    };
+        struct TLASInstanceData
+        {
+            uint32_t vertexOffset;
+            uint32_t indexOffset;
+            uint32_t materialIndex;
+        };
 
-    struct LightCounts
-    {
-        uint32_t pointLightCount, directionalLightCount;
-    };
-
-    struct SceneSettings
-    {
-        XMFLOAT3 clearColor = {0.f, 0.f, 0.f};
-        float exposure = 1.f;
-        XMFLOAT3 ambient = {0.2f, 0.2f, 0.2f};
-    };
+        struct LightCounts
+        {
+            uint32_t pointLightCount, directionalLightCount;
+        };
+    }
 
     class Scene
     {
@@ -59,20 +57,20 @@ namespace DE
 
         void releaseUploadBuffers();
 
-        [[nodiscard]] LightCounts getLightCounts() const { return LightCounts{static_cast<uint32_t>(pointLights.size()), static_cast<uint32_t>(directionalLights.size())}; }
+        [[nodiscard]] gpu::LightCounts getLightCounts() const { return gpu::LightCounts{static_cast<uint32_t>(pointLights.size()), static_cast<uint32_t>(directionalLights.size())}; }
 
-        [[nodiscard]] SceneSettings getSceneSettings() const { return sceneSettings; }
+        [[nodiscard]] gpu::Environment getEnvironment() const { return environment; }
 
     private:
         std::unordered_map<Handle, Model> models;
         std::unordered_map<Handle, ModelInstance> modelInstances;
 
-        std::unordered_map<Handle, PointLight> pointLights;
-        std::unordered_map<Handle, DirectionalLight> directionalLights;
+        std::unordered_map<Handle, gpu::PointLight> pointLights;
+        std::unordered_map<Handle, gpu::DirectionalLight> directionalLights;
 
         std::unordered_map<Handle, uint32_t> modelMaterialArrayOffsets;
 
-        SceneSettings sceneSettings;
+        gpu::Environment environment;
 
         ID3D12ResourcePtr instanceBuffer;
 
