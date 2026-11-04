@@ -10,6 +10,7 @@
 #include "core/rect.hpp"
 #include "clientState.hpp"
 #include "camera.hpp"
+#include "scripter/scripter.hpp"
 
 #include <chrono>
 #include <string>
@@ -42,6 +43,9 @@ namespace DE
         std::string sceneFilePath;
 
         gpu::FrameFeedback lastFrameFeedback;
+
+        scripter::Script script;
+        bool isScriptRunning = false;
 
         bool vsync = true;
 

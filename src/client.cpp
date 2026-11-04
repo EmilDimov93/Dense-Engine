@@ -63,7 +63,7 @@ namespace DE
             }
 
             std::optional<commands::Command> command;
-            ui.tick(sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync);
+            ui.tick(sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync, script, isScriptRunning);
             if (command)
             {
                 if (const commands::AddModel *addModelCommand = std::get_if<commands::AddModel>(&*command))
@@ -107,6 +107,12 @@ namespace DE
                 {
                     renderer.setViewportRect(makeViewportRect(resizeSidebarCommand->sidebarWidthPx));
                 }
+            }
+
+            if (isScriptRunning)
+            {
+                hasSceneChanged = true;
+                isScriptRunning = scripter::execute(script, sceneDescription);
             }
 
             clientState.time = std::chrono::duration<float>(std::chrono::steady_clock::now() - startTime).count();

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/dxcommon.hpp"
+#include "core/rect.hpp"
 
 #include "scene/sceneDescription.hpp"
 
@@ -12,6 +13,8 @@
 
 #include "command.hpp"
 #include "frameFeedback.hpp"
+
+#include "scripter/scripter.hpp"
 
 #include "performanceMonitor.hpp"
 
@@ -28,7 +31,7 @@ namespace DE
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        void tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync);
+        void tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning);
         void draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const;
 
         void createBackBufferViews(const PerFrame<ID3D12ResourcePtr> &backBuffers);
@@ -43,6 +46,7 @@ namespace DE
         static constexpr float MAX_FOV = 179.f;
 
         static constexpr uint32_t OPTIMAL_SIDEBAR_WIDTH = 210;
+        static constexpr uint32_t OPTIMAL_SIDEBAR_SCRIPTOR_WIDTH = 314;
 
         ID3D12Device *device = nullptr;
 
@@ -64,5 +68,6 @@ namespace DE
         void updateCamera(Camera &camera);
         void updateShortcuts(std::optional<commands::Command> &command);
         bool updateSidebarSize();
+        void drawScripterWindow(scripter::Script &script, Rect windowRect);
     };
 }
