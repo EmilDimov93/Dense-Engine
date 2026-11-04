@@ -3,7 +3,6 @@ build/
 logo/
 early_dev/
 example/
-scripter.hpp
 git.ps1
 lines.ps1
 conventions.md

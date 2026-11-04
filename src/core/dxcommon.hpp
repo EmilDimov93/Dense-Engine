@@ -45,4 +45,12 @@ namespace DE
     MAKE_SMART_COM_POINTER(ID3D12StateObject);
     MAKE_SMART_COM_POINTER(ID3D12StateObjectProperties);
     MAKE_SMART_COM_POINTER(ID3DBlob);
+
+    inline XMFLOAT3 &operator+=(XMFLOAT3 &a, const XMFLOAT3 &b)
+    {
+        a.x += b.x;
+        a.y += b.y;
+        a.z += b.z;
+        return a;
+    }
 }

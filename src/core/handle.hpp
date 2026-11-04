@@ -9,6 +9,8 @@ namespace DE
 {
     using Handle = uint32_t;
 
+    static constexpr Handle INVALID_HANDLE = 0u;
+
     class HandleGenerator
     {
     public:
