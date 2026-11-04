@@ -67,6 +67,7 @@ namespace DE
         bool isDragging = false;
 
         const ImGuiIO &io = ImGui::GetIO();
+        const ImGuiStyle &style = ImGui::GetStyle();
 
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -97,7 +98,7 @@ namespace DE
 
         ImGui::SameLine();
 
-        const float topBarRemainingWidth = sidebarWidthPx - loadBtnSize.x - saveBtnSize.x - ImGui::GetStyle().ItemSpacing.x * 4;
+        const float topBarRemainingWidth = sidebarWidthPx - loadBtnSize.x - saveBtnSize.x - style.ItemSpacing.x * 4;
 
         performanceMonitor.draw(topBarRemainingWidth, io.Framerate, frameFeedback.rayCount);
 
@@ -124,7 +125,7 @@ namespace DE
             if (ImGui::Button(isScripterWindowOpen ? "Close" : "Open", ImVec2(-FLT_MIN, 0)))
             {
                 isScripterWindowOpen = !isScripterWindowOpen;
-                if(isScripterWindowOpen)
+                if (isScripterWindowOpen)
                     sidebarWidthPx = OPTIMAL_SIDEBAR_SCRIPTOR_WIDTH;
             }
             if (wasScriptWindowOpen)
@@ -234,7 +235,10 @@ namespace DE
             ImGui::EndPopup();
         }
 
-        ImGui::BeginTable("ModelInstancesTable", 2, ImGuiTableFlags_Borders);
+        const float tableRowHeight = ImGui::GetTextLineHeight() + style.CellPadding.y * 2.f;
+
+        float instancesTableHeight = tableRowHeight * static_cast<float>(std::min(static_cast<uint32_t>(sceneDescription.modelInstanceDescriptions.size()), 10u) + 1) + 2.f;
+        ImGui::BeginTable("ModelInstancesTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY, ImVec2(0.f, instancesTableHeight));
         ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableHeadersRow();
@@ -313,7 +317,7 @@ namespace DE
             ImGui::EndPopup();
         }
 
-        const float labelColumnWidth = ImGui::CalcTextSize("Intensity").x + ImGui::GetStyle().ItemSpacing.x;
+        const float labelColumnWidth = ImGui::CalcTextSize("Intensity").x + style.ItemSpacing.x;
 
         auto drawLabeledFloat = [&hasSceneChanged, labelColumnWidth](const char *name, float &value, float min, float max)
         {
@@ -327,7 +331,8 @@ namespace DE
             ImGui::PopID();
         };
 
-        ImGui::BeginTable("LightsTable", 2, ImGuiTableFlags_Borders);
+        float lightsTableHeight = tableRowHeight * static_cast<float>(std::min(static_cast<uint32_t>(sceneDescription.pointLightDescriptions.size() + sceneDescription.directionalLightDescriptions.size()), 10u) + 1) + 2.f;
+        ImGui::BeginTable("LightsTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY, ImVec2(0.f, lightsTableHeight));
         ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableHeadersRow();
@@ -536,6 +541,9 @@ namespace DE
     {
         if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_S))
             command = commands::SaveScene();
+
+        if (ImGui::IsKeyPressed(ImGuiKey_F2))
+            command = commands::Screenshot();
     }
 
     bool UI::updateSidebarSize()

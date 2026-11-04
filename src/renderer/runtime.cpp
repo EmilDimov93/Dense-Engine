@@ -8,9 +8,11 @@
 #include "core/dxcommon.hpp"
 #include "core/assertions.hpp"
 
+#include <fstream>
+
 namespace DE
 {
-    gpu::FrameFeedback Renderer::tick(const UI &ui, const gpu::ClientState &clientState, const gpu::CameraConstants &cameraConstants, bool vsync)
+    gpu::FrameFeedback Renderer::tick(const UI &ui, gpu::ClientState clientState, const gpu::CameraConstants &cameraConstants, bool vsync, bool screenshot)
     {
         const UINT frameIndex = swapChain.getCurrentBackBufferIndex();
 
@@ -35,6 +37,12 @@ namespace DE
         if (!scene.empty())
         {
             gpu::LightCounts lightCounts = scene.getLightCounts();
+
+            if (screenshot)
+            {
+                clientState.lowerQuality = false;
+                clientState.ssaaSamples = 16u;
+            }
 
             commands.list->SetComputeRootSignature(pipeline.globalRootSignature);
             commands.list->SetComputeRootDescriptorTable(dxwrap::RootParams::OutputTexture, descriptorHeap.gpuHandle(dxwrap::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX));
@@ -109,11 +117,62 @@ namespace DE
 
         ui.draw(commands.list, frameIndex);
 
-        commands.barrier(backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+        ID3D12ResourcePtr captureBuffer;
+        D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint{};
+
+        if (screenshot)
+        {
+            const D3D12_RESOURCE_DESC backBufferDesc = backBuffer->GetDesc();
+            UINT64 totalBytes = 0;
+            device.device->GetCopyableFootprints(&backBufferDesc, 0, 1, 0, &footprint, nullptr, nullptr, &totalBytes);
+            captureBuffer = createBuffer(device, totalBytes, D3D12_HEAP_TYPE_READBACK, D3D12_RESOURCE_STATE_COPY_DEST);
+
+            commands.barrier(backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+
+            D3D12_TEXTURE_COPY_LOCATION capDst{};
+            capDst.pResource = captureBuffer;
+            capDst.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+            capDst.PlacedFootprint = footprint;
+
+            D3D12_TEXTURE_COPY_LOCATION capSrc{};
+            capSrc.pResource = backBuffer;
+            capSrc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+            capSrc.SubresourceIndex = 0;
+
+            commands.list->CopyTextureRegion(&capDst, 0, 0, 0, &capSrc, nullptr);
+
+            commands.barrier(backBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PRESENT);
+        }
+        else
+        {
+            commands.barrier(backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+        }
 
         commands.execute(frameIndex);
-
         swapChain.present(vsync);
+
+        if (screenshot)
+        {
+            waitForGpu();
+
+            void *data = nullptr;
+            dxa(captureBuffer->Map(0, nullptr, &data), "Failed to map capture buffer");
+
+            std::ofstream file("output.ppm", std::ios::binary);
+            file << "P6\n"
+                 << swapChainSize.x << " " << swapChainSize.y << "\n255\n";
+
+            const uint8_t *base = static_cast<const uint8_t *>(data) + footprint.Offset;
+            for (UINT y = 0; y < swapChainSize.y; ++y)
+            {
+                const uint8_t *row = base + y * footprint.Footprint.RowPitch;
+                for (UINT x = 0; x < swapChainSize.x; ++x)
+                    file.write(reinterpret_cast<const char *>(row + x * 4), 3);
+            }
+
+            const D3D12_RANGE noWrite{0, 0};
+            captureBuffer->Unmap(0, &noWrite);
+        }
 
         return frameFeedback;
     }

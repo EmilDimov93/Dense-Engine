@@ -62,6 +62,8 @@ namespace DE
                 hasSceneChanged = false;
             }
 
+            bool requestedScreenshot = false;
+
             std::optional<commands::Command> command;
             ui.tick(sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync, script, isScriptRunning);
             if (command)
@@ -107,6 +109,10 @@ namespace DE
                 {
                     renderer.setViewportRect(makeViewportRect(resizeSidebarCommand->sidebarWidthPx));
                 }
+                else if (const commands::Screenshot *screenshotCommand = std::get_if<commands::Screenshot>(&*command))
+                {
+                    requestedScreenshot = true;
+                }
             }
 
             if (isScriptRunning)
@@ -117,7 +123,7 @@ namespace DE
 
             clientState.time = std::chrono::duration<float>(std::chrono::steady_clock::now() - startTime).count();
 
-            lastFrameFeedback = renderer.tick(ui, clientState, camera.toConstants(), vsync);
+            lastFrameFeedback = renderer.tick(ui, clientState, camera.toConstants(), vsync, requestedScreenshot);
         }
     }
 

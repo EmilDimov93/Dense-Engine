@@ -31,7 +31,8 @@ namespace DE
         auto withAlpha = [](ImVec4 c, float a)
         { c.w = a; return c; };
 
-        ImVec4 *colors = ImGui::GetStyle().Colors;
+        ImGuiStyle &style = ImGui::GetStyle();
+        ImVec4 *colors = style.Colors;
 
         colors[ImGuiCol_Button] = withAlpha(green, 0.12f);
         colors[ImGuiCol_ButtonHovered] = withAlpha(green, 0.35f);
@@ -51,6 +52,9 @@ namespace DE
         colors[ImGuiCol_ResizeGrip] = withAlpha(green, 0.08f);
         colors[ImGuiCol_ResizeGripHovered] = withAlpha(green, 0.28f);
         colors[ImGuiCol_ResizeGripActive] = withAlpha(green, 0.45f);
+
+        style.ScrollbarSize = 6.f;
+        style.ScrollbarRounding = 3.f;
 
         ImGui_ImplWin32_Init(windowHandle);
 
