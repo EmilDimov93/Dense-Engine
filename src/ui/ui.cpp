@@ -122,7 +122,7 @@ namespace DE
 
     void drawTableXYZHeader(const char *name)
     {
-        ImGui::BeginTable(name, 4, ImGuiTableFlags_Borders);
+        ImGui::BeginTable(name, 4, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX);
         ImGui::TableSetupColumn("");
         ImGui::TableSetupColumn("X");
         ImGui::TableSetupColumn("Y");
@@ -168,7 +168,7 @@ namespace DE
         return ImVec2{viewportMin.x + viewportSize.x * 0.5f + x * scale, viewportMin.y + viewportSize.y * 0.5f - y * scale};
     }
 
-    void UI::tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync)
+    void UI::tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync)
     {
         bool isDragging = false;
 
@@ -179,7 +179,7 @@ namespace DE
         ImGui::NewFrame();
 
         ImGui::SetNextWindowPos({0.f, 0.f});
-        ImGui::SetNextWindowSize({static_cast<float>(sidebarWidth), io.DisplaySize.y});
+        ImGui::SetNextWindowSize({static_cast<float>(sidebarWidthPx), io.DisplaySize.y});
 
         ImGui::Begin("Sidebar", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration);
 
@@ -203,7 +203,7 @@ namespace DE
 
         ImGui::SameLine();
 
-        const float topBarRemainingWidth = sidebarWidth - loadBtnSize.x - saveBtnSize.x - ImGui::GetStyle().ItemSpacing.x * 4;
+        const float topBarRemainingWidth = sidebarWidthPx - loadBtnSize.x - saveBtnSize.x - ImGui::GetStyle().ItemSpacing.x * 4;
 
         performanceMonitor.draw(topBarRemainingWidth, io.Framerate, frameFeedback.rayCount);
 
@@ -222,18 +222,20 @@ namespace DE
         ImGui::SameLine();
         ImGui::Checkbox("VSync", &vsync);
 
+        const float maxSliderWidth = std::min(ImGui::GetContentRegionAvail().x, 130.f);
+
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
-        const float minFov = 0.f;
-        const float maxFov = 180.f;
+        ImGui::SetNextItemWidth(maxSliderWidth);
         const char *fovFormat = (camera.fov < 0.01f) ? "ORTHO" : "%.f";
-        ImGui::SliderScalar("FOV", ImGuiDataType_Float, &camera.fov, &minFov, &maxFov, fovFormat);
+        ImGui::SliderScalar("FOV", ImGuiDataType_Float, &camera.fov, &MIN_FOV, &MAX_FOV, fovFormat);
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
+        ImGui::SetNextItemWidth(maxSliderWidth);
         const float minCameraSpeed = 0.f;
         const float maxCameraSpeed = 100.f;
-        ImGui::SliderScalar("Camera Speed", ImGuiDataType_Float, &camera.moveSpeed, &minCameraSpeed, &maxCameraSpeed, "%.1f", ImGuiSliderFlags_Logarithmic);
+        ImGui::SliderScalar("Move Speed", ImGuiDataType_Float, &camera.moveSpeed, &minCameraSpeed, &maxCameraSpeed, "%.1f", ImGuiSliderFlags_Logarithmic);
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
@@ -245,6 +247,7 @@ namespace DE
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
+        ImGui::SetNextItemWidth(maxSliderWidth);
         const float minExposure = 0.f;
         const float maxExposure = 100.f;
         hasSceneChanged |= ImGui::SliderScalar("Exposure", ImGuiDataType_Float, &sceneDescription.exposure, &minExposure, &maxExposure, "%.2f", ImGuiSliderFlags_Logarithmic);
@@ -482,7 +485,7 @@ namespace DE
             if (clientState.selectedSceneComponentHandle == static_cast<int32_t>(pointLight.handle))
             {
                 const ImVec2 displaySize = io.DisplaySize;
-                const ImVec2 viewportMin{static_cast<float>(sidebarWidth), 0.f};
+                const ImVec2 viewportMin{static_cast<float>(sidebarWidthPx), 0.f};
                 const ImVec2 viewportSize{displaySize.x - viewportMin.x, displaySize.y};
 
                 if (const auto lightScreenPos = worldToScreen(camera, pointLight.pos, viewportMin, viewportSize))
@@ -501,15 +504,18 @@ namespace DE
 
         updateCamera(camera);
         updateShortcuts(command);
-        updateSidebarSize(sidebarWidthFraction, sidebarWidth);
+        bool hasSidebarResized = updateSidebarSize();
+
+        if(hasSidebarResized)
+            command = commands::ResizeSidebar(sidebarWidthPx);
 
         ImGui::End();
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
             clientState.selectedSceneComponentHandle = -1;
-            if (!io.WantCaptureMouse && ImGui::GetMousePos().x > sidebarWidth)
-                clientState.clickedPixel = XMINT2{static_cast<int32_t>(ImGui::GetMousePos().x - sidebarWidth), static_cast<int32_t>(ImGui::GetMousePos().y)};
+            if (!io.WantCaptureMouse && ImGui::GetMousePos().x > sidebarWidthPx)
+                clientState.clickedPixel = XMINT2{static_cast<int32_t>(ImGui::GetMousePos().x - sidebarWidthPx), static_cast<int32_t>(ImGui::GetMousePos().y)};
         }
         else
         {
@@ -554,6 +560,10 @@ namespace DE
         if (io.WantTextInput || io.KeyCtrl)
             return;
 
+        constexpr float fovStepDegPerWheelNotch = 5.f;
+        if (!io.WantCaptureMouse && io.MouseWheel != 0.f)
+            camera.fov = std::clamp(camera.fov - io.MouseWheel * fovStepDegPerWheelNotch, MIN_FOV, MAX_FOV);
+
         const float dolly = static_cast<float>(ImGui::IsKeyDown(ImGuiKey_W) - ImGui::IsKeyDown(ImGuiKey_S));
         const float truck = static_cast<float>(ImGui::IsKeyDown(ImGuiKey_D) - ImGui::IsKeyDown(ImGuiKey_A));
         float pan = 0.f;
@@ -590,16 +600,16 @@ namespace DE
             command = commands::SaveScene();
     }
 
-    void UI::updateSidebarSize(float &sidebarWidthFraction, uint32_t sidebarWidth)
+    bool UI::updateSidebarSize()
     {
         if (ImGui::IsAnyItemActive())
-            return;
+            return false;
 
         const ImGuiIO &io = ImGui::GetIO();
 
         float cursorX = io.MousePos.x;
 
-        const bool isHoveringEdge = std::abs(cursorX - static_cast<float>(sidebarWidth)) < 5.f;
+        const bool isHoveringEdge = std::abs(cursorX - static_cast<float>(sidebarWidthPx)) < 5.f;
 
         if (isHoveringEdge && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             isResizingSidebar = true;
@@ -611,8 +621,15 @@ namespace DE
 
         if (isResizingSidebar)
         {
-            sidebarWidthFraction = cursorX / io.DisplaySize.x;
-            sidebarWidthFraction = std::clamp(sidebarWidthFraction, 0.1f, 0.5f);
+            const uint32_t oldSidebarWidthPx = sidebarWidthPx;
+            sidebarWidthPx = static_cast<uint32_t>(std::clamp(cursorX, 1.f, 0.7f * io.DisplaySize.x));
+            if(std::abs(static_cast<int32_t>(cursorX) - static_cast<int32_t>(OPTIMAL_SIDEBAR_WIDTH)) <= 10)
+                sidebarWidthPx = OPTIMAL_SIDEBAR_WIDTH;
+
+            if(sidebarWidthPx != oldSidebarWidthPx)
+                return true;
         }
+
+        return false;
     }
 }

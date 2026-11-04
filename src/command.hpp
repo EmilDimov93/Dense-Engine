@@ -43,5 +43,10 @@ namespace DE::commands
     {
     };
 
-    using Command = std::variant<AddModel, AddInstance, AddLight, LoadScene, SaveScene>;
+    struct ResizeSidebar
+    {
+        uint32_t sidebarWidthPx;
+    };
+
+    using Command = std::variant<AddModel, AddInstance, AddLight, LoadScene, SaveScene, ResizeSidebar>;
 }

@@ -15,7 +15,7 @@ namespace DE
                                                 renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight())),
                                                 ui(window.getHandle(), renderer.getDevice(), renderer.getQueue(), renderer.getBackBuffers())
     {
-        renderer.setViewportRect(makeViewportRect());
+        renderer.setViewportRect(makeViewportRect(ui.getSidebarWidthPx()));
 
         // Default light (sun)
         addDirectionalLight({0.f, 1.f, 0.f}, 1.f, {1.f, 1.f, 1.f});
@@ -52,7 +52,7 @@ namespace DE
             {
                 renderer.resizeSwapChain(windowSize);
                 ui.createBackBufferViews(renderer.getBackBuffers());
-                renderer.setViewportRect(makeViewportRect());
+                renderer.setViewportRect(makeViewportRect(ui.getSidebarWidthPx()));
             }
 
             if (hasSceneChanged)
@@ -63,7 +63,7 @@ namespace DE
             }
 
             std::optional<commands::Command> command;
-            ui.tick(makeViewportRect().start.x, sidebarWidthFraction, sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync);
+            ui.tick(sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync);
             if (command)
             {
                 if (const commands::AddModel *addModelCommand = std::get_if<commands::AddModel>(&*command))
@@ -76,9 +76,9 @@ namespace DE
                 }
                 else if (const commands::AddLight *addLightCommand = std::get_if<commands::AddLight>(&*command))
                 {
-                    if(addLightCommand->lightType == commands::AddLight::LightType::Point)
+                    if (addLightCommand->lightType == commands::AddLight::LightType::Point)
                         addPointLight({0.f, 0.f, 0.f}, 1.f, {1.f, 1.f, 1.f}, 5.f);
-                    else if(addLightCommand->lightType == commands::AddLight::LightType::Directional)
+                    else if (addLightCommand->lightType == commands::AddLight::LightType::Directional)
                         addDirectionalLight({0.f, 1.f, 0.f}, 1.f, {1.f, 1.f, 1.f});
                 }
                 else if (const commands::LoadScene *loadSceneCommand = std::get_if<commands::LoadScene>(&*command))
@@ -94,14 +94,18 @@ namespace DE
                 }
                 else if (const commands::SaveScene *saveSceneCommand = std::get_if<commands::SaveScene>(&*command))
                 {
-                    if(this->sceneFilePath == "")
+                    if (this->sceneFilePath == "")
                     {
                         std::optional<std::filesystem::path> selectedPath = saveFileDialog(window.getHandle());
-                        if(selectedPath)
+                        if (selectedPath)
                             this->sceneFilePath = selectedPath->string();
                     }
 
                     saveScene(this->sceneFilePath, sceneDescription);
+                }
+                else if (const commands::ResizeSidebar *resizeSidebarCommand = std::get_if<commands::ResizeSidebar>(&*command))
+                {
+                    renderer.setViewportRect(makeViewportRect(resizeSidebarCommand->sidebarWidthPx));
                 }
             }
 
@@ -153,11 +157,10 @@ namespace DE
         return handle;
     }
 
-    Rect Client::makeViewportRect() const
+    Rect Client::makeViewportRect(uint32_t sidebarWidthPx) const
     {
-        XMUINT2 swapChainSize = renderer.getSwapChainSize();
-
-        return Rect{{static_cast<uint32_t>(sidebarWidthFraction * swapChainSize.x), 0},
-                    {static_cast<uint32_t>(swapChainSize.x - sidebarWidthFraction * swapChainSize.x), swapChainSize.y}};
+        const XMUINT2 size = renderer.getSwapChainSize();
+        sidebarWidthPx = std::min(sidebarWidthPx, size.x - 1);
+        return Rect{{sidebarWidthPx, 0}, {size.x - sidebarWidthPx, size.y}};
     }
 }

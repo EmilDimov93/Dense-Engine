@@ -28,14 +28,21 @@ namespace DE
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        void tick(uint32_t sidebarWidth, float &sidebarWidthFraction, SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync);
+        void tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync);
         void draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const;
 
         void createBackBufferViews(const PerFrame<ID3D12ResourcePtr> &backBuffers);
         D3D12_CPU_DESCRIPTOR_HANDLE backBufferView(UINT frameIndex) const;
 
+        uint32_t getSidebarWidthPx() const { return sidebarWidthPx; }
+
     private:
         static constexpr UINT MAX_TEXTURES = 64;
+
+        static constexpr float MIN_FOV = 0.f;
+        static constexpr float MAX_FOV = 179.f;
+
+        static constexpr uint32_t OPTIMAL_SIDEBAR_WIDTH = 210;
 
         ID3D12Device *device = nullptr;
 
@@ -48,12 +55,14 @@ namespace DE
         ID3D12DescriptorHeapPtr backBufferViewHeap;
         UINT backBufferViewSize = 0;
 
+        uint32_t sidebarWidthPx = OPTIMAL_SIDEBAR_WIDTH;
+
         bool isResizingSidebar = false;
 
         PerformanceMonitor performanceMonitor;
 
         void updateCamera(Camera &camera);
         void updateShortcuts(std::optional<commands::Command> &command);
-        void updateSidebarSize(float &sidebarWidthFraction, uint32_t sidebarWidth);
+        bool updateSidebarSize();
     };
 }

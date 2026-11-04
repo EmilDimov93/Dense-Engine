@@ -39,8 +39,6 @@ namespace DE
 
         Camera camera;
 
-        float sidebarWidthFraction = 0.25f;
-
         std::string sceneFilePath;
 
         gpu::FrameFeedback lastFrameFeedback;
@@ -55,6 +53,6 @@ namespace DE
         Handle addPointLight(XMFLOAT3 pos, float intensity, XMFLOAT3 color, float range);
         Handle addDirectionalLight(XMFLOAT3 direction, float intensity, XMFLOAT3 color);
 
-        Rect makeViewportRect() const;
+        Rect makeViewportRect(uint32_t sidebarWidthPx) const;
     };
 }
