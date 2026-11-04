@@ -8,7 +8,17 @@ A DirectX 12 rendering engine for real-time ray tracing.
 
 **⚠️ Note: Dense Engine is still in early development**
 
-<img width="1280" height="743" alt="Example" src="https://github.com/user-attachments/assets/719a8501-4790-4f63-93f7-c386f732350b" />
+<p align="center">
+  <img width="100%" alt="Preview - Forest" src="https://github.com/user-attachments/assets/082c1a90-42cf-4651-9646-09132ebdbbe1" />
+  <br>
+  <sub>Preview - Forest</sub>
+</p>
+
+<p align="center">
+  <img width="100%" alt="Preview - Tunnel" src="https://github.com/user-attachments/assets/f35e41e7-0d09-49c1-beb9-0efdb90669af" />
+  <br>
+  <sub>Preview - Tunnel</sub>
+</p>
 
 ## Building & Running
 

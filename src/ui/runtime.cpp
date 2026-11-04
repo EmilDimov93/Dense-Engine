@@ -238,49 +238,51 @@ namespace DE
         const float tableRowHeight = ImGui::GetTextLineHeight() + style.CellPadding.y * 2.f;
 
         float instancesTableHeight = tableRowHeight * static_cast<float>(std::min(static_cast<uint32_t>(sceneDescription.modelInstanceDescriptions.size()), 10u) + 1) + 2.f;
-        ImGui::BeginTable("ModelInstancesTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY, ImVec2(0.f, instancesTableHeight));
-        ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableHeadersRow();
-        for (uint32_t rowIndex = 0; rowIndex < sceneDescription.modelInstanceDescriptions.size(); rowIndex++)
+        if (ImGui::BeginTable("ModelInstancesTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY, ImVec2(0.f, instancesTableHeight)))
         {
-            ModelInstanceDescription &modelInstance = sceneDescription.modelInstanceDescriptions[rowIndex];
-
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::PushID(rowIndex);
-            if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(modelInstance.handle), ImGuiSelectableFlags_SpanAllColumns))
+            ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableHeadersRow();
+            for (uint32_t rowIndex = 0; rowIndex < sceneDescription.modelInstanceDescriptions.size(); rowIndex++)
             {
-                clientState.selectedSceneComponentHandle = static_cast<int32_t>(modelInstance.handle);
-                ImGui::OpenPopup("InstanceDetailsPopup");
-            }
+                ModelInstanceDescription &modelInstance = sceneDescription.modelInstanceDescriptions[rowIndex];
 
-            if (ImGui::BeginPopup("InstanceDetailsPopup"))
-            {
-                drawTableXYZHeader("TransformTable");
-
-                drawTableXYZRow("Position", modelInstance.transform.pos.x, modelInstance.transform.pos.y, modelInstance.transform.pos.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
-                drawTableXYZRow("Rotation", modelInstance.transform.rot.x, modelInstance.transform.rot.y, modelInstance.transform.rot.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
-                drawTableXYZRow("Scale", modelInstance.transform.scale.x, modelInstance.transform.scale.y, modelInstance.transform.scale.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
-
-                ImGui::EndTable();
-
-                ImGui::EndPopup();
-            }
-
-            ImGui::PopID();
-
-            ImGui::TableNextColumn();
-            for (const ModelDescription &modelDescription : sceneDescription.modelDescriptions)
-            {
-                if (modelInstance.modelHandle == modelDescription.handle)
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::PushID(rowIndex);
+                if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(modelInstance.handle), ImGuiSelectableFlags_SpanAllColumns))
                 {
-                    ImGui::TextUnformatted(std::filesystem::path(modelDescription.filePath).filename().string().c_str());
-                    break;
+                    clientState.selectedSceneComponentHandle = static_cast<int32_t>(modelInstance.handle);
+                    ImGui::OpenPopup("InstanceDetailsPopup");
+                }
+
+                if (ImGui::BeginPopup("InstanceDetailsPopup"))
+                {
+                    drawTableXYZHeader("TransformTable");
+
+                    drawTableXYZRow("Position", modelInstance.transform.pos.x, modelInstance.transform.pos.y, modelInstance.transform.pos.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
+                    drawTableXYZRow("Rotation", modelInstance.transform.rot.x, modelInstance.transform.rot.y, modelInstance.transform.rot.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
+                    drawTableXYZRow("Scale", modelInstance.transform.scale.x, modelInstance.transform.scale.y, modelInstance.transform.scale.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
+
+                    ImGui::EndTable();
+
+                    ImGui::EndPopup();
+                }
+
+                ImGui::PopID();
+
+                ImGui::TableNextColumn();
+                for (const ModelDescription &modelDescription : sceneDescription.modelDescriptions)
+                {
+                    if (modelInstance.modelHandle == modelDescription.handle)
+                    {
+                        ImGui::TextUnformatted(std::filesystem::path(modelDescription.filePath).filename().string().c_str());
+                        break;
+                    }
                 }
             }
+            ImGui::EndTable();
         }
-        ImGui::EndTable();
 
         ImGui::SeparatorText("Lights");
 
@@ -331,122 +333,124 @@ namespace DE
             ImGui::PopID();
         };
 
-        float lightsTableHeight = tableRowHeight * static_cast<float>(std::min(static_cast<uint32_t>(sceneDescription.pointLightDescriptions.size() + sceneDescription.directionalLightDescriptions.size()), 10u) + 1) + 2.f;
-        ImGui::BeginTable("LightsTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY, ImVec2(0.f, lightsTableHeight));
-        ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableHeadersRow();
-
+        float lightsTableHeight = tableRowHeight * static_cast<float>(std::min(static_cast<uint32_t>(sceneDescription.pointLightDescriptions.size() + sceneDescription.directionalLightDescriptions.size() + 1), 10u) + 1) + 2.f;
+        if (ImGui::BeginTable("LightsTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY, ImVec2(0.f, lightsTableHeight)))
         {
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::PushID("Ambient");
-            const bool isAmbientPopupOpen = ImGui::IsPopupOpen("AmbientLightDetailsPopup");
-            if (ImGui::Selectable("-", isAmbientPopupOpen, ImGuiSelectableFlags_SpanAllColumns))
-                ImGui::OpenPopup("AmbientLightDetailsPopup");
+            ImGui::TableSetupColumn("Handle", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableHeadersRow();
 
-            if (ImGui::BeginPopup("AmbientLightDetailsPopup"))
             {
-                drawTableXYZHeader("ColorTable");
-                drawTableXYZRow("Color", sceneDescription.ambient.x, sceneDescription.ambient.y, sceneDescription.ambient.z, 0.f, 1.f, hasSceneChanged, isDragging);
-                ImGui::EndTable();
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::PushID("Ambient");
+                const bool isAmbientPopupOpen = ImGui::IsPopupOpen("AmbientLightDetailsPopup");
+                if (ImGui::Selectable("-", isAmbientPopupOpen, ImGuiSelectableFlags_SpanAllColumns))
+                    ImGui::OpenPopup("AmbientLightDetailsPopup");
 
-                ImGui::EndPopup();
-            }
-
-            ImGui::PopID();
-
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted("ambient");
-        }
-
-        for (uint32_t rowIndex = 0; rowIndex < sceneDescription.directionalLightDescriptions.size(); rowIndex++)
-        {
-            DirectionalLightDescription &directionalLight = sceneDescription.directionalLightDescriptions[rowIndex];
-
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::PushID(rowIndex);
-            if (ImGui::Selectable(std::to_string(directionalLight.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(directionalLight.handle), ImGuiSelectableFlags_SpanAllColumns))
-            {
-                clientState.selectedSceneComponentHandle = static_cast<int32_t>(directionalLight.handle);
-                ImGui::OpenPopup("DirectionalLightDetailsPopup");
-            }
-
-            if (ImGui::BeginPopup("DirectionalLightDetailsPopup"))
-            {
-                drawTableXYZHeader("DirectionAndColorTable");
-
-                drawTableXYZRow("Direction", directionalLight.direction.x, directionalLight.direction.y, directionalLight.direction.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
-                drawTableXYZRow("Color", directionalLight.color.x, directionalLight.color.y, directionalLight.color.z, 0.f, 1.f, hasSceneChanged, isDragging);
-                if (hasSceneChanged)
+                if (ImGui::BeginPopup("AmbientLightDetailsPopup"))
                 {
-                    const float length = std::sqrt(directionalLight.direction.x * directionalLight.direction.x + directionalLight.direction.y * directionalLight.direction.y + directionalLight.direction.z * directionalLight.direction.z);
-                    directionalLight.direction.x /= length;
-                    directionalLight.direction.y /= length;
-                    directionalLight.direction.z /= length;
+                    drawTableXYZHeader("ColorTable");
+                    drawTableXYZRow("Color", sceneDescription.ambient.x, sceneDescription.ambient.y, sceneDescription.ambient.z, 0.f, 1.f, hasSceneChanged, isDragging);
+                    ImGui::EndTable();
+
+                    ImGui::EndPopup();
                 }
 
-                ImGui::EndTable();
+                ImGui::PopID();
 
-                drawLabeledFloat("Intensity", directionalLight.intensity, 0.f, FLT_MAX);
-
-                ImGui::EndPopup();
+                ImGui::TableNextColumn();
+                ImGui::TextUnformatted("ambient");
             }
 
-            ImGui::PopID();
-
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted("directional");
-        }
-
-        for (uint32_t rowIndex = 0; rowIndex < sceneDescription.pointLightDescriptions.size(); rowIndex++)
-        {
-            PointLightDescription &pointLight = sceneDescription.pointLightDescriptions[rowIndex];
-
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::PushID(rowIndex);
-            if (ImGui::Selectable(std::to_string(pointLight.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(pointLight.handle), ImGuiSelectableFlags_SpanAllColumns))
+            for (uint32_t rowIndex = 0; rowIndex < sceneDescription.directionalLightDescriptions.size(); rowIndex++)
             {
-                clientState.selectedSceneComponentHandle = static_cast<int32_t>(pointLight.handle);
-                ImGui::OpenPopup("PointLightDetailsPopup");
-            }
+                DirectionalLightDescription &directionalLight = sceneDescription.directionalLightDescriptions[rowIndex];
 
-            if (ImGui::BeginPopup("PointLightDetailsPopup"))
-            {
-                drawTableXYZHeader("PositionAndColorTable");
-
-                drawTableXYZRow("Position", pointLight.pos.x, pointLight.pos.y, pointLight.pos.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
-                drawTableXYZRow("Color", pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.f, 1.f, hasSceneChanged, isDragging);
-
-                ImGui::EndTable();
-
-                drawLabeledFloat("Intensity", pointLight.intensity, 0.f, FLT_MAX);
-                drawLabeledFloat("Range", pointLight.range, 0.f, FLT_MAX);
-
-                ImGui::EndPopup();
-            }
-
-            if (clientState.selectedSceneComponentHandle == static_cast<int32_t>(pointLight.handle))
-            {
-                const ImVec2 displaySize = io.DisplaySize;
-                const ImVec2 viewportMin{static_cast<float>(sidebarWidthPx), 0.f};
-                const ImVec2 viewportSize{displaySize.x - viewportMin.x, displaySize.y};
-
-                if (const auto lightScreenPos = worldToScreen(camera, pointLight.pos, viewportMin, viewportSize))
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::PushID(rowIndex);
+                if (ImGui::Selectable(std::to_string(directionalLight.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(directionalLight.handle), ImGuiSelectableFlags_SpanAllColumns))
                 {
-                    const ImVec4 markerColor{pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.8f};
-                    ImGui::GetBackgroundDrawList()->AddCircleFilled(*lightScreenPos, 5.f, ImGui::ColorConvertFloat4ToU32(markerColor));
+                    clientState.selectedSceneComponentHandle = static_cast<int32_t>(directionalLight.handle);
+                    ImGui::OpenPopup("DirectionalLightDetailsPopup");
                 }
+
+                if (ImGui::BeginPopup("DirectionalLightDetailsPopup"))
+                {
+                    drawTableXYZHeader("DirectionAndColorTable");
+
+                    drawTableXYZRow("Direction", directionalLight.direction.x, directionalLight.direction.y, directionalLight.direction.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
+                    drawTableXYZRow("Color", directionalLight.color.x, directionalLight.color.y, directionalLight.color.z, 0.f, 1.f, hasSceneChanged, isDragging);
+                    if (hasSceneChanged)
+                    {
+                        const float length = std::sqrt(directionalLight.direction.x * directionalLight.direction.x + directionalLight.direction.y * directionalLight.direction.y + directionalLight.direction.z * directionalLight.direction.z);
+                        directionalLight.direction.x /= length;
+                        directionalLight.direction.y /= length;
+                        directionalLight.direction.z /= length;
+                    }
+
+                    ImGui::EndTable();
+
+                    drawLabeledFloat("Intensity", directionalLight.intensity, 0.f, FLT_MAX);
+
+                    ImGui::EndPopup();
+                }
+
+                ImGui::PopID();
+
+                ImGui::TableNextColumn();
+                ImGui::TextUnformatted("directional");
             }
 
-            ImGui::PopID();
+            for (uint32_t rowIndex = 0; rowIndex < sceneDescription.pointLightDescriptions.size(); rowIndex++)
+            {
+                PointLightDescription &pointLight = sceneDescription.pointLightDescriptions[rowIndex];
 
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted("point");
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::PushID(rowIndex);
+                if (ImGui::Selectable(std::to_string(pointLight.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(pointLight.handle), ImGuiSelectableFlags_SpanAllColumns))
+                {
+                    clientState.selectedSceneComponentHandle = static_cast<int32_t>(pointLight.handle);
+                    ImGui::OpenPopup("PointLightDetailsPopup");
+                }
+
+                if (ImGui::BeginPopup("PointLightDetailsPopup"))
+                {
+                    drawTableXYZHeader("PositionAndColorTable");
+
+                    drawTableXYZRow("Position", pointLight.pos.x, pointLight.pos.y, pointLight.pos.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
+                    drawTableXYZRow("Color", pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.f, 1.f, hasSceneChanged, isDragging);
+
+                    ImGui::EndTable();
+
+                    drawLabeledFloat("Intensity", pointLight.intensity, 0.f, FLT_MAX);
+                    drawLabeledFloat("Range", pointLight.range, 0.f, FLT_MAX);
+
+                    ImGui::EndPopup();
+                }
+
+                if (clientState.selectedSceneComponentHandle == static_cast<int32_t>(pointLight.handle))
+                {
+                    const ImVec2 displaySize = io.DisplaySize;
+                    const ImVec2 viewportMin{static_cast<float>(sidebarWidthPx), 0.f};
+                    const ImVec2 viewportSize{displaySize.x - viewportMin.x, displaySize.y};
+
+                    if (const auto lightScreenPos = worldToScreen(camera, pointLight.pos, viewportMin, viewportSize))
+                    {
+                        const ImVec4 markerColor{pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.8f};
+                        ImGui::GetBackgroundDrawList()->AddCircleFilled(*lightScreenPos, 5.f, ImGui::ColorConvertFloat4ToU32(markerColor));
+                    }
+                }
+
+                ImGui::PopID();
+
+                ImGui::TableNextColumn();
+                ImGui::TextUnformatted("point");
+            }
+            ImGui::EndTable();
         }
-        ImGui::EndTable();
 
         updateCamera(camera);
         updateShortcuts(command);
