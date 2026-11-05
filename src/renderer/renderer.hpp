@@ -44,7 +44,6 @@ namespace DE
 
         ID3D12Device5 *getDevice() const { return device; }
         ID3D12CommandQueue *getQueue() const { return commands.queue; }
-        const PerFrame<ID3D12ResourcePtr> &getBackBuffers() const { return swapChain.backBuffers; }
 
     private:
         dxwrap::Device device;

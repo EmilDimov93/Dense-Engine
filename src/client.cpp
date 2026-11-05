@@ -13,7 +13,7 @@ namespace DE
 {
     Client::Client(const char *sceneFilePath) : window(L"Dense Engine"),
                                                 renderer(window.getHandle(), XMUINT2(window.getWidth(), window.getHeight())),
-                                                ui(window.getHandle(), renderer.getDevice(), renderer.getQueue(), renderer.getBackBuffers())
+                                                ui(window.getHandle(), renderer.getDevice(), renderer.getQueue())
     {
         renderer.setViewportRect(makeViewportRect(ui.getSidebarWidthPx()));
 
@@ -51,7 +51,6 @@ namespace DE
             if (swapChainSize.x != windowSize.x || swapChainSize.y != windowSize.y)
             {
                 renderer.resizeSwapChain(windowSize);
-                ui.createBackBufferViews(renderer.getBackBuffers());
                 renderer.setViewportRect(makeViewportRect(ui.getSidebarWidthPx()));
             }
 

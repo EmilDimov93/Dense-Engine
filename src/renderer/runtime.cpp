@@ -83,7 +83,7 @@ namespace DE
 
         commands.barrier(backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-        const D3D12_CPU_DESCRIPTOR_HANDLE backBufferView = ui.backBufferView(frameIndex);
+        const D3D12_CPU_DESCRIPTOR_HANDLE backBufferView = swapChain.backBufferView(frameIndex);
 
         const FLOAT clearColor[4] = {environment.clearColor.x, environment.clearColor.y, environment.clearColor.z, 1.f};
         commands.list->ClearRenderTargetView(backBufferView, clearColor, 0, nullptr);
@@ -115,7 +115,7 @@ namespace DE
         commands.barrier(output, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         commands.barrier(backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-        ui.draw(commands.list, frameIndex);
+        ui.draw(commands.list, backBufferView);
 
         ID3D12ResourcePtr captureBuffer;
         D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint{};
@@ -207,7 +207,7 @@ namespace DE
     {
         commands.waitIdle();
 
-        swapChain.resize(size);
+        swapChain.resize(size, device);
     }
 
     void Renderer::setViewportRect(Rect rect)

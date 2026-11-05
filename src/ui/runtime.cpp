@@ -490,9 +490,8 @@ namespace DE
         clientState.lowerQuality = isDragging;
     }
 
-    void UI::draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const
+    void UI::draw(ID3D12GraphicsCommandList *list, D3D12_CPU_DESCRIPTOR_HANDLE target) const
     {
-        const D3D12_CPU_DESCRIPTOR_HANDLE target = backBufferView(frameIndex);
         list->OMSetRenderTargets(1, &target, FALSE, nullptr);
 
         ID3D12DescriptorHeap *descriptorHeaps[] = {textureHeap};

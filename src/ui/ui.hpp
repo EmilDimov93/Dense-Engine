@@ -26,16 +26,13 @@ namespace DE
     class UI
     {
     public:
-        UI(HWND windowHandle, ID3D12Device *device, ID3D12CommandQueue *queue, const PerFrame<ID3D12ResourcePtr> &backBuffers);
+        UI(HWND windowHandle, ID3D12Device *device, ID3D12CommandQueue *queue);
         ~UI();
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
         void tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning);
-        void draw(ID3D12GraphicsCommandList *list, UINT frameIndex) const;
-
-        void createBackBufferViews(const PerFrame<ID3D12ResourcePtr> &backBuffers);
-        D3D12_CPU_DESCRIPTOR_HANDLE backBufferView(UINT frameIndex) const;
+        void draw(ID3D12GraphicsCommandList *list, D3D12_CPU_DESCRIPTOR_HANDLE target) const;
 
         uint32_t getSidebarWidthPx() const { return sidebarWidthPx; }
 
@@ -55,9 +52,6 @@ namespace DE
         ID3D12DescriptorHeapPtr textureHeap;
         UINT textureDescriptorSize = 0;
         std::vector<UINT> freeTextureSlots;
-
-        ID3D12DescriptorHeapPtr backBufferViewHeap;
-        UINT backBufferViewSize = 0;
 
         uint32_t sidebarWidthPx = OPTIMAL_SIDEBAR_WIDTH;
 

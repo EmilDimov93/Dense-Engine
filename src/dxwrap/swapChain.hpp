@@ -6,16 +6,20 @@
 #include "core/dxcommon.hpp"
 #include "core/assertions.hpp"
 
+#include "device.hpp"
+
 namespace DE::dxwrap
 {
     class SwapChain
     {
     public:
         PerFrame<ID3D12ResourcePtr> backBuffers;
+        ID3D12DescriptorHeapPtr backBufferViewHeap;
+        UINT backBufferViewSize = 0;
 
-        SwapChain(IDXGIFactory6 *factory, ID3D12CommandQueue *graphicsQueue, HWND windowHandle, UINT width, UINT height)
+        SwapChain(Device &device, ID3D12CommandQueue *graphicsQueue, HWND windowHandle, UINT width, UINT height)
         {
-            dxa(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &isTearingAllowed, sizeof(isTearingAllowed)), "Failed to check feature support");
+            dxa(device.factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &isTearingAllowed, sizeof(isTearingAllowed)), "Failed to check feature support");
 
             DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
             swapChainDesc.Width = width;
@@ -31,9 +35,9 @@ namespace DE::dxwrap
             swapChainDesc.Flags = isTearingAllowed ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
             IDXGISwapChain1Ptr swapChain1;
-            dxa(factory->CreateSwapChainForHwnd(graphicsQueue, windowHandle, &swapChainDesc, nullptr, nullptr, &swapChain1), "Failed to create swap chain");
+            dxa(device.factory->CreateSwapChainForHwnd(graphicsQueue, windowHandle, &swapChainDesc, nullptr, nullptr, &swapChain1), "Failed to create swap chain");
 
-            dxa(factory->MakeWindowAssociation(windowHandle, DXGI_MWA_NO_ALT_ENTER), "Failed to make window association");
+            dxa(device.factory->MakeWindowAssociation(windowHandle, DXGI_MWA_NO_ALT_ENTER), "Failed to make window association");
             dxa(swapChain1->QueryInterface(IID_PPV_ARGS(&swapChain)), "Failed to copy swap chain");
 
             for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
@@ -41,6 +45,22 @@ namespace DE::dxwrap
 
             size.x = width;
             size.y = height;
+
+            D3D12_DESCRIPTOR_HEAP_DESC backBufferViewHeapDesc{};
+            backBufferViewHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+            backBufferViewHeapDesc.NumDescriptors = FRAMES_IN_FLIGHT;
+            dxa(device.device->CreateDescriptorHeap(&backBufferViewHeapDesc, IID_PPV_ARGS(&backBufferViewHeap)), "Failed to create back buffer view heap");
+            backBufferViewSize = device.device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+            for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
+                device.device->CreateRenderTargetView(backBuffers[bufferIndex], nullptr, backBufferView(bufferIndex));
+        }
+
+        D3D12_CPU_DESCRIPTOR_HANDLE backBufferView(UINT frameIndex) const
+        {
+            D3D12_CPU_DESCRIPTOR_HANDLE handle = backBufferViewHeap->GetCPUDescriptorHandleForHeapStart();
+            handle.ptr += static_cast<SIZE_T>(frameIndex) * backBufferViewSize;
+            return handle;
         }
 
         void present(bool vsync)
@@ -51,7 +71,7 @@ namespace DE::dxwrap
                 dxa(swapChain->Present(0, isTearingAllowed ? DXGI_PRESENT_ALLOW_TEARING : 0), "Failed to present");
         }
 
-        void resize(XMUINT2 newSize)
+        void resize(XMUINT2 newSize, ID3D12Device5 *device)
         {
             for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
                 backBuffers[bufferIndex] = nullptr;
@@ -59,7 +79,10 @@ namespace DE::dxwrap
             dxa(swapChain->ResizeBuffers(FRAMES_IN_FLIGHT, newSize.x, newSize.y, DXGI_FORMAT_UNKNOWN, isTearingAllowed ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0), "Failed to resize swap chain");
 
             for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
+            {
                 dxa(swapChain->GetBuffer(bufferIndex, IID_PPV_ARGS(&backBuffers[bufferIndex])), "Failed to get swap chain buffer");
+                device->CreateRenderTargetView(backBuffers[bufferIndex], nullptr, backBufferView(bufferIndex));
+            }
 
             size = newSize;
         }

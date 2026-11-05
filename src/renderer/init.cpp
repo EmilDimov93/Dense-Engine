@@ -8,7 +8,7 @@
 namespace DE
 {
     Renderer::Renderer(HWND window, XMUINT2 windowSize) : commands(device),
-                                                          swapChain(device.factory, commands.queue, window, windowSize.x, windowSize.y),
+                                                          swapChain(device, commands.queue, window, windowSize.x, windowSize.y),
                                                           pipeline(device),
                                                           descriptorHeap(device),
                                                           renderTarget(device, descriptorHeap.cpuHandle(dxwrap::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX), windowSize.x, windowSize.y),

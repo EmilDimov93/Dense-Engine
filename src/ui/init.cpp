@@ -17,7 +17,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 namespace DE
 {
-    UI::UI(HWND windowHandle, ID3D12Device *device, ID3D12CommandQueue *queue, const PerFrame<ID3D12ResourcePtr> &backBuffers) : windowHandle(windowHandle), device(device)
+    UI::UI(HWND windowHandle, ID3D12Device *device, ID3D12CommandQueue *queue) : windowHandle(windowHandle), device(device)
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -68,14 +68,6 @@ namespace DE
         for (UINT slot = MAX_TEXTURES; slot > 0; --slot)
             freeTextureSlots.push_back(slot - 1);
 
-        D3D12_DESCRIPTOR_HEAP_DESC backBufferViewHeapDesc{};
-        backBufferViewHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-        backBufferViewHeapDesc.NumDescriptors = FRAMES_IN_FLIGHT;
-        dxa(device->CreateDescriptorHeap(&backBufferViewHeapDesc, IID_PPV_ARGS(&backBufferViewHeap)), "Failed to create ui back buffer view heap");
-        backBufferViewSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-        createBackBufferViews(backBuffers);
-
         ImGui_ImplDX12_InitInfo initInfo;
         initInfo.Device = device;
         initInfo.CommandQueue = queue;
@@ -119,18 +111,5 @@ namespace DE
     bool UI::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         return ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam) != 0;
-    }
-
-    void UI::createBackBufferViews(const PerFrame<ID3D12ResourcePtr> &backBuffers)
-    {
-        for (UINT bufferIndex = 0; bufferIndex < FRAMES_IN_FLIGHT; ++bufferIndex)
-            device->CreateRenderTargetView(backBuffers[bufferIndex], nullptr, backBufferView(bufferIndex));
-    }
-
-    D3D12_CPU_DESCRIPTOR_HANDLE UI::backBufferView(UINT frameIndex) const
-    {
-        D3D12_CPU_DESCRIPTOR_HANDLE handle = backBufferViewHeap->GetCPUDescriptorHandleForHeapStart();
-        handle.ptr += static_cast<SIZE_T>(frameIndex) * backBufferViewSize;
-        return handle;
     }
 }
