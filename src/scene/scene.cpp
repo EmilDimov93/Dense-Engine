@@ -10,7 +10,6 @@
 #include "dxwrap/buffer.hpp"
 #include "dxwrap/resourceBarrier.hpp"
 
-#include <cstring>
 #include <thread>
 #include <atomic>
 #include <algorithm>

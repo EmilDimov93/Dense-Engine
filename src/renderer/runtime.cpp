@@ -26,7 +26,7 @@ namespace DE
         const D3D12_RANGE noWriteRange{0, 0};
         frameFeedbackReadbackBuffers[frameIndex]->Unmap(0, &noWriteRange);
 
-        ID3D12Resource *backBuffer = swapChain.backBuffers[frameIndex];
+        ID3D12Resource *backBuffer = swapChain.backBuffer(frameIndex);
         ID3D12Resource *output = renderTarget.texture;
 
         ID3D12DescriptorHeap *descriptorHeaps[] = {descriptorHeap.get()};

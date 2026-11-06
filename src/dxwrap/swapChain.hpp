@@ -13,10 +13,6 @@ namespace DE::dxwrap
     class SwapChain
     {
     public:
-        PerFrame<ID3D12ResourcePtr> backBuffers;
-        ID3D12DescriptorHeapPtr backBufferViewHeap;
-        UINT backBufferViewSize = 0;
-
         SwapChain(Device &device, ID3D12CommandQueue *graphicsQueue, HWND windowHandle, UINT width, UINT height)
         {
             dxa(device.factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &isTearingAllowed, sizeof(isTearingAllowed)), "Failed to check feature support");
@@ -63,6 +59,11 @@ namespace DE::dxwrap
             return handle;
         }
 
+        ID3D12ResourcePtr backBuffer(UINT frameIndex) const
+        {
+            return backBuffers[frameIndex];
+        }
+
         void present(bool vsync)
         {
             if (vsync)
@@ -99,6 +100,11 @@ namespace DE::dxwrap
 
     private:
         IDXGISwapChain4Ptr swapChain;
+
+        PerFrame<ID3D12ResourcePtr> backBuffers;
+        ID3D12DescriptorHeapPtr backBufferViewHeap;
+        UINT backBufferViewSize = 0;
+
         XMUINT2 size{};
         BOOL isTearingAllowed = FALSE;
     };
