@@ -31,6 +31,9 @@ namespace DE
         float moveSpeed = 5.f;
         float lookSensitivityRadPerPixel = 0.01f;
 
+        static constexpr float MIN_MOVE_SPEED = 0.f;
+        static constexpr float MAX_MOVE_SPEED = 100.f;
+
         gpu::CameraConstants toConstants() const
         {
             const XMMATRIX rotation = XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z);

@@ -175,24 +175,20 @@ namespace DE
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
         ImGui::SetNextItemWidth(maxSliderWidth);
-        const float minCameraSpeed = 0.f;
-        const float maxCameraSpeed = 100.f;
-        ImGui::SliderScalar("Move Speed", ImGuiDataType_Float, &camera.moveSpeed, &minCameraSpeed, &maxCameraSpeed, "%.1f", ImGuiSliderFlags_Logarithmic);
+        ImGui::SliderScalar("Move Speed", ImGuiDataType_Float, &camera.moveSpeed, &Camera::MIN_MOVE_SPEED, &Camera::MAX_MOVE_SPEED, "%.1f", ImGuiSliderFlags_Logarithmic);
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
         drawTableXYZHeader("Background");
 
-        drawTableXYZRow("Background", sceneDescription.clearColor.x, sceneDescription.clearColor.y, sceneDescription.clearColor.z, 0.f, 1.f, hasSceneChanged, isDragging);
+        drawTableXYZRow("Background", sceneDescription.clearColor.x, sceneDescription.clearColor.y, sceneDescription.clearColor.z, MIN_COLOR, MAX_COLOR, hasSceneChanged, isDragging);
 
         ImGui::EndTable();
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
         ImGui::SetNextItemWidth(maxSliderWidth);
-        const float minExposure = 0.f;
-        const float maxExposure = 100.f;
-        hasSceneChanged |= ImGui::SliderScalar("Exposure", ImGuiDataType_Float, &sceneDescription.exposure, &minExposure, &maxExposure, "%.2f", ImGuiSliderFlags_Logarithmic);
+        hasSceneChanged |= ImGui::SliderScalar("Exposure", ImGuiDataType_Float, &sceneDescription.exposure, &MIN_EXPOSURE, &MAX_EXPOSURE, "%.2f", ImGuiSliderFlags_Logarithmic);
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
@@ -351,7 +347,7 @@ namespace DE
                 if (ImGui::BeginPopup("AmbientLightDetailsPopup"))
                 {
                     drawTableXYZHeader("ColorTable");
-                    drawTableXYZRow("Color", sceneDescription.ambient.x, sceneDescription.ambient.y, sceneDescription.ambient.z, 0.f, 1.f, hasSceneChanged, isDragging);
+                    drawTableXYZRow("Color", sceneDescription.ambient.x, sceneDescription.ambient.y, sceneDescription.ambient.z, MIN_COLOR, MAX_COLOR, hasSceneChanged, isDragging);
                     ImGui::EndTable();
 
                     ImGui::EndPopup();
@@ -381,18 +377,21 @@ namespace DE
                     drawTableXYZHeader("DirectionAndColorTable");
 
                     drawTableXYZRow("Direction", directionalLight.direction.x, directionalLight.direction.y, directionalLight.direction.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
-                    drawTableXYZRow("Color", directionalLight.color.x, directionalLight.color.y, directionalLight.color.z, 0.f, 1.f, hasSceneChanged, isDragging);
+                    drawTableXYZRow("Color", directionalLight.color.x, directionalLight.color.y, directionalLight.color.z, MIN_COLOR, MAX_COLOR, hasSceneChanged, isDragging);
                     if (hasSceneChanged)
                     {
                         const float length = std::sqrt(directionalLight.direction.x * directionalLight.direction.x + directionalLight.direction.y * directionalLight.direction.y + directionalLight.direction.z * directionalLight.direction.z);
-                        directionalLight.direction.x /= length;
-                        directionalLight.direction.y /= length;
-                        directionalLight.direction.z /= length;
+                        if (length > 0.f)
+                        {
+                            directionalLight.direction.x /= length;
+                            directionalLight.direction.y /= length;
+                            directionalLight.direction.z /= length;
+                        }
                     }
 
                     ImGui::EndTable();
 
-                    drawLabeledFloat("Intensity", directionalLight.intensity, 0.f, FLT_MAX);
+                    drawLabeledFloat("Intensity", directionalLight.intensity, MIN_INTENSITY, MAX_INTENSITY);
 
                     ImGui::EndPopup();
                 }
@@ -421,12 +420,12 @@ namespace DE
                     drawTableXYZHeader("PositionAndColorTable");
 
                     drawTableXYZRow("Position", pointLight.pos.x, pointLight.pos.y, pointLight.pos.z, -FLT_MAX, FLT_MAX, hasSceneChanged, isDragging);
-                    drawTableXYZRow("Color", pointLight.color.x, pointLight.color.y, pointLight.color.z, 0.f, 1.f, hasSceneChanged, isDragging);
+                    drawTableXYZRow("Color", pointLight.color.x, pointLight.color.y, pointLight.color.z, MIN_COLOR, MAX_COLOR, hasSceneChanged, isDragging);
 
                     ImGui::EndTable();
 
-                    drawLabeledFloat("Intensity", pointLight.intensity, 0.f, FLT_MAX);
-                    drawLabeledFloat("Range", pointLight.range, 0.f, FLT_MAX);
+                    drawLabeledFloat("Intensity", pointLight.intensity, MIN_INTENSITY, MAX_INTENSITY);
+                    drawLabeledFloat("Range", pointLight.range, MIN_RANGE, MAX_RANGE);
 
                     ImGui::EndPopup();
                 }

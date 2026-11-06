@@ -21,6 +21,7 @@ namespace DE
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
+        ImGui::GetIO().IniFilename = nullptr;
         ImGui::StyleColorsDark();
 
         const ImVec4 green = ImVec4(0.24f, 0.68f, 0.42f, 1.00f);

@@ -7,6 +7,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <algorithm>
 
 namespace DE::scripter
 {
@@ -29,6 +30,11 @@ namespace DE::scripter
             if (modelInstanceDescription.handle == handle)
                 return modelInstanceDescription.transform.rot;
 
+        throw std::runtime_error("Invalid handle used in script (" + std::to_string(handle) + ")");
+    }
+
+    XMFLOAT3 &findDirXMFLOAT3(SceneDescription &sceneDescription, const Handle &handle)
+    {
         for (DirectionalLightDescription &directionalLightDescription : sceneDescription.directionalLightDescriptions)
             if (directionalLightDescription.handle == handle)
                 return directionalLightDescription.direction;
@@ -90,16 +96,41 @@ namespace DE::scripter
                     findPosXMFLOAT3(sceneDescription, moveInstruction->handle) += moveInstruction->pos;
                 else if (const instruction::ROTATE *rotateInstruction = std::get_if<instruction::ROTATE>(&instruction))
                     findRotXMFLOAT3(sceneDescription, rotateInstruction->handle) += rotateInstruction->rot;
+                else if (const instruction::DIRECTION *directionInstruction = std::get_if<instruction::DIRECTION>(&instruction))
+                {
+                    XMFLOAT3 &dir = findDirXMFLOAT3(sceneDescription, directionInstruction->handle);
+                    dir += directionInstruction->dir;
+                    const float length = std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+                    if (length > 0.f)
+                    {
+                        dir.x /= length;
+                        dir.y /= length;
+                        dir.z /= length;
+                    }
+                }
                 else if (const instruction::SCALE *scaleInstruction = std::get_if<instruction::SCALE>(&instruction))
                     findScaleXMFLOAT3(sceneDescription, scaleInstruction->handle) += scaleInstruction->scale;
                 else if (const instruction::COLOR *colorInstruction = std::get_if<instruction::COLOR>(&instruction))
-                    findColorXMFLOAT3(sceneDescription, colorInstruction->handle) += colorInstruction->color;
+                {
+                    XMFLOAT3 &color = findColorXMFLOAT3(sceneDescription, colorInstruction->handle);
+                    color.x = std::clamp(color.x + colorInstruction->color.x, MIN_COLOR, MAX_COLOR);
+                    color.y = std::clamp(color.y + colorInstruction->color.y, MIN_COLOR, MAX_COLOR);
+                    color.z = std::clamp(color.z + colorInstruction->color.z, MIN_COLOR, MAX_COLOR);
+                }
                 else if (const instruction::INTENSITY *intensityInstruction = std::get_if<instruction::INTENSITY>(&instruction))
-                    findIntensityFloat(sceneDescription, intensityInstruction->handle) += intensityInstruction->intensity;
+                {
+                    float &intensity = findIntensityFloat(sceneDescription, intensityInstruction->handle);
+                    intensity = std::clamp(intensity + intensityInstruction->intensity, MIN_INTENSITY, MAX_INTENSITY);
+                }
                 else if (const instruction::RANGE *rangeInstruction = std::get_if<instruction::RANGE>(&instruction))
-                    findRangeFloat(sceneDescription, rangeInstruction->handle) += rangeInstruction->range;
+                {
+                    float &range = findRangeFloat(sceneDescription, rangeInstruction->handle);
+                    range = std::clamp(range + rangeInstruction->range, MIN_RANGE, MAX_RANGE);
+                }
                 else if (const instruction::EXPOSURE *exposureInstruction = std::get_if<instruction::EXPOSURE>(&instruction))
-                    sceneDescription.exposure += exposureInstruction->exposure;
+                {
+                    sceneDescription.exposure = std::clamp(sceneDescription.exposure + exposureInstruction->exposure, MIN_EXPOSURE, MAX_EXPOSURE);
+                }
                 else if (const instruction::AMBIENT *ambientInstruction = std::get_if<instruction::AMBIENT>(&instruction))
                     sceneDescription.ambient += ambientInstruction->ambient;
             }

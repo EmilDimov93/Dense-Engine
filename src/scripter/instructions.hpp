@@ -31,6 +31,13 @@ namespace DE::scripter::instruction
         XMFLOAT3 scale{};
     };
 
+    struct DIRECTION
+    {
+        static constexpr const char *NAME = "DIRECTION";
+        Handle handle = INVALID_HANDLE;
+        XMFLOAT3 dir{};
+    };
+
     struct COLOR
     {
         static constexpr const char *NAME = "COLOR";
@@ -64,5 +71,5 @@ namespace DE::scripter::instruction
         XMFLOAT3 ambient{};
     };
 
-    using Instruction = std::variant<MOVE, ROTATE, SCALE, COLOR, INTENSITY, RANGE, EXPOSURE, AMBIENT>;
+    using Instruction = std::variant<MOVE, ROTATE, SCALE, DIRECTION, COLOR, INTENSITY, RANGE, EXPOSURE, AMBIENT>;
 }

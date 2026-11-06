@@ -26,7 +26,7 @@ namespace DE
                 ImGui::TableHeadersRow();
 
                 static const Instruction ALL_INSTRUCTIONS[] = {
-                    MOVE{}, ROTATE{}, SCALE{}, COLOR{}, INTENSITY{}, RANGE{}, EXPOSURE{}, AMBIENT{}};
+                    MOVE{}, ROTATE{}, SCALE{}, DIRECTION{}, COLOR{}, INTENSITY{}, RANGE{}, EXPOSURE{}, AMBIENT{}};
 
                 auto getName = [](const auto &i)
                 {
@@ -91,6 +91,13 @@ namespace DE
                         name = SCALE::NAME;
                         handle = &scale->handle;
                         value = &scale->scale.x;
+                        speed = 0.0005f;
+                    }
+                    else if (DIRECTION *direction = std::get_if<DIRECTION>(&instruction))
+                    {
+                        name = DIRECTION::NAME;
+                        handle = &direction->handle;
+                        value = &direction->dir.x;
                         speed = 0.0005f;
                     }
                     else if (COLOR *color = std::get_if<COLOR>(&instruction))

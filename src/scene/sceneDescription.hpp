@@ -11,6 +11,15 @@
 
 namespace DE
 {
+    inline constexpr float MIN_INTENSITY = 0.f;
+    inline constexpr float MAX_INTENSITY = FLT_MAX;
+    inline constexpr float MIN_RANGE = 0.f;
+    inline constexpr float MAX_RANGE = FLT_MAX;
+    inline constexpr float MIN_COLOR = 0.f;
+    inline constexpr float MAX_COLOR = 1.f;
+    inline constexpr float MIN_EXPOSURE = 0.f;
+    inline constexpr float MAX_EXPOSURE = 100.f;
+
     struct ModelDescription
     {
         Handle handle;
