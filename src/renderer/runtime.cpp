@@ -67,7 +67,7 @@ namespace DE
             D3D12_DISPATCH_RAYS_DESC dispatchDesc = pipeline.dispatchDesc(viewportRect.size);
 
             const D3D12_WRITEBUFFERIMMEDIATE_PARAMETER resetParams[] = {
-                {frameFeedbackBuffer->GetGPUVirtualAddress() + offsetof(gpu::FrameFeedback, clickedSceneComponentHandle), static_cast<UINT>(-1)},
+                {frameFeedbackBuffer->GetGPUVirtualAddress() + offsetof(gpu::FrameFeedback, clickedSceneComponentHandle), INVALID_HANDLE},
                 {frameFeedbackBuffer->GetGPUVirtualAddress() + offsetof(gpu::FrameFeedback, rayCount), 0},
             };
             commands.list->WriteBufferImmediate(_countof(resetParams), resetParams, nullptr);

@@ -7,7 +7,7 @@ RWTexture2D<float4> output : register(u0);
 
 struct FrameFeedback
 {
-    int clickedSceneComponentHandle;
+    uint clickedSceneComponentHandle;
     uint rayCount;
 };
 RWStructuredBuffer<FrameFeedback> frameFeedback : register(u1);
@@ -93,7 +93,7 @@ ConstantBuffer<Camera> camera : register(b2);
 
 struct ClientState
 {
-    int selectedSceneComponentHandle;
+    uint selectedSceneComponentHandle;
     uint ssaaSamples;
     float time;
     bool lowerQuality;

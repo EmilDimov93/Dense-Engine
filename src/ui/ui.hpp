@@ -31,7 +31,7 @@ namespace DE
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        void tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning, bool &renderThisFrame);
+        void tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning, bool &renderThisFrame, bool &onDemandRendering);
         void draw(ID3D12GraphicsCommandList *list, D3D12_CPU_DESCRIPTOR_HANDLE target) const;
 
         uint32_t getSidebarWidthPx() const { return sidebarWidthPx; }
@@ -42,8 +42,8 @@ namespace DE
         static constexpr float MIN_FOV = 0.f;
         static constexpr float MAX_FOV = 179.f;
 
-        static constexpr uint32_t OPTIMAL_SIDEBAR_WIDTH = 210;
-        static constexpr uint32_t OPTIMAL_SIDEBAR_SCRIPTOR_WIDTH = 314;
+        static constexpr uint32_t OPTIMAL_SIDEBAR_WIDTH = 215;
+        static constexpr uint32_t OPTIMAL_SIDEBAR_SCRIPTER_WIDTH = 314;
 
         ID3D12Device *device = nullptr;
 

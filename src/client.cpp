@@ -68,7 +68,7 @@ namespace DE
             bool isSidebarResized = false;
 
             std::optional<commands::Command> command;
-            ui.tick(sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync, script, isScriptRunning, renderThisFrame);
+            ui.tick(sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync, script, isScriptRunning, renderThisFrame, onDemandRendering);
             if (command)
             {
                 if (const commands::AddModel *addModelCommand = std::get_if<commands::AddModel>(&*command))
@@ -127,7 +127,7 @@ namespace DE
 
             clientState.time = std::chrono::duration<float>(std::chrono::steady_clock::now() - startTime).count();
 
-            const bool hasSelectedSceneComponent = clientState.selectedSceneComponentHandle != -1;
+            const bool hasSelectedSceneComponent = clientState.selectedSceneComponentHandle != INVALID_HANDLE;
 
             renderThisFrame = !onDemandRendering || renderThisFrame || hasSceneChanged || wasSceneChanged || wasLowerQuality || wasSwapChainResized || requestedScreenshot || isSidebarResized || hasSelectedSceneComponent;
 

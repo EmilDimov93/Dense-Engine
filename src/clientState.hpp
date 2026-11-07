@@ -4,12 +4,13 @@
 #pragma once
 
 #include "core/dxcommon.hpp"
+#include "core/handle.hpp"
 
 namespace DE::gpu
 {
     struct ClientState
     {
-        int32_t selectedSceneComponentHandle = -1;
+        uint32_t selectedSceneComponentHandle = INVALID_HANDLE;
         uint32_t ssaaSamples = 4u;
         float time = 0.f;
         uint32_t lowerQuality = 0u;

@@ -62,7 +62,7 @@ namespace DE
         return ImVec2{viewportMin.x + viewportSize.x * 0.5f + x * scale, viewportMin.y + viewportSize.y * 0.5f - y * scale};
     }
 
-    void UI::tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning, bool &renderThisFrame)
+    void UI::tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning, bool &renderThisFrame, bool &onDemandRendering)
     {
         bool isDragging = false;
 
@@ -126,7 +126,7 @@ namespace DE
             {
                 isScripterWindowOpen = !isScripterWindowOpen;
                 if (isScripterWindowOpen)
-                    sidebarWidthPx = OPTIMAL_SIDEBAR_SCRIPTOR_WIDTH;
+                    sidebarWidthPx = OPTIMAL_SIDEBAR_SCRIPTER_WIDTH;
             }
             if (wasScriptWindowOpen)
                 ImGui::PopStyleColor(3);
@@ -163,6 +163,9 @@ namespace DE
 
         ImGui::SameLine();
         ImGui::Checkbox("VSync", &vsync);
+
+        ImGui::SameLine();
+        ImGui::Checkbox("ODR", &onDemandRendering);
 
         const float maxSliderWidth = std::min(ImGui::GetContentRegionAvail().x, 130.f);
 
@@ -246,9 +249,9 @@ namespace DE
                 ImGui::TableNextRow();
                 ImGui::TableNextColumn();
                 ImGui::PushID(rowIndex);
-                if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(modelInstance.handle), ImGuiSelectableFlags_SpanAllColumns))
+                if (ImGui::Selectable(std::to_string(modelInstance.handle).c_str(), clientState.selectedSceneComponentHandle == modelInstance.handle, ImGuiSelectableFlags_SpanAllColumns))
                 {
-                    clientState.selectedSceneComponentHandle = static_cast<int32_t>(modelInstance.handle);
+                    clientState.selectedSceneComponentHandle = modelInstance.handle;
                     ImGui::OpenPopup("InstanceDetailsPopup");
                 }
 
@@ -366,9 +369,9 @@ namespace DE
                 ImGui::TableNextRow();
                 ImGui::TableNextColumn();
                 ImGui::PushID(rowIndex);
-                if (ImGui::Selectable(std::to_string(directionalLight.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(directionalLight.handle), ImGuiSelectableFlags_SpanAllColumns))
+                if (ImGui::Selectable(std::to_string(directionalLight.handle).c_str(), clientState.selectedSceneComponentHandle == directionalLight.handle, ImGuiSelectableFlags_SpanAllColumns))
                 {
-                    clientState.selectedSceneComponentHandle = static_cast<int32_t>(directionalLight.handle);
+                    clientState.selectedSceneComponentHandle = directionalLight.handle;
                     ImGui::OpenPopup("DirectionalLightDetailsPopup");
                 }
 
@@ -409,9 +412,9 @@ namespace DE
                 ImGui::TableNextRow();
                 ImGui::TableNextColumn();
                 ImGui::PushID(rowIndex);
-                if (ImGui::Selectable(std::to_string(pointLight.handle).c_str(), clientState.selectedSceneComponentHandle == static_cast<int32_t>(pointLight.handle), ImGuiSelectableFlags_SpanAllColumns))
+                if (ImGui::Selectable(std::to_string(pointLight.handle).c_str(), clientState.selectedSceneComponentHandle == pointLight.handle, ImGuiSelectableFlags_SpanAllColumns))
                 {
-                    clientState.selectedSceneComponentHandle = static_cast<int32_t>(pointLight.handle);
+                    clientState.selectedSceneComponentHandle = pointLight.handle;
                     ImGui::OpenPopup("PointLightDetailsPopup");
                 }
 
@@ -430,7 +433,7 @@ namespace DE
                     ImGui::EndPopup();
                 }
 
-                if (clientState.selectedSceneComponentHandle == static_cast<int32_t>(pointLight.handle))
+                if (clientState.selectedSceneComponentHandle == pointLight.handle)
                 {
                     const ImVec2 displaySize = io.DisplaySize;
                     const ImVec2 viewportMin{static_cast<float>(sidebarWidthPx), 0.f};
@@ -472,7 +475,7 @@ namespace DE
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
-            clientState.selectedSceneComponentHandle = -1;
+            clientState.selectedSceneComponentHandle = INVALID_HANDLE;
             if (!io.WantCaptureMouse && ImGui::GetMousePos().x > sidebarWidthPx)
                 clientState.clickedPixel = XMINT2{static_cast<int32_t>(ImGui::GetMousePos().x - sidebarWidthPx), static_cast<int32_t>(ImGui::GetMousePos().y)};
         }
@@ -481,7 +484,7 @@ namespace DE
             clientState.clickedPixel = XMINT2{-1, -1};
         }
 
-        if (frameFeedback.clickedSceneComponentHandle != -1)
+        if (frameFeedback.clickedSceneComponentHandle != INVALID_HANDLE)
             clientState.selectedSceneComponentHandle = frameFeedback.clickedSceneComponentHandle;
 
         ImGui::Render();

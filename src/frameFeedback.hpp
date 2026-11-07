@@ -3,13 +3,15 @@
 
 #pragma once
 
+#include "core/handle.hpp"
+
 #include <cstdint>
 
 namespace DE::gpu
 {
     struct FrameFeedback
     {
-        int32_t clickedSceneComponentHandle = -1;
+        uint32_t clickedSceneComponentHandle = INVALID_HANDLE;
         uint32_t rayCount = 0;
     };
 }
