@@ -48,6 +48,10 @@ namespace DE
         bool isScriptRunning = false;
 
         bool vsync = true;
+        bool onDemandRendering = true;
+
+        bool wasSceneChanged = true;
+        bool wasLowerQuality = false;
 
         const std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 

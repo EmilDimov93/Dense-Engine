@@ -62,7 +62,7 @@ namespace DE
         return ImVec2{viewportMin.x + viewportSize.x * 0.5f + x * scale, viewportMin.y + viewportSize.y * 0.5f - y * scale};
     }
 
-    void UI::tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning)
+    void UI::tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning, bool &renderThisFrame)
     {
         bool isDragging = false;
 
@@ -451,9 +451,9 @@ namespace DE
             ImGui::EndTable();
         }
 
-        updateCamera(camera);
+        const bool hasCameraChanged = updateCamera(camera);
         updateShortcuts(command);
-        bool hasSidebarResized = updateSidebarSize();
+        const bool hasSidebarResized = updateSidebarSize();
 
         if (hasSidebarResized)
             command = commands::ResizeSidebar(sidebarWidthPx);
@@ -486,7 +486,9 @@ namespace DE
 
         ImGui::Render();
 
-        clientState.lowerQuality = isDragging;
+        clientState.lowerQuality = isDragging || hasCameraChanged;
+
+        renderThisFrame = hasCameraChanged || ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Left);
     }
 
     void UI::draw(ID3D12GraphicsCommandList *list, D3D12_CPU_DESCRIPTOR_HANDLE target) const
@@ -499,15 +501,19 @@ namespace DE
         ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), list);
     }
 
-    void UI::updateCamera(Camera &camera)
+    bool UI::updateCamera(Camera &camera)
     {
         const ImGuiIO &io = ImGui::GetIO();
         if (io.WantTextInput || io.KeyCtrl)
-            return;
+            return false;
 
         constexpr float fovStepDegPerWheelNotch = 5.f;
+        bool isZooming = false;
         if (!io.WantCaptureMouse && io.MouseWheel != 0.f)
+        {
             camera.fov = std::clamp(camera.fov - io.MouseWheel * fovStepDegPerWheelNotch, MIN_FOV, MAX_FOV);
+            isZooming = true;
+        }
 
         const float dolly = static_cast<float>(ImGui::IsKeyDown(ImGuiKey_W) - ImGui::IsKeyDown(ImGuiKey_S));
         const float truck = static_cast<float>(ImGui::IsKeyDown(ImGuiKey_D) - ImGui::IsKeyDown(ImGuiKey_A));
@@ -519,6 +525,8 @@ namespace DE
             tilt = io.MouseDelta.y;
         }
 
+        const bool hasCameraChanged = dolly != 0.f || truck != 0.f || pan != 0.f || tilt != 0.f || isZooming;
+
         const float dt = io.DeltaTime;
 
         camera.rot.y += pan * camera.lookSensitivityRadPerPixel;
@@ -527,7 +535,7 @@ namespace DE
         camera.rot.x = std::clamp(camera.rot.x, -XM_PI / 2.f, XM_PI / 2.f);
 
         if (dolly == 0.f && truck == 0.f)
-            return;
+            return hasCameraChanged;
 
         const gpu::CameraConstants constants = camera.toConstants();
         const XMVECTOR forward = XMLoadFloat3(&constants.forward);
@@ -537,6 +545,8 @@ namespace DE
         const XMVECTOR pos = XMLoadFloat3(&camera.pos) + direction * (camera.moveSpeed * dt);
 
         XMStoreFloat3(&camera.pos, pos);
+
+        return hasCameraChanged;
     }
 
     void UI::updateShortcuts(std::optional<commands::Command> &command)

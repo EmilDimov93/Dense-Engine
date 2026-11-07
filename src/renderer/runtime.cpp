@@ -12,7 +12,7 @@
 
 namespace DE
 {
-    gpu::FrameFeedback Renderer::tick(const UI &ui, gpu::ClientState clientState, const gpu::CameraConstants &cameraConstants, bool vsync, bool screenshot)
+    gpu::FrameFeedback Renderer::tick(const UI &ui, gpu::ClientState clientState, const gpu::CameraConstants &cameraConstants, bool renderThisFrame, bool vsync, bool screenshot)
     {
         const UINT frameIndex = swapChain.getCurrentBackBufferIndex();
 
@@ -23,8 +23,10 @@ namespace DE
         const D3D12_RANGE readRange{0, sizeof(gpu::FrameFeedback)};
         dxa(frameFeedbackReadbackBuffers[frameIndex]->Map(0, &readRange, &mapped), "Failed to map frame feedback readback buffer");
         std::memcpy(&frameFeedback, mapped, sizeof(gpu::FrameFeedback));
-        const D3D12_RANGE noWriteRange{0, 0};
-        frameFeedbackReadbackBuffers[frameIndex]->Unmap(0, &noWriteRange);
+        const gpu::FrameFeedback cleared{};
+        std::memcpy(mapped, &cleared, sizeof(cleared));
+        const D3D12_RANGE writeRange{0, sizeof(gpu::FrameFeedback)};
+        frameFeedbackReadbackBuffers[frameIndex]->Unmap(0, &writeRange);
 
         ID3D12Resource *backBuffer = swapChain.backBuffer(frameIndex);
         ID3D12Resource *output = renderTarget.texture;
@@ -34,7 +36,7 @@ namespace DE
 
         gpu::Environment environment = scene.getEnvironment();
 
-        if (!scene.empty())
+        if (!scene.empty() && renderThisFrame)
         {
             gpu::LightCounts lightCounts = scene.getLightCounts();
 

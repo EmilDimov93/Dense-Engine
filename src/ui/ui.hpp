@@ -31,7 +31,7 @@ namespace DE
 
         static bool handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        void tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning);
+        void tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning, bool &renderThisFrame);
         void draw(ID3D12GraphicsCommandList *list, D3D12_CPU_DESCRIPTOR_HANDLE target) const;
 
         uint32_t getSidebarWidthPx() const { return sidebarWidthPx; }
@@ -59,9 +59,9 @@ namespace DE
 
         PerformanceMonitor performanceMonitor;
 
-        void updateCamera(Camera &camera);
-        void updateShortcuts(std::optional<commands::Command> &command);
+        bool updateCamera(Camera &camera);
         bool updateSidebarSize();
+        void updateShortcuts(std::optional<commands::Command> &command);
         void drawScripterWindow(scripter::Script &script, Rect windowRect);
     };
 }

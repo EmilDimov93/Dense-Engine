@@ -48,10 +48,12 @@ namespace DE
             XMUINT2 swapChainSize = renderer.getSwapChainSize();
             XMUINT2 windowSize = XMUINT2(window.getWidth(), window.getHeight());
 
+            bool wasSwapChainResized = false;
             if (swapChainSize.x != windowSize.x || swapChainSize.y != windowSize.y)
             {
                 renderer.resizeSwapChain(windowSize);
                 renderer.setViewportRect(makeViewportRect(ui.getSidebarWidthPx()));
+                wasSwapChainResized = true;
             }
 
             if (hasSceneChanged)
@@ -61,10 +63,12 @@ namespace DE
                 hasSceneChanged = false;
             }
 
+            bool renderThisFrame = false;
             bool requestedScreenshot = false;
+            bool isSidebarResized = false;
 
             std::optional<commands::Command> command;
-            ui.tick(sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync, script, isScriptRunning);
+            ui.tick(sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync, script, isScriptRunning, renderThisFrame);
             if (command)
             {
                 if (const commands::AddModel *addModelCommand = std::get_if<commands::AddModel>(&*command))
@@ -107,6 +111,7 @@ namespace DE
                 else if (const commands::ResizeSidebar *resizeSidebarCommand = std::get_if<commands::ResizeSidebar>(&*command))
                 {
                     renderer.setViewportRect(makeViewportRect(resizeSidebarCommand->sidebarWidthPx));
+                    isSidebarResized = true;
                 }
                 else if (const commands::Screenshot *screenshotCommand = std::get_if<commands::Screenshot>(&*command))
                 {
@@ -122,7 +127,14 @@ namespace DE
 
             clientState.time = std::chrono::duration<float>(std::chrono::steady_clock::now() - startTime).count();
 
-            lastFrameFeedback = renderer.tick(ui, clientState, camera.toConstants(), vsync, requestedScreenshot);
+            const bool hasSelectedSceneComponent = clientState.selectedSceneComponentHandle != -1;
+
+            renderThisFrame = !onDemandRendering || renderThisFrame || hasSceneChanged || wasSceneChanged || wasLowerQuality || wasSwapChainResized || requestedScreenshot || isSidebarResized || hasSelectedSceneComponent;
+
+            wasSceneChanged = hasSceneChanged;
+            wasLowerQuality = clientState.lowerQuality;
+
+            lastFrameFeedback = renderer.tick(ui, clientState, camera.toConstants(), renderThisFrame, vsync, requestedScreenshot);
         }
     }
 

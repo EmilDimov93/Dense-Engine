@@ -132,7 +132,12 @@ namespace DE::scripter
                     sceneDescription.exposure = std::clamp(sceneDescription.exposure + exposureInstruction->exposure, MIN_EXPOSURE, MAX_EXPOSURE);
                 }
                 else if (const instruction::AMBIENT *ambientInstruction = std::get_if<instruction::AMBIENT>(&instruction))
+                {
                     sceneDescription.ambient += ambientInstruction->ambient;
+                    sceneDescription.ambient.x = std::clamp(sceneDescription.ambient.x, MIN_COLOR, MAX_COLOR);
+                    sceneDescription.ambient.y = std::clamp(sceneDescription.ambient.y, MIN_COLOR, MAX_COLOR);
+                    sceneDescription.ambient.z = std::clamp(sceneDescription.ambient.z, MIN_COLOR, MAX_COLOR);
+                }
             }
         }
         catch (const std::runtime_error &e)
