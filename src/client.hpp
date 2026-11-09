@@ -11,6 +11,7 @@
 #include "clientState.hpp"
 #include "camera.hpp"
 #include "scripter/scripter.hpp"
+#include "dlod.hpp"
 
 #include <chrono>
 #include <string>
@@ -47,11 +48,13 @@ namespace DE
         scripter::Script script;
         bool isScriptRunning = false;
 
+        DLOD dlod;
+
         bool vsync = true;
         bool onDemandRendering = true;
+        bool dynamicLOD = true;
 
-        bool wasSceneChanged = true;
-        bool wasLowerQuality = false;
+        bool wasInteractingWithUI = false;
 
         const std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 

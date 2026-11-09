@@ -12,7 +12,7 @@
 
 namespace DE
 {
-    gpu::FrameFeedback Renderer::tick(const UI &ui, gpu::ClientState clientState, const gpu::CameraConstants &cameraConstants, bool renderThisFrame, bool vsync, bool screenshot)
+    gpu::FrameFeedback Renderer::tick(const UI &ui, const gpu::ClientState &clientState, const gpu::CameraConstants &cameraConstants, bool renderThisFrame, bool vsync, bool screenshot)
     {
         const UINT frameIndex = swapChain.getCurrentBackBufferIndex();
 
@@ -40,12 +40,6 @@ namespace DE
         {
             gpu::LightCounts lightCounts = scene.getLightCounts();
 
-            if (screenshot)
-            {
-                clientState.lowerQuality = false;
-                clientState.ssaaSamples = 16u;
-            }
-
             commands.list->SetComputeRootSignature(pipeline.globalRootSignature);
             commands.list->SetComputeRootDescriptorTable(dxwrap::RootParams::OutputTexture, descriptorHeap.gpuHandle(dxwrap::DESCRIPTOR_HEAP_OUTPUT_UAV_INDEX));
             commands.list->SetComputeRootUnorderedAccessView(dxwrap::RootParams::FrameFeedback, frameFeedbackBuffer->GetGPUVirtualAddress());
@@ -64,7 +58,7 @@ namespace DE
 
             commands.list->SetPipelineState1(pipeline.stateObject);
 
-            D3D12_DISPATCH_RAYS_DESC dispatchDesc = pipeline.dispatchDesc(viewportRect.size);
+            D3D12_DISPATCH_RAYS_DESC dispatchDesc = pipeline.dispatchDesc(viewportRect.size, clientState.downscaleFactor);
 
             const D3D12_WRITEBUFFERIMMEDIATE_PARAMETER resetParams[] = {
                 {frameFeedbackBuffer->GetGPUVirtualAddress() + offsetof(gpu::FrameFeedback, clickedSceneComponentHandle), INVALID_HANDLE},

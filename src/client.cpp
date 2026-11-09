@@ -56,19 +56,11 @@ namespace DE
                 wasSwapChainResized = true;
             }
 
-            if (hasSceneChanged)
-            {
-                renderer.uploadScene(sceneDescription);
-
-                hasSceneChanged = false;
-            }
-
-            bool renderThisFrame = false;
             bool requestedScreenshot = false;
-            bool isSidebarResized = false;
+            bool isInteractingWithUI = false;
 
             std::optional<commands::Command> command;
-            ui.tick(sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync, script, isScriptRunning, renderThisFrame, onDemandRendering);
+            ui.tick(sceneDescription, hasSceneChanged, clientState, command, camera, lastFrameFeedback, vsync, script, isScriptRunning, onDemandRendering, dynamicLOD, isInteractingWithUI);
             if (command)
             {
                 if (const commands::AddModel *addModelCommand = std::get_if<commands::AddModel>(&*command))
@@ -111,7 +103,6 @@ namespace DE
                 else if (const commands::ResizeSidebar *resizeSidebarCommand = std::get_if<commands::ResizeSidebar>(&*command))
                 {
                     renderer.setViewportRect(makeViewportRect(resizeSidebarCommand->sidebarWidthPx));
-                    isSidebarResized = true;
                 }
                 else if (const commands::Screenshot *screenshotCommand = std::get_if<commands::Screenshot>(&*command))
                 {
@@ -125,14 +116,25 @@ namespace DE
                 isScriptRunning = scripter::execute(script, sceneDescription);
             }
 
+            const bool sceneUploaded = hasSceneChanged;
+            if (hasSceneChanged)
+            {
+                renderer.uploadScene(sceneDescription);
+
+                hasSceneChanged = false;
+            }
+
             clientState.time = std::chrono::duration<float>(std::chrono::steady_clock::now() - startTime).count();
 
-            const bool hasSelectedSceneComponent = clientState.selectedSceneComponentHandle != INVALID_HANDLE;
+            const bool interactionWithUIJustEnded = wasInteractingWithUI && !isInteractingWithUI;
+            const bool renderThisFrame = !onDemandRendering || interactionWithUIJustEnded || isInteractingWithUI || sceneUploaded || wasSwapChainResized || requestedScreenshot;
 
-            renderThisFrame = !onDemandRendering || renderThisFrame || hasSceneChanged || wasSceneChanged || wasLowerQuality || wasSwapChainResized || requestedScreenshot || isSidebarResized || hasSelectedSceneComponent;
+            clientState.lowerQuality = false;
 
-            wasSceneChanged = hasSceneChanged;
-            wasLowerQuality = clientState.lowerQuality;
+            if (dynamicLOD)
+                dlod.adjustLOD(clientState.ssaaSamples, clientState.downscaleFactor, clientState.lowerQuality, !wasInteractingWithUI && isInteractingWithUI, (onDemandRendering && interactionWithUIJustEnded) || requestedScreenshot);
+
+            wasInteractingWithUI = isInteractingWithUI;
 
             lastFrameFeedback = renderer.tick(ui, clientState, camera.toConstants(), renderThisFrame, vsync, requestedScreenshot);
         }

@@ -98,6 +98,7 @@ struct ClientState
     float time;
     bool lowerQuality;
     int2 clickedPixel;
+    uint downscaleFactor;
 };
 
 ConstantBuffer<ClientState> clientState : register(b3);
@@ -139,18 +140,15 @@ struct ShadowPayload
 [shader("raygeneration")]
 void RayGen()
 {
-    uint2 pixel = DispatchRaysIndex().xy;
-    uint2 dims = DispatchRaysDimensions().xy;
-
-    uint ssaaSamples = (clientState.lowerQuality ? 1 : clientState.ssaaSamples);
+    uint2 pixel = DispatchRaysIndex().xy * clientState.downscaleFactor;
+    uint2 dims = DispatchRaysDimensions().xy * clientState.downscaleFactor;
     
     float3 color = {0.f, 0.f, 0.f};
-    for(uint i = 0; i < ssaaSamples; i++)
+    for(uint i = 0; i < clientState.ssaaSamples; i++)
     {
-        uint side = (uint)sqrt((float)ssaaSamples);
-        float2 offset = float2((i % side + 0.5f) / side - 0.5f, (i / side + 0.5f) / side - 0.5f);
+        const float2 offset = frac(float2(0.5f + 0.7548776662466927f * i, 0.5f + 0.5698402909980532f * i)) - 0.5f;
 
-        float2 ndc = (float2(pixel) + 0.5f + offset) / float2(dims) * 2.f - 1.f;
+        float2 ndc = (float2(pixel) + (0.5f + offset) * clientState.downscaleFactor) / float2(dims) * 2.f - 1.f;
         const float fovY = radians(camera.fov);
         const float tanHalfFov = tan(fovY / 2.f);
 
@@ -180,9 +178,13 @@ void RayGen()
         color += payload.color.xyz;
     }
 
-    color /= float(ssaaSamples);
+    color /= float(clientState.ssaaSamples);
 
-    output[pixel] = float4(linearToSRGB(toneMapACES(color * environment.exposure)), 1.f);
+    float4 result = float4(linearToSRGB(toneMapACES(color * environment.exposure)), 1.f);
+
+    for (uint y = 0; y < clientState.downscaleFactor; y++)
+        for (uint x = 0; x < clientState.downscaleFactor; x++)
+            output[pixel + uint2(x, y)] = result;
 }
 
 [shader("miss")]
@@ -200,7 +202,7 @@ void ShadowMiss(inout ShadowPayload payload)
 [shader("closesthit")]
 void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes attribs)
 {
-    if(payload.depth == 0 && clientState.clickedPixel.x == DispatchRaysIndex().x && clientState.clickedPixel.y == DispatchRaysIndex().y)
+    if(payload.depth == 0 && clientState.clickedPixel.x / clientState.downscaleFactor == DispatchRaysIndex().x && clientState.clickedPixel.y / clientState.downscaleFactor == DispatchRaysIndex().y)
         frameFeedback[0].clickedSceneComponentHandle = InstanceID();
 
     TLASInstanceData instanceData = tlasInstanceData[InstanceIndex()];

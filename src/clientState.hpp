@@ -15,5 +15,6 @@ namespace DE::gpu
         float time = 0.f;
         uint32_t lowerQuality = 0u;
         XMINT2 clickedPixel = {-1, -1};
+        uint32_t downscaleFactor = 1u;
     };
 }

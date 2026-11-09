@@ -62,7 +62,7 @@ namespace DE
         return ImVec2{viewportMin.x + viewportSize.x * 0.5f + x * scale, viewportMin.y + viewportSize.y * 0.5f - y * scale};
     }
 
-    void UI::tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning, bool &renderThisFrame, bool &onDemandRendering)
+    void UI::tick(SceneDescription &sceneDescription, bool &hasSceneChanged, gpu::ClientState &clientState, std::optional<commands::Command> &command, Camera &camera, const gpu::FrameFeedback &frameFeedback, bool &vsync, scripter::Script &script, bool &isScriptRunning, bool &onDemandRendering, bool &dynamicLOD, bool &isInteracting)
     {
         bool isDragging = false;
 
@@ -151,17 +151,23 @@ namespace DE
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
-        const uint32_t ssaaOptions[] = {1, 4, 9, 16};
-        ImGui::SetNextItemWidth(50.f);
-        if (ImGui::BeginCombo("SSAA", std::format("{}x", clientState.ssaaSamples).c_str()))
-        {
-            for (uint32_t option : ssaaOptions)
-                if (ImGui::Selectable(std::format("{}x", option).c_str(), clientState.ssaaSamples == option))
-                    clientState.ssaaSamples = option;
-            ImGui::EndCombo();
-        }
+        ImGui::Checkbox("DLOD", &dynamicLOD);
+
+        if(!dynamicLOD)
+            onDemandRendering = false;
 
         ImGui::SameLine();
+        ImGui::SetNextItemWidth(22.f);
+        if (ImGui::InputScalar("SSAA", ImGuiDataType_U32, &clientState.ssaaSamples))
+            clientState.ssaaSamples = std::clamp(clientState.ssaaSamples, 1u, 32u);
+
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(22.f);
+        if (ImGui::InputScalar("Downscale", ImGuiDataType_U32, &clientState.downscaleFactor))
+            clientState.downscaleFactor = std::clamp(clientState.downscaleFactor, 1u, 4u);
+
+        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+
         ImGui::Checkbox("VSync", &vsync);
 
         ImGui::SameLine();
@@ -489,9 +495,8 @@ namespace DE
 
         ImGui::Render();
 
-        clientState.lowerQuality = isDragging || hasCameraChanged;
-
-        renderThisFrame = hasCameraChanged || ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+        const bool hasSelectedSceneComponent = clientState.selectedSceneComponentHandle != INVALID_HANDLE;
+        isInteracting = isDragging || hasCameraChanged || hasSelectedSceneComponent || (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !io.WantCaptureMouse) || isResizingSidebar;
     }
 
     void UI::draw(ID3D12GraphicsCommandList *list, D3D12_CPU_DESCRIPTOR_HANDLE target) const
@@ -522,13 +527,15 @@ namespace DE
         const float truck = static_cast<float>(ImGui::IsKeyDown(ImGuiKey_D) - ImGui::IsKeyDown(ImGuiKey_A));
         float pan = 0.f;
         float tilt = 0.f;
+        bool isRotating = false;
         if (!io.WantCaptureMouse && ImGui::IsMouseDown(ImGuiMouseButton_Right))
         {
             pan = io.MouseDelta.x;
             tilt = io.MouseDelta.y;
+            isRotating = true;
         }
 
-        const bool hasCameraChanged = dolly != 0.f || truck != 0.f || pan != 0.f || tilt != 0.f || isZooming;
+        const bool hasCameraChanged = dolly != 0.f || truck != 0.f || isRotating || isZooming;
 
         const float dt = io.DeltaTime;
 

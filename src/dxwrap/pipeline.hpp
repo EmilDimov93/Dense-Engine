@@ -105,7 +105,7 @@ namespace DE::dxwrap
             rootParams[RootParams::ClientState].Constants = {
                 .ShaderRegister = 3,
                 .RegisterSpace = 0,
-                .Num32BitValues = 6};
+                .Num32BitValues = 7};
 
             const D3D12_STATIC_SAMPLER_DESC linearWrapSampler{
                 .Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR,
@@ -193,7 +193,7 @@ namespace DE::dxwrap
             shaderTable->Unmap(0, nullptr);
         }
 
-        D3D12_DISPATCH_RAYS_DESC dispatchDesc(XMUINT2 size) const
+        D3D12_DISPATCH_RAYS_DESC dispatchDesc(XMUINT2 size, uint32_t downscaleFactor) const
         {
             D3D12_DISPATCH_RAYS_DESC dispatchDesc{};
             dispatchDesc.RayGenerationShaderRecord.StartAddress = Raygen();
@@ -204,8 +204,8 @@ namespace DE::dxwrap
             dispatchDesc.HitGroupTable.StartAddress = HitGroup();
             dispatchDesc.HitGroupTable.SizeInBytes = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
             dispatchDesc.HitGroupTable.StrideInBytes = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
-            dispatchDesc.Width = size.x;
-            dispatchDesc.Height = size.y;
+            dispatchDesc.Width = static_cast<UINT>(std::ceil(static_cast<float>(size.x) / downscaleFactor));
+            dispatchDesc.Height = static_cast<UINT>(std::ceil(static_cast<float>(size.y) / downscaleFactor));
             dispatchDesc.Depth = 1;
 
             return dispatchDesc;
