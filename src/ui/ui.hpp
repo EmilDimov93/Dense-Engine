@@ -53,11 +53,13 @@ namespace DE
         UINT textureDescriptorSize = 0;
         std::vector<UINT> freeTextureSlots;
 
+        PerformanceMonitor performanceMonitor;
+
         uint32_t sidebarWidthPx = OPTIMAL_SIDEBAR_WIDTH;
 
         bool isResizingSidebar = false;
 
-        PerformanceMonitor performanceMonitor;
+        bool isScripterWindowOpen = false;
 
         bool updateCamera(Camera &camera);
         bool updateSidebarSize();

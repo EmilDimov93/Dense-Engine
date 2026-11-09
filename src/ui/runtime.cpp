@@ -78,126 +78,160 @@ namespace DE
 
         ImGui::Begin("Sidebar", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-        if (ImGui::Button("Load", ImVec2(0, 0)))
         {
-            std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle, {L"DE Scene", L"*.descene"});
-            if (selectedPath)
-                command = commands::LoadScene(selectedPath->string());
+            if (ImGui::Button("Load", ImVec2(0, 0)))
+            {
+                std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle, {L"DE Scene", L"*.descene"});
+                if (selectedPath)
+                    command = commands::LoadScene(selectedPath->string());
+            }
+
+            const ImVec2 loadBtnSize = ImGui::GetItemRectSize();
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Save", ImVec2(0, 0)))
+            {
+                command = commands::SaveScene();
+            }
+
+            const ImVec2 saveBtnSize = ImGui::GetItemRectSize();
+
+            ImGui::SameLine();
+
+            const float topBarRemainingWidth = sidebarWidthPx - loadBtnSize.x - saveBtnSize.x - style.ItemSpacing.x * 4;
+
+            performanceMonitor.draw(topBarRemainingWidth, io.Framerate, frameFeedback.rayCount);
         }
-
-        const ImVec2 loadBtnSize = ImGui::GetItemRectSize();
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Save", ImVec2(0, 0)))
-        {
-            command = commands::SaveScene();
-        }
-
-        const ImVec2 saveBtnSize = ImGui::GetItemRectSize();
-
-        ImGui::SameLine();
-
-        const float topBarRemainingWidth = sidebarWidthPx - loadBtnSize.x - saveBtnSize.x - style.ItemSpacing.x * 4;
-
-        performanceMonitor.draw(topBarRemainingWidth, io.Framerate, frameFeedback.rayCount);
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
-        constexpr ImGuiTableFlags scriptTableFlags = ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInnerH;
-        static bool isScripterWindowOpen = false;
-        if (ImGui::BeginTable("ScriptTable", 2, scriptTableFlags))
         {
-            ImGui::TableSetupColumn("Script", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableHeadersRow();
+            ImGui::BeginGroup();
 
-            ImGui::TableNextRow();
+            ImGui::Checkbox("DLOD", &dynamicLOD);
 
-            const bool wasScriptWindowOpen = isScripterWindowOpen;
-            if (isScripterWindowOpen)
-            {
-                ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(225, 22, 28, 255));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(180, 22, 28, 255));
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 22, 28, 255));
-            }
-            ImGui::TableNextColumn();
-            if (ImGui::Button(isScripterWindowOpen ? "Close" : "Open", ImVec2(-FLT_MIN, 0)))
-            {
-                isScripterWindowOpen = !isScripterWindowOpen;
-                if (isScripterWindowOpen)
-                    sidebarWidthPx = OPTIMAL_SIDEBAR_SCRIPTER_WIDTH;
-            }
-            if (wasScriptWindowOpen)
-                ImGui::PopStyleColor(3);
+            if (dynamicLOD)
+                ImGui::BeginDisabled(true);
 
-            const bool wasScriptRunning = isScriptRunning;
-            if (isScriptRunning)
-            {
-                ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(225, 22, 28, 255));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(180, 22, 28, 255));
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 22, 28, 255));
-            }
-            ImGui::TableNextColumn();
-            if (ImGui::Button(isScriptRunning ? "Stop" : "Run", ImVec2(-FLT_MIN, 0)))
-                isScriptRunning = !isScriptRunning;
-            if (wasScriptRunning)
-                ImGui::PopStyleColor(3);
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(22.f);
+            if (ImGui::InputScalar("SSAA", ImGuiDataType_U32, &clientState.ssaaSamples))
+                clientState.ssaaSamples = std::clamp(clientState.ssaaSamples, 1u, 32u);
 
-            ImGui::EndTable();
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(15.f);
+            if (ImGui::InputScalar("Downscale", ImGuiDataType_U32, &clientState.downscaleFactor))
+                clientState.downscaleFactor = std::clamp(clientState.downscaleFactor, 1u, 4u);
+
+            if (dynamicLOD)
+                ImGui::EndDisabled();
+
+            ImGui::EndGroup();
+
+            const float borderPaddingPx = 4.f;
+            const ImVec2 groupMin = ImGui::GetItemRectMin();
+            const ImVec2 groupMax = ImGui::GetItemRectMax();
+            const ImVec2 borderMin(groupMin.x - borderPaddingPx, groupMin.y - borderPaddingPx);
+            const ImVec2 borderMax(groupMax.x + borderPaddingPx, groupMax.y + borderPaddingPx);
+            ImGui::GetWindowDrawList()->AddRect(borderMin, borderMax, ImGui::GetColorU32(ImGuiCol_Border), 3.f, 0, 1.f);
+
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Dynamic Level Of Detail (DLOD) automatically \nadjusts SSAA and Downscale to sustain stable FPS\n\nEffect:\n- more stable FPS\n- lower image quality while changing scene");
         }
 
-        const float scripterWindowStartY = ImGui::GetCursorPos().y;
-
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
-        ImGui::Checkbox("DLOD", &dynamicLOD);
+        {
+            ImGui::Checkbox("VSync", &vsync);
 
-        if(!dynamicLOD)
-            onDemandRendering = false;
+            ImGui::SameLine();
+            ImGui::Checkbox("ODR", &onDemandRendering);
 
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(22.f);
-        if (ImGui::InputScalar("SSAA", ImGuiDataType_U32, &clientState.ssaaSamples))
-            clientState.ssaaSamples = std::clamp(clientState.ssaaSamples, 1u, 32u);
-
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(22.f);
-        if (ImGui::InputScalar("Downscale", ImGuiDataType_U32, &clientState.downscaleFactor))
-            clientState.downscaleFactor = std::clamp(clientState.downscaleFactor, 1u, 4u);
-
-        ImGui::Dummy(ImVec2(0.0f, 8.0f));
-
-        ImGui::Checkbox("VSync", &vsync);
-
-        ImGui::SameLine();
-        ImGui::Checkbox("ODR", &onDemandRendering);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("On-Demand Rendering (ODR) renders a \nnew frame only when something changes\n\nEffect:\n- rests the GPU when the scene is static\n- lower power use and heat");
+        }
 
         const float maxSliderWidth = std::min(ImGui::GetContentRegionAvail().x, 130.f);
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
-        ImGui::SetNextItemWidth(maxSliderWidth);
-        const char *fovFormat = (camera.fov < 0.01f) ? "ORTHO" : "%.f";
-        ImGui::SliderScalar("FOV", ImGuiDataType_Float, &camera.fov, &MIN_FOV, &MAX_FOV, fovFormat);
+        {
+            ImGui::SetNextItemWidth(maxSliderWidth);
+            const char *fovFormat = (camera.fov < 0.01f) ? "ORTHO" : "%.f";
+            ImGui::SliderScalar("FOV", ImGuiDataType_Float, &camera.fov, &MIN_FOV, &MAX_FOV, fovFormat);
+        }
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
-        ImGui::SetNextItemWidth(maxSliderWidth);
-        ImGui::SliderScalar("Move Speed", ImGuiDataType_Float, &camera.moveSpeed, &Camera::MIN_MOVE_SPEED, &Camera::MAX_MOVE_SPEED, "%.1f", ImGuiSliderFlags_Logarithmic);
+        {
+            ImGui::SetNextItemWidth(maxSliderWidth);
+            ImGui::SliderScalar("Move Speed", ImGuiDataType_Float, &camera.moveSpeed, &Camera::MIN_MOVE_SPEED, &Camera::MAX_MOVE_SPEED, "%.1f", ImGuiSliderFlags_Logarithmic);
+        }
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
-        drawTableXYZHeader("Background");
+        {
+            constexpr ImGuiTableFlags scriptTableFlags = ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInnerH;
+            if (ImGui::BeginTable("ScriptTable", 2, scriptTableFlags))
+            {
+                ImGui::TableSetupColumn("Script", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableHeadersRow();
 
-        drawTableXYZRow("Background", sceneDescription.clearColor.x, sceneDescription.clearColor.y, sceneDescription.clearColor.z, MIN_COLOR, MAX_COLOR, hasSceneChanged, isDragging);
+                ImGui::TableNextRow();
 
-        ImGui::EndTable();
+                const bool wasScriptWindowOpen = isScripterWindowOpen;
+                if (isScripterWindowOpen)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(225, 22, 28, 255));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(180, 22, 28, 255));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 22, 28, 255));
+                }
+                ImGui::TableNextColumn();
+                if (ImGui::Button(isScripterWindowOpen ? "Close" : "Open", ImVec2(-FLT_MIN, 0)))
+                {
+                    isScripterWindowOpen = !isScripterWindowOpen;
+                    if (isScripterWindowOpen)
+                        sidebarWidthPx = OPTIMAL_SIDEBAR_SCRIPTER_WIDTH;
+                }
+                if (wasScriptWindowOpen)
+                    ImGui::PopStyleColor(3);
+
+                const bool wasScriptRunning = isScriptRunning;
+                if (isScriptRunning)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(225, 22, 28, 255));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(180, 22, 28, 255));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 22, 28, 255));
+                }
+                ImGui::TableNextColumn();
+                if (ImGui::Button(isScriptRunning ? "Stop" : "Run", ImVec2(-FLT_MIN, 0)))
+                    isScriptRunning = !isScriptRunning;
+                if (wasScriptRunning)
+                    ImGui::PopStyleColor(3);
+
+                ImGui::EndTable();
+            }
+        }
+        const float scripterWindowStartY = ImGui::GetCursorPos().y;
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
-        ImGui::SetNextItemWidth(maxSliderWidth);
-        hasSceneChanged |= ImGui::SliderScalar("Exposure", ImGuiDataType_Float, &sceneDescription.exposure, &MIN_EXPOSURE, &MAX_EXPOSURE, "%.2f", ImGuiSliderFlags_Logarithmic);
+        {
+            drawTableXYZHeader("Background");
+
+            drawTableXYZRow("Background", sceneDescription.clearColor.x, sceneDescription.clearColor.y, sceneDescription.clearColor.z, MIN_COLOR, MAX_COLOR, hasSceneChanged, isDragging);
+
+            ImGui::EndTable();
+        }
+
+        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+
+        {
+            ImGui::SetNextItemWidth(maxSliderWidth);
+            hasSceneChanged |= ImGui::SliderScalar("Exposure", ImGuiDataType_Float, &sceneDescription.exposure, &MIN_EXPOSURE, &MAX_EXPOSURE, "%.2f", ImGuiSliderFlags_Logarithmic);
+        }
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
@@ -210,34 +244,36 @@ namespace DE
 
         ImGui::SeparatorText("Model Instances");
 
-        if (ImGui::Button("Add Instance", ImVec2(-FLT_MIN, 0)))
         {
-            ImGui::OpenPopup("Models popup");
-        }
-
-        if (ImGui::BeginPopup("Models popup"))
-        {
-            ImGui::BeginTable("Select model", 1, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_Borders);
-            ImGui::TableSetupColumn("Model name");
-            ImGui::TableHeadersRow();
-
-            for (uint32_t modelIndex = 0; modelIndex < sceneDescription.modelDescriptions.size(); modelIndex++)
+            if (ImGui::Button("Add Instance", ImVec2(-FLT_MIN, 0)))
             {
-                const ModelDescription &modelDescription = sceneDescription.modelDescriptions[modelIndex];
-                const std::string fileName = std::filesystem::path(modelDescription.filePath).filename().string();
-
-                ImGui::TableNextRow();
-                ImGui::TableNextColumn();
-                ImGui::PushID(modelIndex);
-                if (ImGui::Selectable(fileName.c_str()))
-                {
-                    command = commands::AddInstance(modelDescription.handle);
-                }
-                ImGui::PopID();
+                ImGui::OpenPopup("Models popup");
             }
 
-            ImGui::EndTable();
-            ImGui::EndPopup();
+            if (ImGui::BeginPopup("Models popup"))
+            {
+                ImGui::BeginTable("Select model", 1, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_Borders);
+                ImGui::TableSetupColumn("Model name");
+                ImGui::TableHeadersRow();
+
+                for (uint32_t modelIndex = 0; modelIndex < sceneDescription.modelDescriptions.size(); modelIndex++)
+                {
+                    const ModelDescription &modelDescription = sceneDescription.modelDescriptions[modelIndex];
+                    const std::string fileName = std::filesystem::path(modelDescription.filePath).filename().string();
+
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::PushID(modelIndex);
+                    if (ImGui::Selectable(fileName.c_str()))
+                    {
+                        command = commands::AddInstance(modelDescription.handle);
+                    }
+                    ImGui::PopID();
+                }
+
+                ImGui::EndTable();
+                ImGui::EndPopup();
+            }
         }
 
         const float tableRowHeight = ImGui::GetTextLineHeight() + style.CellPadding.y * 2.f;
@@ -291,37 +327,39 @@ namespace DE
 
         ImGui::SeparatorText("Lights");
 
-        if (ImGui::Button("Add Light", ImVec2(-FLT_MIN, 0)))
         {
-            ImGui::OpenPopup("Lights popup");
-        }
-
-        if (ImGui::BeginPopup("Lights popup"))
-        {
-            ImGui::BeginTable("Select light type", 1, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_Borders);
-            ImGui::TableSetupColumn("Light type");
-            ImGui::TableHeadersRow();
-
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::PushID(0);
-            if (ImGui::Selectable("Point"))
+            if (ImGui::Button("Add Light", ImVec2(-FLT_MIN, 0)))
             {
-                command = commands::AddLight(commands::AddLight::LightType::Point);
+                ImGui::OpenPopup("Lights popup");
             }
-            ImGui::PopID();
 
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::PushID(1);
-            if (ImGui::Selectable("Directional"))
+            if (ImGui::BeginPopup("Lights popup"))
             {
-                command = commands::AddLight(commands::AddLight::LightType::Directional);
-            }
-            ImGui::PopID();
+                ImGui::BeginTable("Select light type", 1, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_Borders);
+                ImGui::TableSetupColumn("Light type");
+                ImGui::TableHeadersRow();
 
-            ImGui::EndTable();
-            ImGui::EndPopup();
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::PushID(0);
+                if (ImGui::Selectable("Point"))
+                {
+                    command = commands::AddLight(commands::AddLight::LightType::Point);
+                }
+                ImGui::PopID();
+
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::PushID(1);
+                if (ImGui::Selectable("Directional"))
+                {
+                    command = commands::AddLight(commands::AddLight::LightType::Directional);
+                }
+                ImGui::PopID();
+
+                ImGui::EndTable();
+                ImGui::EndPopup();
+            }
         }
 
         const float labelColumnWidth = ImGui::CalcTextSize("Intensity").x + style.ItemSpacing.x;
