@@ -115,8 +115,8 @@ namespace DE
                 ImGui::BeginDisabled(true);
 
             ImGui::SameLine();
-            ImGui::SetNextItemWidth(22.f);
-            if (ImGui::InputScalar("SSAA", ImGuiDataType_U32, &clientState.ssaaSamples))
+            ImGui::SetNextItemWidth(26.f);
+            if (ImGui::InputScalar("SSAA", ImGuiDataType_U32, &clientState.ssaaSamples, nullptr, nullptr, "%ux"))
                 clientState.ssaaSamples = std::clamp(clientState.ssaaSamples, 1u, 32u);
 
             ImGui::SameLine();

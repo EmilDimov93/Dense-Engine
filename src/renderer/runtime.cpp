@@ -9,6 +9,7 @@
 #include "core/assertions.hpp"
 
 #include <fstream>
+#include <chrono>
 
 namespace DE
 {
@@ -154,7 +155,8 @@ namespace DE
             void *data = nullptr;
             dxa(captureBuffer->Map(0, nullptr, &data), "Failed to map capture buffer");
 
-            std::ofstream file("output.ppm", std::ios::binary);
+            const auto currentTime = std::chrono::floor<std::chrono::seconds>(std::chrono::zoned_time{std::chrono::current_zone(), std::chrono::system_clock::now()}.get_local_time());
+            std::ofstream file(std::format("screenshot_{:%H-%M-%S}.ppm", currentTime), std::ios::binary);
             file << "P6\n"
                  << swapChainSize.x << " " << swapChainSize.y << "\n255\n";
 
