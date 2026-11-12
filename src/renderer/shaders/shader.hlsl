@@ -130,6 +130,7 @@ struct RayPayload
 {
     float4 color;
     uint depth;
+    uint rayCount;
 };
 
 struct ShadowPayload
@@ -144,6 +145,7 @@ void RayGen()
     uint2 dims = DispatchRaysDimensions().xy * clientState.downscaleFactor;
     
     float3 color = {0.f, 0.f, 0.f};
+    uint rayCount = 0;
     for(uint i = 0; i < clientState.ssaaSamples; i++)
     {
         const float2 offset = frac(float2(0.5f + 0.7548776662466927f * i, 0.5f + 0.5698402909980532f * i)) - 0.5f;
@@ -171,9 +173,9 @@ void RayGen()
         ray.TMin = 0.001f;
         ray.TMax = 1000.f;
 
-        RayPayload payload = { float4(0.f, 0.f, 0.f, 0.f), 0 };
+        RayPayload payload = { float4(0.f, 0.f, 0.f, 0.f), 0, 0 };
         TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
-        InterlockedAdd(frameFeedback[0].rayCount, 1);
+        rayCount += 1 + payload.rayCount;
 
         color += payload.color.xyz;
     }
@@ -185,6 +187,8 @@ void RayGen()
     for (uint y = 0; y < clientState.downscaleFactor; y++)
         for (uint x = 0; x < clientState.downscaleFactor; x++)
             output[pixel + uint2(x, y)] = result;
+
+    InterlockedAdd(frameFeedback[0].rayCount, rayCount);
 }
 
 [shader("miss")]
@@ -249,9 +253,9 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         reflectionRay.TMin = 0.001f;
         reflectionRay.TMax = 1000.f;
 
-        RayPayload reflectionPayload = {float4(environment.clearColor, 1.f), payload.depth + 1};
+        RayPayload reflectionPayload = { float4(environment.clearColor, 1.f), payload.depth + 1, 0 };
         TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, reflectionRay, reflectionPayload);
-        InterlockedAdd(frameFeedback[0].rayCount, 1);
+        payload.rayCount += 1 + reflectionPayload.rayCount;
 
         reflectedColor = reflectionPayload.color.xyz;
     }
@@ -278,7 +282,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
 
         ShadowPayload shadowPayload = { 0.f };
         TraceRay(scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, shadowRay, shadowPayload);
-        InterlockedAdd(frameFeedback[0].rayCount, 1);
+        payload.rayCount++;
 
         const float cosLightNormal = clamp(dot(faceNormalWorld, lightDir), 0.f, 1.f);
         const float lightAmount = shadowPayload.visibility * cosLightNormal * directionalLights[i].intensity;
@@ -307,7 +311,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
 
         ShadowPayload shadowPayload = { 0.f };
         TraceRay(scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, shadowRay, shadowPayload);
-        InterlockedAdd(frameFeedback[0].rayCount, 1);
+        payload.rayCount++;
 
         const float cosLightNormal = clamp(dot(faceNormalWorld, lightDir), 0.f, 1.f);
         const float lightAmount = shadowPayload.visibility * cosLightNormal * pointLights[i].intensity / (distance * distance);
@@ -336,9 +340,9 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         refractedRay.TMin = 0.001f;
         refractedRay.TMax = 1000.f;
 
-        RayPayload refractedPayload = {float4(environment.clearColor, 1.f), payload.depth + 1};
+        RayPayload refractedPayload = { float4(environment.clearColor, 1.f), payload.depth + 1, 0 };
         TraceRay(scene, RAY_FLAG_NONE, 0xFF, 0, 0, 0, refractedRay, refractedPayload);
-        InterlockedAdd(frameFeedback[0].rayCount, 1);
+        payload.rayCount += 1 + refractedPayload.rayCount;
 
         payload.color.rgb = lerp(refractedPayload.color.rgb, payload.color.rgb, hitTriangleFrontSide ? albedo.a : 0.f);
     }
