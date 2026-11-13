@@ -49,7 +49,7 @@ namespace DE
             commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::VertexBuffer, scene.getVertexBufferAddress());
             commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::IndexBuffer, scene.getIndexBufferAddress());
             commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::TLASInstanceDataBuffer, scene.getTLASInstanceDataAddress());
-            commands.list->SetComputeRootDescriptorTable(dxwrap::RootParams::Textures, descriptorHeap.gpuHandle(dxwrap::DESCRIPTOR_HEAP_FIRST_TEXTURE_INDEX));
+            commands.list->SetComputeRootDescriptorTable(dxwrap::RootParams::Textures, descriptorHeap.gpuHandle(dxwrap::DESCRIPTOR_HEAP_BACKGROUND_TEXTURE_INDEX));
             commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::PointLightBuffer, scene.getPointLightBufferAddress());
             commands.list->SetComputeRootShaderResourceView(dxwrap::RootParams::DirectionalLightBuffer, scene.getDirectionalLightBufferAddress());
             commands.list->SetComputeRoot32BitConstants(dxwrap::RootParams::LightCounts, sizeof(gpu::LightCounts) / 4, &lightCounts, 0);

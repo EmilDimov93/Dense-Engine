@@ -19,6 +19,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <optional>
 
 namespace DE
 {
@@ -71,6 +72,9 @@ namespace DE
         std::unordered_map<Handle, uint32_t> modelMaterialArrayOffsets;
 
         gpu::Environment environment;
+
+        std::optional<dxwrap::Texture> backgroundTexture;
+        std::string backgroundTextureFilePath;
 
         ID3D12ResourcePtr instanceBuffer;
 

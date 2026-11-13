@@ -57,6 +57,8 @@ namespace DE
         std::vector<PointLightDescription> pointLightDescriptions;
         std::vector<DirectionalLightDescription> directionalLightDescriptions;
 
+        std::string backgroundTextureFilePath;
+
         XMFLOAT3 clearColor = {0.f, 0.f, 0.f};
         float exposure = 1.f;
         XMFLOAT3 ambient = {0.2f, 0.2f, 0.2f};

@@ -19,7 +19,7 @@ namespace DE
     {
         std::ifstream file(filePath);
         if (!file.is_open())
-            fatal("Failed to open OBJ file");
+            fatal("Failed to open OBJ file (" + filePath + ")");
 
         ModelUploadData result;
         std::unordered_map<std::string, uint32_t> materialIndexByName;
@@ -257,7 +257,7 @@ namespace DE
         stbi_uc *decodedPixels = stbi_load(filePath.c_str(), &width, &height, nullptr, STBI_rgb_alpha);
 
         if (!decodedPixels)
-            fatal("Failed to load diffuse texture (map_Kd)");
+            fatal("Failed to load texture (" + filePath + ")");
 
         textureUploadData.width = static_cast<uint32_t>(width);
         textureUploadData.height = static_cast<uint32_t>(height);

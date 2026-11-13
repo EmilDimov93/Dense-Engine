@@ -103,9 +103,27 @@ namespace DE
             buildTLAS();
         }
 
+        if (!sceneDescription.backgroundTextureFilePath.empty() && sceneDescription.backgroundTextureFilePath != backgroundTextureFilePath)
+        {
+            const D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{
+                .Format = dxwrap::TEXTURE_FORMAT,
+                .ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D,
+                .Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING,
+                .Texture2D = {.MipLevels = 1}};
+
+            TextureUploadData backgroundTextureUploadData = loadTexture(sceneDescription.backgroundTextureFilePath);
+
+            backgroundTexture.emplace(device, commandList, backgroundTextureUploadData.pixels, XMUINT2(backgroundTextureUploadData.width, backgroundTextureUploadData.height));
+
+            device->CreateShaderResourceView(backgroundTexture->resource, &srvDesc, descriptorHeap->cpuHandle(static_cast<UINT>(dxwrap::DESCRIPTOR_HEAP_BACKGROUND_TEXTURE_INDEX)));
+
+            backgroundTextureFilePath = sceneDescription.backgroundTextureFilePath;
+        }
+
         environment.clearColor = sceneDescription.clearColor;
         environment.exposure = sceneDescription.exposure;
         environment.ambient = sceneDescription.ambient;
+        environment.hasBackgroundTexture = !sceneDescription.backgroundTextureFilePath.empty();
 
         pointLights.clear();
         pointLights.reserve(sceneDescription.pointLightDescriptions.size());

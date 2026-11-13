@@ -74,6 +74,7 @@ struct Environment
     float3 clearColor;
     float exposure;
     float3 ambient;
+    bool hasBackgroundTexture;
 };
 
 ConstantBuffer<Environment> environment : register(b1);
@@ -109,6 +110,8 @@ static const uint MAX_REFLECTION_BOUNCES = 1;
 static const uint MAX_REFRACTION_DEPTH = 4;
 
 static const float AIR_IOR = 1.0003f;
+
+static const float PI = 3.14159265f;
 
 // Helpers
 
@@ -191,10 +194,19 @@ void RayGen()
     InterlockedAdd(frameFeedback[0].rayCount, rayCount);
 }
 
+float3 sampleBackground(float3 dir)
+{
+    if (!environment.hasBackgroundTexture)
+        return environment.clearColor;
+
+    float2 uv = float2(atan2(dir.z, dir.x) / (2.f * PI) + 0.5f, acos(clamp(dir.y, -1.f, 1.f)) / PI);
+    return textures[0].SampleLevel(linearWrapSampler, uv, 0.f).rgb;
+}
+
 [shader("miss")]
 void Miss(inout RayPayload payload)
 {
-    payload.color = float4(environment.clearColor, 1.f);
+    payload.color = float4(sampleBackground(WorldRayDirection()), 1.f);
 }
 
 [shader("miss")]
@@ -233,7 +245,7 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
 
     float4 albedo = hitMaterial.diffuse;
     if (hitMaterial.textureIndex >= 0)
-        albedo *= textures[NonUniformResourceIndex(hitMaterial.textureIndex)].SampleLevel(linearWrapSampler, uv, 0.f);
+        albedo *= textures[NonUniformResourceIndex(hitMaterial.textureIndex + 1)].SampleLevel(linearWrapSampler, uv, 0.f);
 
     float3 hitPos = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 
@@ -244,12 +256,13 @@ void ClosestHit(inout RayPayload payload, BuiltInTriangleIntersectionAttributes 
         hitTriangleFrontSide = false;
     }
 
-    float3 reflectedColor = environment.clearColor;
-    if(payload.depth < MAX_REFLECTION_BOUNCES && !clientState.lowerQuality)
+    const float3 reflectDir = reflect(WorldRayDirection(), faceNormalWorld);
+    float3 reflectedColor = sampleBackground(reflectDir);
+    if (payload.depth < MAX_REFLECTION_BOUNCES && !clientState.lowerQuality)
     {
         RayDesc reflectionRay;
         reflectionRay.Origin = hitPos - WorldRayDirection() * 0.001f;
-        reflectionRay.Direction = reflect(WorldRayDirection(), faceNormalWorld);
+        reflectionRay.Direction = reflectDir;
         reflectionRay.TMin = 0.001f;
         reflectionRay.TMax = 1000.f;
 

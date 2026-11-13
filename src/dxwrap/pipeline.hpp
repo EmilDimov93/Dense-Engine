@@ -50,7 +50,7 @@ namespace DE::dxwrap
 
             D3D12_DESCRIPTOR_RANGE textureRange{
                 .RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
-                .NumDescriptors = MAX_TEXTURES,
+                .NumDescriptors = MAX_TEXTURES + 1,
                 .BaseShaderRegister = 0,
                 .RegisterSpace = 1,
                 .OffsetInDescriptorsFromTableStart = 0};
@@ -95,7 +95,7 @@ namespace DE::dxwrap
             rootParams[RootParams::Environment].Constants = {
                 .ShaderRegister = 1,
                 .RegisterSpace = 0,
-                .Num32BitValues = 7};
+                .Num32BitValues = 8};
             rootParams[RootParams::Camera].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
             rootParams[RootParams::Camera].Constants = {
                 .ShaderRegister = 2,
