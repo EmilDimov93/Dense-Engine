@@ -21,7 +21,12 @@ namespace DE
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGui::GetIO().IniFilename = nullptr;
+
+        ImGuiStyle &style = ImGui::GetStyle();
+        ImVec4 *colors = style.Colors;
+        ImGuiIO &io = ImGui::GetIO();
+
+        io.IniFilename = nullptr;
         ImGui::StyleColorsDark();
 
         const ImVec4 green = ImVec4(0.24f, 0.68f, 0.42f, 1.00f);
@@ -31,9 +36,6 @@ namespace DE
 
         auto withAlpha = [](ImVec4 c, float a)
         { c.w = a; return c; };
-
-        ImGuiStyle &style = ImGui::GetStyle();
-        ImVec4 *colors = style.Colors;
 
         colors[ImGuiCol_Button] = withAlpha(green, 0.12f);
         colors[ImGuiCol_ButtonHovered] = withAlpha(green, 0.35f);
@@ -97,9 +99,9 @@ namespace DE
         };
         ImGui_ImplDX12_Init(&initInfo);
 
-        ImFont *font = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(JetBrainsMonoNLExtraBold_compressed_data, JetBrainsMonoNLExtraBold_compressed_size, 14.0f);
+        ImFont *font = io.Fonts->AddFontFromMemoryCompressedTTF(JetBrainsMonoNLExtraBold_compressed_data, JetBrainsMonoNLExtraBold_compressed_size, 14.0f);
         if (font != nullptr)
-            ImGui::GetIO().FontDefault = font;
+            io.FontDefault = font;
     }
 
     UI::~UI()
