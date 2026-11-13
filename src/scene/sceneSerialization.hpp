@@ -97,13 +97,23 @@ namespace DE
 
         outputFile << "Environment" << '\n';
 
+        std::string backgroundTextureFilePath = "none";
+        if (!sceneDescription.backgroundTextureFilePath.empty())
+        {
+            std::filesystem::path relativeFilePath = std::filesystem::relative(sceneDescription.backgroundTextureFilePath, filePath.parent_path());
+            if (relativeFilePath.empty())
+                relativeFilePath = sceneDescription.backgroundTextureFilePath;
+            backgroundTextureFilePath = relativeFilePath.generic_string();
+        }
+
         outputFile << sceneDescription.clearColor.x << '\n'
                    << sceneDescription.clearColor.y << '\n'
                    << sceneDescription.clearColor.z << '\n'
                    << sceneDescription.exposure << '\n'
                    << sceneDescription.ambient.x << '\n'
                    << sceneDescription.ambient.y << '\n'
-                   << sceneDescription.ambient.z << '\n';
+                   << sceneDescription.ambient.z << '\n'
+                   << backgroundTextureFilePath << '\n';
 
         outputFile.close();
         if (outputFile.fail())
@@ -370,6 +380,10 @@ namespace DE
                         break;
                     case 6:
                         newSceneDescription.ambient.z = stof(line);
+                        break;
+                    case 7:
+                        if (line != "none")
+                            newSceneDescription.backgroundTextureFilePath = (filePath.parent_path() / line).string();
                         break;
                     }
                     break;
