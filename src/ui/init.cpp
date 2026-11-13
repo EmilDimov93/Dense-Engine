@@ -51,6 +51,11 @@ namespace DE
         colors[ImGuiCol_TitleBgActive] = withAlpha(greenDark, 0.50f);
         colors[ImGuiCol_Tab] = withAlpha(greenDark, 0.30f);
         colors[ImGuiCol_TabHovered] = withAlpha(green, 0.35f);
+        colors[ImGuiCol_TabSelected] = withAlpha(green, 0.25f);
+        colors[ImGuiCol_TabSelectedOverline] = green;
+        colors[ImGuiCol_TabDimmed] = withAlpha(greenDark, 0.20f);
+        colors[ImGuiCol_TabDimmedSelected] = withAlpha(green, 0.15f);
+        colors[ImGuiCol_TabDimmedSelectedOverline] = withAlpha(green, 0.50f);
         colors[ImGuiCol_TextSelectedBg] = withAlpha(green, 0.20f);
         colors[ImGuiCol_ResizeGrip] = withAlpha(green, 0.08f);
         colors[ImGuiCol_ResizeGripHovered] = withAlpha(green, 0.28f);

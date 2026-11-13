@@ -60,7 +60,8 @@ namespace DE
         bool isResizingSidebar = false;
 
         bool isScripterWindowOpen = false;
-
+        bool isBackgroundImageTabOpen = false;
+        
         bool updateCamera(Camera &camera);
         bool updateSidebarSize();
         void updateShortcuts(std::optional<commands::Command> &command);

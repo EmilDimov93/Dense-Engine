@@ -219,11 +219,79 @@ namespace DE
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
         {
-            drawTableXYZHeader("Background");
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.f, 4.f));
+            ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 3.f);
+            ImGui::BeginChild("BackgroundGroup", ImVec2(0.f, 0.f), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
+            ImGui::PopStyleVar(2);
 
-            drawTableXYZRow("Background", sceneDescription.clearColor.x, sceneDescription.clearColor.y, sceneDescription.clearColor.z, MIN_COLOR, MAX_COLOR, hasSceneChanged, isDragging);
+            ImGui::AlignTextToFramePadding();
+            ImGui::TextUnformatted("Background");
+            ImGui::SameLine();
 
-            ImGui::EndTable();
+            const bool showImageTab = isBackgroundImageTabOpen || !sceneDescription.backgroundTextureFilePath.empty();
+
+            if (ImGui::BeginTabBar("BackgroundTabs"))
+            {
+                // Color tab
+                const bool isColorTabVisible = ImGui::BeginTabItem("Color", nullptr, showImageTab ? 0 : ImGuiTabItemFlags_SetSelected);
+                if (ImGui::IsItemClicked() && showImageTab)
+                {
+                    sceneDescription.backgroundTextureFilePath.clear();
+                    isBackgroundImageTabOpen = false;
+                    hasSceneChanged = true;
+                }
+                if (isColorTabVisible)
+                {
+                    const char *axisLabels[3] = {"X", "Y", "Z"};
+                    float *components[3] = {&sceneDescription.clearColor.x, &sceneDescription.clearColor.y, &sceneDescription.clearColor.z};
+
+                    for (int32_t i = 0; i < 3; i++)
+                    {
+                        if (i > 0)
+                            ImGui::SameLine();
+
+                        ImGui::AlignTextToFramePadding();
+                        ImGui::TextUnformatted(axisLabels[i]);
+                        ImGui::SameLine(0.f, 4.f);
+
+                        ImGui::PushID(i);
+                        ImGui::SetNextItemWidth(32.f);
+                        hasSceneChanged |= ImGui::DragFloat("##BackgroundColor", components[i], 0.01f, MIN_COLOR, MAX_COLOR, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+                        isDragging |= ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
+                        ImGui::PopID();
+                    }
+
+                    ImGui::EndTabItem();
+                }
+
+                // Image tab
+                const bool isImageTabVisible = ImGui::BeginTabItem("Image", nullptr, showImageTab ? ImGuiTabItemFlags_SetSelected : 0);
+                if (ImGui::IsItemClicked() && !showImageTab)
+                {
+                    isBackgroundImageTabOpen = true;
+                }
+                if (isImageTabVisible)
+                {
+                    const std::string buttonLabel = !sceneDescription.backgroundTextureFilePath.empty()
+                                                        ? std::filesystem::path(sceneDescription.backgroundTextureFilePath).filename().string()
+                                                        : "Choose image...";
+
+                    if (ImGui::Button(buttonLabel.c_str(), ImVec2(-FLT_MIN, 0)))
+                    {
+                        if (std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle, {L"Images", L"*.png;*.jpg;*.jpeg"}))
+                        {
+                            sceneDescription.backgroundTextureFilePath = selectedPath->string();
+                            hasSceneChanged = true;
+                        }
+                    }
+
+                    ImGui::EndTabItem();
+                }
+
+                ImGui::EndTabBar();
+            }
+
+            ImGui::EndChild();
         }
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
