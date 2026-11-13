@@ -75,22 +75,10 @@ namespace DE
                 }
                 else if (keyword == "map_Kd")
                 {
-                    std::filesystem::path texturePath = mtlPath.parent_path() / readRestOfLine(ss);
+                    TextureUploadData textureUploadData = loadTexture((mtlPath.parent_path() / readRestOfLine(ss)).string());
 
-                    int width = 0;
-                    int height = 0;
-                    int channelsInFile = 0;
-                    stbi_uc *decodedPixels = stbi_load(texturePath.string().c_str(), &width, &height, &channelsInFile, STBI_rgb_alpha);
-
-                    if (!decodedPixels)
-                    {
-                        warn("Failed to load diffuse texture (map_Kd)");
-                        continue;
-                    }
-
-                    currentMaterial->textureSize = XMUINT2(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
-                    currentMaterial->texture.assign(decodedPixels, decodedPixels + static_cast<size_t>(width) * height * 4);
-                    stbi_image_free(decodedPixels);
+                    currentMaterial->textureSize = XMUINT2(textureUploadData.width, textureUploadData.height);
+                    currentMaterial->texture = std::move(textureUploadData.pixels);
                 }
                 else if (keyword == "d")
                     ss >> currentMaterial->diffuse.w;
@@ -260,5 +248,21 @@ namespace DE
         }
 
         return data;
+    }
+
+    TextureUploadData loadTexture(const std::string &filePath)
+    {
+        TextureUploadData textureUploadData;
+        int width, height;
+        stbi_uc *decodedPixels = stbi_load(filePath.c_str(), &width, &height, nullptr, STBI_rgb_alpha);
+
+        if (!decodedPixels)
+            fatal("Failed to load diffuse texture (map_Kd)");
+
+        textureUploadData.width = static_cast<uint32_t>(width);
+        textureUploadData.height = static_cast<uint32_t>(height);
+        textureUploadData.pixels.assign(decodedPixels, decodedPixels + static_cast<size_t>(width) * height * 4);
+
+        return textureUploadData;
     }
 }
