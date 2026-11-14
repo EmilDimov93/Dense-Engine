@@ -166,6 +166,9 @@ namespace DE
         pointLightBuffer = nullptr;
         directionalLightBuffer = nullptr;
         tlas = {};
+
+        backgroundTexture.reset();
+        backgroundTextureFilePath.clear();
     }
 
     void Scene::releaseUploadBuffers()
@@ -173,6 +176,9 @@ namespace DE
         for (auto &[handle, model] : models)
             for (dxwrap::Texture &texture : model.textures)
                 texture.uploadBuffer = nullptr;
+
+        if (backgroundTexture)
+            backgroundTexture->uploadBuffer = nullptr;
     }
 
     void Scene::uploadGeometry()
