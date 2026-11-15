@@ -232,7 +232,6 @@ namespace DE
 
             if (ImGui::BeginTabBar("BackgroundTabs"))
             {
-                // Color tab
                 const bool isColorTabVisible = ImGui::BeginTabItem("Color", nullptr, showImageTab ? 0 : ImGuiTabItemFlags_SetSelected);
                 if (ImGui::IsItemClicked() && showImageTab)
                 {
@@ -264,12 +263,10 @@ namespace DE
                     ImGui::EndTabItem();
                 }
 
-                // Image tab
                 const bool isImageTabVisible = ImGui::BeginTabItem("Image", nullptr, showImageTab ? ImGuiTabItemFlags_SetSelected : 0);
                 if (ImGui::IsItemClicked() && !showImageTab)
-                {
                     isBackgroundImageTabOpen = true;
-                }
+
                 if (isImageTabVisible)
                 {
                     const std::string buttonLabel = !sceneDescription.backgroundTextureFilePath.empty()
@@ -299,6 +296,7 @@ namespace DE
         {
             ImGui::SetNextItemWidth(maxSliderWidth);
             hasSceneChanged |= ImGui::SliderScalar("Exposure", ImGuiDataType_Float, &sceneDescription.exposure, &MIN_EXPOSURE, &MAX_EXPOSURE, "%.2f", ImGuiSliderFlags_Logarithmic);
+            isDragging |= ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
         }
 
         ImGui::Dummy(ImVec2(0.0f, 8.0f));
@@ -432,7 +430,7 @@ namespace DE
 
         const float labelColumnWidth = ImGui::CalcTextSize("Intensity").x + style.ItemSpacing.x;
 
-        auto drawLabeledFloat = [&hasSceneChanged, labelColumnWidth](const char *name, float &value, float min, float max)
+        auto drawLabeledFloat = [&hasSceneChanged, &isDragging, labelColumnWidth](const char *name, float &value, float min, float max)
         {
             ImGui::PushID(name);
             const float rowStartX = ImGui::GetCursorPosX();
@@ -441,6 +439,7 @@ namespace DE
             ImGui::SameLine(rowStartX + labelColumnWidth);
             ImGui::SetNextItemWidth(-FLT_MIN);
             hasSceneChanged |= ImGui::DragFloat("##value", &value, 0.01f, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+            isDragging |= ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
             ImGui::PopID();
         };
 
