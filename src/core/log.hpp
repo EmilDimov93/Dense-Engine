@@ -35,6 +35,8 @@ namespace DE::log
                 return "Warning: " + msg;
             case Level::Fatal:
                 return "Fatal: " + msg;
+            default:
+                return msg;
             }
         }
 
