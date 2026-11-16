@@ -3,7 +3,7 @@
 
 #include "modelLoader.hpp"
 
-#include "core/assertions.hpp"
+#include "core/log.hpp"
 
 #include <fstream>
 #include <filesystem>
@@ -19,7 +19,7 @@ namespace DE
     {
         std::ifstream file(filePath);
         if (!file.is_open())
-            fatal("Failed to open OBJ file (" + filePath + ")");
+            log::fatal("Failed to open OBJ file (" + filePath + ")");
 
         ModelUploadData result;
         std::unordered_map<std::string, uint32_t> materialIndexByName;
@@ -47,7 +47,7 @@ namespace DE
             std::ifstream mtl(mtlPath);
             if (!mtl.is_open())
             {
-                warn("Failed to open MTL file");
+                log::warn("Failed to open MTL file");
                 return;
             }
 
@@ -243,21 +243,21 @@ namespace DE
         }
         else
         {
-            fatal("Failed to load model: extension not supported (" + ext + ")");
+            log::fatal("Failed to load model: extension not supported (" + ext + ")");
             return data;
         }
 
         return data;
     }
 
-    TextureUploadData loadTexture(const std::string &filePath)
+    [[nodiscard]] TextureUploadData loadTexture(const std::string &filePath)
     {
         TextureUploadData textureUploadData;
         int width, height;
         stbi_uc *decodedPixels = stbi_load(filePath.c_str(), &width, &height, nullptr, STBI_rgb_alpha);
 
         if (!decodedPixels)
-            fatal("Failed to load texture (" + filePath + ")");
+            log::fatal("Failed to load texture (" + filePath + ")");
 
         textureUploadData.width = static_cast<uint32_t>(width);
         textureUploadData.height = static_cast<uint32_t>(height);

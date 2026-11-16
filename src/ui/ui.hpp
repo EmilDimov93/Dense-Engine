@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/dxcommon.hpp"
+#include "core/log.hpp"
 #include "core/rect.hpp"
 
 #include "scene/sceneDescription.hpp"

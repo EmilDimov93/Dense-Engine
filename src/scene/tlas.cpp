@@ -3,11 +3,9 @@
 
 #include "scene.hpp"
 
-#include "core/assertions.hpp"
+#include "core/log.hpp"
 
 #include "dxwrap/buffer.hpp"
-
-#include <cstring>
 
 namespace DE
 {
@@ -22,7 +20,7 @@ namespace DE
 
             auto modelIt = models.find(instance.modelHandle);
             if (modelIt == models.end())
-                fatal("Model instance references unknown model");
+                log::fatal("Model instance references unknown model");
 
             const uint32_t materialOffset = modelMaterialArrayOffsets.at(instance.modelHandle);
 
@@ -47,7 +45,7 @@ namespace DE
         }
 
         if (instanceDescs.empty())
-            fatal("Cannot build TLAS without model instances");
+            log::fatal("Cannot build TLAS without model instances");
 
         instanceBuffer = createUploadBuffer<D3D12_RAYTRACING_INSTANCE_DESC>(device, instanceDescs);
 

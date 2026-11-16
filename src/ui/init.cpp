@@ -88,7 +88,7 @@ namespace DE
         {
             UI *ui = static_cast<UI *>(info->UserData);
             if (ui->freeTextureSlots.empty())
-                fatal("Out of ui texture descriptors");
+                log::fatal("Out of ui texture descriptors");
 
             const UINT slot = ui->freeTextureSlots.back();
             ui->freeTextureSlots.pop_back();

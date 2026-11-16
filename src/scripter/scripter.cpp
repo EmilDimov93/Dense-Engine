@@ -3,11 +3,12 @@
 
 #include "scripter.hpp"
 
-#include "core/assertions.hpp"
+#include "core/log.hpp"
 
 #include <stdexcept>
 #include <string>
 #include <algorithm>
+#include <cmath>
 
 namespace DE::scripter
 {
@@ -142,7 +143,7 @@ namespace DE::scripter
         }
         catch (const std::runtime_error &e)
         {
-            warn(e.what());
+            log::warn(e.what());
             return false;
         }
 

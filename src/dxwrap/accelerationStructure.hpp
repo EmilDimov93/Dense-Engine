@@ -4,7 +4,7 @@
 #pragma once
 
 #include "core/dxcommon.hpp"
-#include "core/assertions.hpp"
+#include "core/log.hpp"
 
 #include "buffer.hpp"
 
@@ -18,7 +18,7 @@ namespace DE::dxwrap
             D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo{};
             device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &prebuildInfo);
             if (prebuildInfo.ResultDataMaxSizeInBytes == 0)
-                fatal("Acceleration structure prebuild info returned zero size");
+                log::fatal("Acceleration structure prebuild info returned zero size");
 
             const uint64_t sizeBytes = alignUp(prebuildInfo.ResultDataMaxSizeInBytes, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT);
             const uint64_t scratchSizeBytes = alignUp(prebuildInfo.ScratchDataSizeInBytes, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BYTE_ALIGNMENT);

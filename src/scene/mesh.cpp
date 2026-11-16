@@ -5,7 +5,7 @@
 
 #include "dxwrap/buffer.hpp"
 
-#include "core/assertions.hpp"
+#include "core/log.hpp"
 
 namespace DE
 {
@@ -14,7 +14,7 @@ namespace DE
                                                                                                                        materialIndex(meshUploadData.materialIndex)
     {
         if (vertexCount == 0 || indexCount == 0 || indexCount % 3 != 0)
-            fatal("Invalid mesh upload data");
+            log::fatal("Invalid mesh upload data");
 
         vertexBuffer = createUploadBuffer<gpu::Vertex>(device, meshUploadData.vertices);
         
@@ -42,7 +42,7 @@ namespace DE
         D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO blasPrebuildInfo{};
         device->GetRaytracingAccelerationStructurePrebuildInfo(&blasInputs, &blasPrebuildInfo);
         if (blasPrebuildInfo.ResultDataMaxSizeInBytes == 0)
-            fatal("BLAS prebuild info returned zero size");
+            log::fatal("BLAS prebuild info returned zero size");
 
         blas.build(device, commandList, blasInputs);
     }

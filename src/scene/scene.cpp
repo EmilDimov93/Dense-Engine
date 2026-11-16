@@ -5,7 +5,7 @@
 
 #include "modelLoader.hpp"
 
-#include "core/assertions.hpp"
+#include "core/log.hpp"
 
 #include "dxwrap/buffer.hpp"
 #include "dxwrap/resourceBarrier.hpp"
@@ -225,7 +225,7 @@ namespace DE
             bool createMoreTextures = true;
             if (dxwrap::MAX_TEXTURES < textureOffset + model.textures.size())
             {
-                warn("Failed to create texture: texture limit exceeded");
+                log::warn("Failed to create texture: texture limit exceeded");
                 createMoreTextures = false;
             }
 

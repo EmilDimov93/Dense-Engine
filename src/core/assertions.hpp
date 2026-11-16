@@ -4,38 +4,13 @@
 #pragma once
 
 #include "dxcommon.hpp"
+#include "log.hpp"
 
-#include <iostream>
 #include <string_view>
 #include <format>
 
 namespace DE
 {
-    /**
-     * @brief Fatal - Prints message and aborts
-     * @param msg Message to print
-     */
-    [[noreturn]] inline void fatal(std::string_view msg)
-    {
-        std::cerr << msg << std::endl;
-
-#ifdef _MSC_VER
-        if (IsDebuggerPresent())
-            __debugbreak();
-#endif
-
-        abort();
-    }
-
-    /**
-     * @brief Warning - Prints warning message
-     * @param msg Message to print
-     */
-    inline void warn(std::string_view msg)
-    {
-        std::cerr << msg << std::endl;
-    }
-
     /**
      * @brief DirectX Assert - Prints message and aborts if DirectX function fails
      * @param result HRESULT to evaluate
@@ -44,9 +19,7 @@ namespace DE
     inline void dxa(HRESULT result, std::string_view msg)
     {
         if (FAILED(result))
-        {
-            fatal(std::format("{} (HRESULT 0x{:08X})", msg, static_cast<uint32_t>(result)));
-        }
+            log::fatal(std::format("{} (HRESULT 0x{:08X})", msg, static_cast<uint32_t>(result)));
     }
 
     /**
@@ -58,7 +31,7 @@ namespace DE
     void ptra(const T &ptr, std::string_view msg)
     {
         if (!ptr)
-            fatal(msg);
+            log::fatal(msg);
     }
 
     /**
@@ -69,8 +42,6 @@ namespace DE
     inline void hndla(HANDLE handle, std::string_view msg)
     {
         if (handle == nullptr || handle == INVALID_HANDLE_VALUE)
-        {
-            fatal(msg);
-        }
+            log::fatal(msg);
     }
 }

@@ -5,7 +5,7 @@
 
 #include "sceneDescription.hpp"
 
-#include "core/assertions.hpp"
+#include "core/log.hpp"
 #include "version.hpp"
 
 #include <fstream>
@@ -25,7 +25,7 @@ namespace DE
         std::ofstream outputFile(filePath);
         if (!outputFile.is_open())
         {
-            warn("Failed to save scene");
+            log::warn("Failed to save scene");
             return false;
         }
 
@@ -118,7 +118,7 @@ namespace DE
         outputFile.close();
         if (outputFile.fail())
         {
-            warn("Failed to save scene");
+            log::warn("Failed to save scene");
             return false;
         }
 
@@ -130,7 +130,7 @@ namespace DE
         std::ifstream inputFile(filePath);
         if (!inputFile.is_open())
         {
-            warn("Failed to load scene file");
+            log::warn("Failed to load scene file");
             return false;
         }
 
@@ -141,14 +141,14 @@ namespace DE
             std::string line;
             if (!std::getline(inputFile, line))
             {
-                warn("Scene file is empty");
+                log::warn("Scene file is empty");
                 return false;
             }
             else
             {
                 if (stoul(line) != DENSE_ENGINE_VERSION)
                 {
-                    warn("Scene file version mismatch. Scene(" + line + "). Client version (" + std::to_string(DENSE_ENGINE_VERSION) + ")");
+                    log::warn("Scene file version mismatch. Scene(" + line + "). Client version (" + std::to_string(DENSE_ENGINE_VERSION) + ")");
                 }
             }
 
@@ -399,7 +399,7 @@ namespace DE
         }
         catch (const std::exception &)
         {
-            warn("Failed to load scene: corrupted file");
+            log::warn("Failed to load scene: corrupted file");
             return false;
         }
 

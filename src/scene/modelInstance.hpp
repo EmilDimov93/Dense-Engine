@@ -3,10 +3,8 @@
 
 #pragma once
 
-#include "core/dxcommon.hpp"
 #include "core/handle.hpp"
 
-#include "model.hpp"
 #include "transform.hpp"
 
 namespace DE
