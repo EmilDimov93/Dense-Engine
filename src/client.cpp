@@ -138,6 +138,8 @@ namespace DE
 
             lastFrameFeedback = renderer.tick(ui, clientState, camera.toConstants(), renderThisFrame, vsync, requestedScreenshot);
         }
+
+        saveLog();
     }
 
     Handle Client::addModel(const std::string &filePath)
@@ -187,5 +189,24 @@ namespace DE
         const XMUINT2 size = renderer.getSwapChainSize();
         sidebarWidthPx = std::min(sidebarWidthPx, size.x - 1);
         return Rect{{sidebarWidthPx, 0}, {size.x - sidebarWidthPx, size.y}};
+    }
+
+    void Client::saveLog()
+    {
+        std::vector<log::Entry> entries;
+        log::getEntries(log::MAX_ENTRIES, entries);
+
+        std::ofstream file("log.txt");
+
+        const std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::tm localTime{};
+        localtime_s(&localTime, &now);
+
+        file << "Dense Engine Log - " << std::put_time(&localTime, "%Y-%m-%d - %H:%M:%S") << " - Version " << DENSE_ENGINE_VERSION << "\n\n";
+
+        for (auto &entry : entries)
+        {
+            file << entry.str() << '\n';
+        }
     }
 }

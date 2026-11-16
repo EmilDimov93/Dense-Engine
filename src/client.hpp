@@ -65,5 +65,7 @@ namespace DE
         Handle addDirectionalLight(XMFLOAT3 direction, float intensity, XMFLOAT3 color);
 
         Rect makeViewportRect(uint32_t sidebarWidthPx) const;
+
+        void saveLog();
     };
 }
