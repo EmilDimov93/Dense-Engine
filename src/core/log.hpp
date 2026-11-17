@@ -5,11 +5,15 @@
 
 #include "dxcommon.hpp"
 
+#include "version.hpp"
+
 #include <deque>
 #include <vector>
 #include <string>
 #include <string_view>
 #include <mutex>
+#include <fstream>
+#include <chrono>
 
 namespace DE::log
 {
@@ -76,9 +80,30 @@ namespace DE::log
         add(Level::Warning, msg);
     }
 
+    inline void save()
+    {
+        std::vector<Entry> entriesVec;
+        getEntries(MAX_ENTRIES, entriesVec);
+
+        std::ofstream file("log.txt");
+
+        const std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::tm localTime{};
+        localtime_s(&localTime, &now);
+
+        file << "Dense Engine Log - " << std::put_time(&localTime, "%Y-%m-%d - %H:%M:%S") << " - Version " << DENSE_ENGINE_VERSION << "\n\n";
+
+        for (auto &entry : entriesVec)
+        {
+            file << entry.str() << '\n';
+        }
+    }
+
     [[noreturn]] inline void fatal(std::string_view msg)
     {
         add(Level::Fatal, msg);
+
+        save();
 
 #ifdef _MSC_VER
         if (IsDebuggerPresent())
