@@ -21,6 +21,7 @@ set(ENGINE_SOURCES
     src/ui/init.cpp
     src/ui/runtime.cpp
     src/ui/scripterWindow.cpp
+    src/ui/logFooter.cpp
 
     src/scripter/scripter.cpp
 

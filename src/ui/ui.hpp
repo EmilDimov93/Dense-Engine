@@ -62,10 +62,13 @@ namespace DE
 
         bool isScripterWindowOpen = false;
         bool isBackgroundImageTabOpen = false;
+
+        std::vector<log::Entry> logEntries;
         
         bool updateCamera(Camera &camera);
         bool updateSidebarSize();
         void updateShortcuts(std::optional<commands::Command> &command);
         void drawScripterWindow(scripter::Script &script, Rect windowRect);
+        float drawLogFooter();
     };
 }

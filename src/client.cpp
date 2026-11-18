@@ -17,6 +17,8 @@ namespace DE
     {
         renderer.setViewportRect(makeViewportRect(ui.getSidebarWidthPx()));
 
+        log::info("Dense Engine(v" + std::to_string(DENSE_ENGINE_VERSION) + ") started");
+
         // Default light (sun)
         addDirectionalLight({0.f, 1.f, 0.f}, 1.f, {1.f, 1.f, 1.f});
 

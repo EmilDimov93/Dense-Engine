@@ -44,6 +44,9 @@ namespace DE::log
             }
         }
 
+        Level getLevel() const { return level; }
+        const std::string &getMsg() const { return msg; }
+
     private:
         Level level;
         std::string msg;

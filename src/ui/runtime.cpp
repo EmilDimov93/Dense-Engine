@@ -23,29 +23,7 @@ namespace DE
         ImGui::TableSetupColumn("Z");
         ImGui::TableHeadersRow();
     }
-    void drawLogLevelLabel(log::Level level)
-    {
-        const char *label = "";
-        ImVec4 color{1.f, 1.f, 1.f, 1.f};
 
-        switch (level)
-        {
-        case log::Level::Info:
-            label = "Info";
-            color = ImVec4(0.40f, 0.70f, 1.00f, 1.f);
-            break;
-        case log::Level::Warning:
-            label = "Warning";
-            color = ImVec4(1.00f, 0.80f, 0.00f, 1.f);
-            break;
-        case log::Level::Fatal:
-            label = "Fatal";
-            color = ImVec4(0.88f, 0.09f, 0.11f, 1.f);
-            break;
-        }
-
-        ImGui::TextColored(color, "%s", label);
-    }
     void drawTableXYZRow(const char *name, float &x, float &y, float &z, float min, float max, bool &hasSceneChanged, bool &isDragging)
     {
         ImGui::PushID(name);
@@ -95,8 +73,10 @@ namespace DE
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
+        const float footerHeight = drawLogFooter();
+
         ImGui::SetNextWindowPos({0.f, 0.f});
-        ImGui::SetNextWindowSize({static_cast<float>(sidebarWidthPx), io.DisplaySize.y});
+        ImGui::SetNextWindowSize({static_cast<float>(sidebarWidthPx), io.DisplaySize.y - footerHeight});
 
         ImGui::Begin("Sidebar", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
@@ -590,7 +570,7 @@ namespace DE
             scripterWindowRect.start.x = 0;
             scripterWindowRect.start.y = static_cast<uint32_t>(scripterWindowStartY);
             scripterWindowRect.size.x = sidebarWidthPx;
-            scripterWindowRect.size.y = static_cast<uint32_t>(io.DisplaySize.y - scripterWindowStartY);
+            scripterWindowRect.size.y = static_cast<uint32_t>(io.DisplaySize.y - scripterWindowStartY - footerHeight);
             drawScripterWindow(script, scripterWindowRect);
         }
 

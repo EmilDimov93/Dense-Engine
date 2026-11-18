@@ -418,6 +418,8 @@ namespace DE
 
         sceneDescription = std::move(newSceneDescription);
 
+        log::info("Loaded scene (" + filePath.filename().string() + ")");
+
         return true;
     }
 }
