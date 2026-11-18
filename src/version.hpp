@@ -3,4 +3,4 @@
 
 #pragma once
 
-#define DENSE_ENGINE_VERSION 177
+#define DENSE_ENGINE_VERSION 178

@@ -23,7 +23,29 @@ namespace DE
         ImGui::TableSetupColumn("Z");
         ImGui::TableHeadersRow();
     }
+    void drawLogLevelLabel(log::Level level)
+    {
+        const char *label = "";
+        ImVec4 color{1.f, 1.f, 1.f, 1.f};
 
+        switch (level)
+        {
+        case log::Level::Info:
+            label = "Info";
+            color = ImVec4(0.40f, 0.70f, 1.00f, 1.f);
+            break;
+        case log::Level::Warning:
+            label = "Warning";
+            color = ImVec4(1.00f, 0.80f, 0.00f, 1.f);
+            break;
+        case log::Level::Fatal:
+            label = "Fatal";
+            color = ImVec4(0.88f, 0.09f, 0.11f, 1.f);
+            break;
+        }
+
+        ImGui::TextColored(color, "%s", label);
+    }
     void drawTableXYZRow(const char *name, float &x, float &y, float &z, float min, float max, bool &hasSceneChanged, bool &isDragging)
     {
         ImGui::PushID(name);
@@ -104,7 +126,7 @@ namespace DE
             performanceMonitor.draw(topBarRemainingWidth, io.Framerate, frameFeedback.rayCount);
         }
 
-        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+        ImGui::SeparatorText("Graphics");
 
         {
             ImGui::BeginGroup();
@@ -140,7 +162,7 @@ namespace DE
                 ImGui::SetTooltip("Dynamic Level Of Detail (DLOD) automatically \nadjusts SSAA and Downscale to sustain stable FPS\n\nEffect:\n- more stable FPS\n- lower image quality while changing scene");
         }
 
-        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+        ImGui::Dummy(ImVec2(0.0f, 2.0f));
 
         {
             ImGui::Checkbox("VSync", &vsync);
@@ -154,7 +176,7 @@ namespace DE
 
         const float maxSliderWidth = std::min(ImGui::GetContentRegionAvail().x, 130.f);
 
-        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+        ImGui::SeparatorText("Camera");
 
         {
             ImGui::SetNextItemWidth(maxSliderWidth);
@@ -162,61 +184,51 @@ namespace DE
             ImGui::SliderScalar("FOV", ImGuiDataType_Float, &camera.fov, &MIN_FOV, &MAX_FOV, fovFormat);
         }
 
-        ImGui::Dummy(ImVec2(0.0f, 8.0f));
-
         {
             ImGui::SetNextItemWidth(maxSliderWidth);
             ImGui::SliderScalar("Move Speed", ImGuiDataType_Float, &camera.moveSpeed, &Camera::MIN_MOVE_SPEED, &Camera::MAX_MOVE_SPEED, "%.1f", ImGuiSliderFlags_Logarithmic);
         }
 
-        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+        const float halfWidth = (ImGui::GetContentRegionAvail().x - style.ItemSpacing.x) * 0.5f;
 
         {
-            constexpr ImGuiTableFlags scriptTableFlags = ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInnerH;
-            if (ImGui::BeginTable("ScriptTable", 2, scriptTableFlags))
+            ImGui::SeparatorText("Scripter");
+
+            const bool wasScriptWindowOpen = isScripterWindowOpen;
+            if (isScripterWindowOpen)
             {
-                ImGui::TableSetupColumn("Script", ImGuiTableColumnFlags_WidthStretch);
-                ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch);
-                ImGui::TableHeadersRow();
-
-                ImGui::TableNextRow();
-
-                const bool wasScriptWindowOpen = isScripterWindowOpen;
-                if (isScripterWindowOpen)
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(225, 22, 28, 255));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(180, 22, 28, 255));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 22, 28, 255));
-                }
-                ImGui::TableNextColumn();
-                if (ImGui::Button(isScripterWindowOpen ? "Close" : "Open", ImVec2(-FLT_MIN, 0)))
-                {
-                    isScripterWindowOpen = !isScripterWindowOpen;
-                    if (isScripterWindowOpen)
-                        sidebarWidthPx = OPTIMAL_SIDEBAR_SCRIPTER_WIDTH;
-                }
-                if (wasScriptWindowOpen)
-                    ImGui::PopStyleColor(3);
-
-                const bool wasScriptRunning = isScriptRunning;
-                if (isScriptRunning)
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(225, 22, 28, 255));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(180, 22, 28, 255));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 22, 28, 255));
-                }
-                ImGui::TableNextColumn();
-                if (ImGui::Button(isScriptRunning ? "Stop" : "Run", ImVec2(-FLT_MIN, 0)))
-                    isScriptRunning = !isScriptRunning;
-                if (wasScriptRunning)
-                    ImGui::PopStyleColor(3);
-
-                ImGui::EndTable();
+                ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(225, 22, 28, 255));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(180, 22, 28, 255));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 22, 28, 255));
             }
+
+            if (ImGui::Button(isScripterWindowOpen ? "Close" : "Open", ImVec2(halfWidth, 0)))
+            {
+                isScripterWindowOpen = !isScripterWindowOpen;
+                if (isScripterWindowOpen)
+                    sidebarWidthPx = OPTIMAL_SIDEBAR_SCRIPTER_WIDTH;
+            }
+            if (wasScriptWindowOpen)
+                ImGui::PopStyleColor(3);
+
+            ImGui::SameLine();
+
+            const bool wasScriptRunning = isScriptRunning;
+            if (isScriptRunning)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(225, 22, 28, 255));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(180, 22, 28, 255));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 22, 28, 255));
+            }
+
+            if (ImGui::Button(isScriptRunning ? "Stop" : "Run", ImVec2(halfWidth, 0)))
+                isScriptRunning = !isScriptRunning;
+            if (wasScriptRunning)
+                ImGui::PopStyleColor(3);
         }
         const float scripterWindowStartY = ImGui::GetCursorPos().y;
 
-        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+        ImGui::SeparatorText("Scene");
 
         {
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.f, 4.f));
@@ -291,7 +303,7 @@ namespace DE
             ImGui::EndChild();
         }
 
-        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+        ImGui::Dummy(ImVec2(0.0f, 2.0f));
 
         {
             ImGui::SetNextItemWidth(maxSliderWidth);
@@ -299,19 +311,19 @@ namespace DE
             isDragging |= ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
         }
 
-        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+        ImGui::SeparatorText("Models");
 
-        if (ImGui::Button("Add Model", ImVec2(-FLT_MIN, 0)))
+        if (ImGui::Button("Add Model", ImVec2(halfWidth, 0)))
         {
             std::optional<std::filesystem::path> selectedPath = openFileDialog(windowHandle, {L"3D Models", L"*.obj"});
             if (selectedPath)
                 command = commands::AddModel(selectedPath->string());
         }
 
-        ImGui::SeparatorText("Model Instances");
+        ImGui::SameLine();
 
         {
-            if (ImGui::Button("Add Instance", ImVec2(-FLT_MIN, 0)))
+            if (ImGui::Button("Add Instance", ImVec2(halfWidth, 0)))
             {
                 ImGui::OpenPopup("Models popup");
             }
@@ -394,7 +406,7 @@ namespace DE
         ImGui::SeparatorText("Lights");
 
         {
-            if (ImGui::Button("Add Light", ImVec2(-FLT_MIN, 0)))
+            if (ImGui::Button("Add Light", ImVec2(halfWidth, 0)))
             {
                 ImGui::OpenPopup("Lights popup");
             }
