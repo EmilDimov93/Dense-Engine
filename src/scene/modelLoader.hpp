@@ -7,10 +7,11 @@
 #include "texture.hpp"
 
 #include <string>
+#include <optional>
 
 namespace DE
 {
-    [[nodiscard]] ModelUploadData loadModel(const std::string &filePath);
+    [[nodiscard]] std::optional<ModelUploadData> loadModel(const std::string &filePath);
 
-    [[nodiscard]] TextureUploadData loadTexture(const std::string &filePath);
+    [[nodiscard]] std::optional<TextureUploadData> loadTexture(const std::string &filePath);
 }

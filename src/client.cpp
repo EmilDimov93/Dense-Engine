@@ -144,6 +144,8 @@ namespace DE
 
     Handle Client::addModel(const std::string &filePath)
     {
+        hasSceneChanged = true;
+
         Handle handle = handleGenerator.generateHandle();
 
         sceneDescription.modelDescriptions.emplace_back(handle, filePath);

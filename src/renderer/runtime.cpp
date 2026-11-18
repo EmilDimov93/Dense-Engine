@@ -175,14 +175,14 @@ namespace DE
         return frameFeedback;
     }
 
-    void Renderer::loadScene(const SceneDescription &sceneDescription)
+    void Renderer::loadScene(SceneDescription &sceneDescription)
     {
         commands.waitIdle();
         scene.clear();
         uploadScene(sceneDescription);
     }
 
-    void Renderer::uploadScene(const SceneDescription &sceneDescription)
+    void Renderer::uploadScene(SceneDescription &sceneDescription)
     {
         commands.waitIdle();
 

@@ -15,11 +15,14 @@
 
 namespace DE
 {
-    [[nodiscard]] ModelUploadData loadOBJ(const std::string &filePath)
+    [[nodiscard]] std::optional<ModelUploadData> loadOBJ(const std::string &filePath)
     {
         std::ifstream file(filePath);
         if (!file.is_open())
-            log::fatal("Failed to open OBJ file (" + filePath + ")");
+        {
+            log::warn("Failed to open OBJ file (" + filePath + ")");
+            return std::nullopt;
+        }
 
         ModelUploadData result;
         std::unordered_map<std::string, uint32_t> materialIndexByName;
@@ -75,10 +78,13 @@ namespace DE
                 }
                 else if (keyword == "map_Kd")
                 {
-                    TextureUploadData textureUploadData = loadTexture((mtlPath.parent_path() / readRestOfLine(ss)).string());
+                    std::optional<TextureUploadData> textureUploadData = loadTexture((mtlPath.parent_path() / readRestOfLine(ss)).string());
 
-                    currentMaterial->textureSize = XMUINT2(textureUploadData.width, textureUploadData.height);
-                    currentMaterial->texture = std::move(textureUploadData.pixels);
+                    if (textureUploadData)
+                    {
+                        currentMaterial->textureSize = XMUINT2(textureUploadData->width, textureUploadData->height);
+                        currentMaterial->texture = std::move(textureUploadData->pixels);
+                    }
                 }
                 else if (keyword == "d")
                     ss >> currentMaterial->diffuse.w;
@@ -99,8 +105,14 @@ namespace DE
 
         auto finalizeCurrentMesh = [&]()
         {
-            if (currentMeshVertices.empty())
+            if (currentMeshVertices.empty() || currentMeshIndices.empty() || currentMeshIndices.size() % 3 != 0)
+            {
+                if (!currentMeshVertices.empty())
+                    log::warn("Invalid mesh in OBJ file (" + filePath + ")");
+                currentMeshVertices.clear();
+                currentMeshIndices.clear();
                 return;
+            }
 
             if (currentMaterialIndex == UINT32_MAX)
             {
@@ -228,14 +240,20 @@ namespace DE
 
         finalizeCurrentMesh();
 
+        if (result.meshes.empty())
+        {
+            log::warn("Failed to load model: model contains no meshes (" + filePath + ")");
+            return std::nullopt;
+        }
+
         return result;
     }
 
-    [[nodiscard]] ModelUploadData loadModel(const std::string &filePath)
+    [[nodiscard]] std::optional<ModelUploadData> loadModel(const std::string &filePath)
     {
         std::string ext = std::filesystem::path(filePath).extension().string();
 
-        ModelUploadData data;
+        std::optional<ModelUploadData> data;
 
         if (ext == ".obj")
         {
@@ -243,21 +261,24 @@ namespace DE
         }
         else
         {
-            log::fatal("Failed to load model: extension not supported (" + ext + ")");
-            return data;
+            log::warn("Failed to load model: extension not supported (" + ext + ")");
+            return std::nullopt;
         }
 
         return data;
     }
 
-    [[nodiscard]] TextureUploadData loadTexture(const std::string &filePath)
+    [[nodiscard]] std::optional<TextureUploadData> loadTexture(const std::string &filePath)
     {
         TextureUploadData textureUploadData;
         int width, height;
         stbi_uc *decodedPixels = stbi_load(filePath.c_str(), &width, &height, nullptr, STBI_rgb_alpha);
 
         if (!decodedPixels)
-            log::fatal("Failed to load texture (" + filePath + ")");
+        {
+            log::warn("Failed to load texture (" + filePath + ")");
+            return std::nullopt;
+        }
 
         textureUploadData.width = static_cast<uint32_t>(width);
         textureUploadData.height = static_cast<uint32_t>(height);

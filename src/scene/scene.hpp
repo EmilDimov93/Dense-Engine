@@ -43,7 +43,7 @@ namespace DE
     public:
         Scene(ID3D12Device5 *device, ID3D12GraphicsCommandList4 *commandList, const dxwrap::DescriptorHeap *descriptorHeap) : device(device), commandList(commandList), descriptorHeap(descriptorHeap) {}
 
-        void upload(const SceneDescription &sceneDescription);
+        void upload(SceneDescription &sceneDescription);
         D3D12_GPU_VIRTUAL_ADDRESS getMaterialBufferAddress() const { return materialBuffer->GetGPUVirtualAddress(); }
         D3D12_GPU_VIRTUAL_ADDRESS getVertexBufferAddress() const { return vertexBuffer->GetGPUVirtualAddress(); }
         D3D12_GPU_VIRTUAL_ADDRESS getIndexBufferAddress() const { return indexBuffer->GetGPUVirtualAddress(); }

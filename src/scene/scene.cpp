@@ -16,7 +16,7 @@
 
 namespace DE
 {
-    void Scene::upload(const SceneDescription &sceneDescription)
+    void Scene::upload(SceneDescription &sceneDescription)
     {
         std::vector<ModelDescription> newModelDescriptions;
 
@@ -26,7 +26,7 @@ namespace DE
 
         if (!newModelDescriptions.empty())
         {
-            std::vector<std::pair<Handle, ModelUploadData>> newModelUploadDatas;
+            std::vector<std::pair<Handle, std::optional<ModelUploadData>>> newModelUploadDatas;
             newModelUploadDatas.resize(newModelDescriptions.size());
 
             const uint32_t threadCount = std::min(static_cast<uint32_t>(newModelDescriptions.size()), std::max(1u, std::thread::hardware_concurrency()));
@@ -52,27 +52,49 @@ namespace DE
             models.reserve(sceneDescription.modelDescriptions.size());
             for (const auto &[handle, modelUploadData] : newModelUploadDatas)
             {
-                Model model;
-
-                model.meshes.reserve(modelUploadData.meshes.size());
-                for (const MeshUploadData &meshUpload : modelUploadData.meshes)
-                    model.meshes.emplace_back(meshUpload, device, commandList);
-
-                model.materials.reserve(modelUploadData.materials.size());
-                for (const MaterialUploadData &materialUpload : modelUploadData.materials)
+                if (modelUploadData)
                 {
-                    int32_t textureIndex = -1;
-                    if (materialUpload.hasTexture())
+                    Model model;
+
+                    model.meshes.reserve(modelUploadData->meshes.size());
+                    for (const MeshUploadData &meshUpload : modelUploadData->meshes)
+                        model.meshes.emplace_back(meshUpload, device, commandList);
+
+                    model.materials.reserve(modelUploadData->materials.size());
+                    for (const MaterialUploadData &materialUpload : modelUploadData->materials)
                     {
-                        textureIndex = static_cast<int32_t>(model.textures.size());
-                        model.textures.emplace_back(device, commandList, materialUpload.texture, materialUpload.textureSize);
+                        int32_t textureIndex = -1;
+                        if (materialUpload.hasTexture())
+                        {
+                            textureIndex = static_cast<int32_t>(model.textures.size());
+                            model.textures.emplace_back(device, commandList, materialUpload.texture, materialUpload.textureSize);
+                        }
+                        model.materials.emplace_back(materialUpload.diffuse, materialUpload.metallic, materialUpload.roughness, materialUpload.ior, textureIndex);
                     }
-                    model.materials.emplace_back(materialUpload.diffuse, materialUpload.metallic, materialUpload.roughness, materialUpload.ior, textureIndex);
+
+                    models.emplace(handle, std::move(model));
+
+                    modelMaterialArrayOffsets.emplace(handle, 0);
                 }
+                else
+                {
+                    int32_t modelDescriptionToDelete = -1;
+                    for (uint32_t i = 0; i < sceneDescription.modelDescriptions.size(); i++)
+                        if (sceneDescription.modelDescriptions[i].handle == handle)
+                        {
+                            modelDescriptionToDelete = static_cast<int32_t>(i);
+                            break;
+                        }
+                    sceneDescription.modelDescriptions.erase(sceneDescription.modelDescriptions.begin() + modelDescriptionToDelete);
 
-                models.emplace(handle, std::move(model));
+                    std::vector<uint32_t> modelInstanceDescriptionsToDelete;
+                    for (uint32_t i = 0; i < sceneDescription.modelInstanceDescriptions.size(); i++)
+                        if (sceneDescription.modelInstanceDescriptions[i].modelHandle == handle)
+                            modelInstanceDescriptionsToDelete.push_back(i);
 
-                modelMaterialArrayOffsets.emplace(handle, 0);
+                    for (uint32_t i = 0; i < modelInstanceDescriptionsToDelete.size(); i++)
+                        sceneDescription.modelInstanceDescriptions.erase(sceneDescription.modelInstanceDescriptions.begin() + modelInstanceDescriptionsToDelete[modelInstanceDescriptionsToDelete.size() - 1 - i]);
+                }
             }
         }
 
@@ -111,13 +133,20 @@ namespace DE
                 .Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING,
                 .Texture2D = {.MipLevels = 1}};
 
-            TextureUploadData backgroundTextureUploadData = loadTexture(sceneDescription.backgroundTextureFilePath);
+            std::optional<TextureUploadData> backgroundTextureUploadData = loadTexture(sceneDescription.backgroundTextureFilePath);
 
-            backgroundTexture.emplace(device, commandList, backgroundTextureUploadData.pixels, XMUINT2(backgroundTextureUploadData.width, backgroundTextureUploadData.height));
+            if (backgroundTextureUploadData)
+            {
+                backgroundTexture.emplace(device, commandList, backgroundTextureUploadData->pixels, XMUINT2(backgroundTextureUploadData->width, backgroundTextureUploadData->height));
 
-            device->CreateShaderResourceView(backgroundTexture->resource, &srvDesc, descriptorHeap->cpuHandle(static_cast<UINT>(dxwrap::DESCRIPTOR_HEAP_BACKGROUND_TEXTURE_INDEX)));
+                device->CreateShaderResourceView(backgroundTexture->resource, &srvDesc, descriptorHeap->cpuHandle(static_cast<UINT>(dxwrap::DESCRIPTOR_HEAP_BACKGROUND_TEXTURE_INDEX)));
 
-            backgroundTextureFilePath = sceneDescription.backgroundTextureFilePath;
+                backgroundTextureFilePath = sceneDescription.backgroundTextureFilePath;
+            }
+            else
+            {
+                sceneDescription.backgroundTextureFilePath.clear();
+            }
         }
 
         environment.clearColor = sceneDescription.clearColor;
