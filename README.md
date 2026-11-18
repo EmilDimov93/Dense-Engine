@@ -7,13 +7,13 @@
 A DirectX 12 rendering engine with real-time ray tracing, meant for smooth and interactive scene editing, allowing great visuals and animation.
 
 <p align="center">
-  <img width="100%" alt="Preview - Forest" src="https://github.com/user-attachments/assets/ae6b7027-492a-4d70-8c54-868865b8cdea" />
+  <img width="100%" alt="Preview - Forest" src="https://github.com/user-attachments/assets/c3c5a877-30f7-41e6-8a54-3119fc344a0e" />
   <br>
   <sub>Preview - Forest</sub>
 </p>
 
 <p align="center">
-  <img width="100%" alt="Preview - Tunnel" src="https://github.com/user-attachments/assets/94faa179-6e21-435e-9ea8-a5bc6c94d490" />
+  <img width="100%" alt="Preview - Tunnel" src="https://github.com/user-attachments/assets/43561d39-2538-4cab-b679-91f4ad7a159e" />
   <br>
   <sub>Preview - Tunnel</sub>
 </p>
@@ -34,6 +34,7 @@ A DirectX 12 rendering engine with real-time ray tracing, meant for smooth and i
 - Hard shadows & smooth shading
 - Textures
 - Tonemapping (ACES)
+- Background image (equirectangular)
 
 #### UI with ImGui
 - Full control of rendering features
@@ -60,6 +61,7 @@ A DirectX 12 rendering engine with real-time ray tracing, meant for smooth and i
 
 #### Other
 - Screenshot at maximum quality with F2
+- Log for information, saved on exit
 - Shaders, font & icon embedded in the executable
 - Window with WinAPI
 
