@@ -28,7 +28,7 @@ set(ENGINE_SOURCES
     src/window/window.cpp
 )
 
-add_library(imgui STATIC
+add_library(imgui OBJECT
     ext/imgui/imgui.cpp
     ext/imgui/imgui_draw.cpp
     ext/imgui/imgui_tables.cpp
@@ -55,10 +55,12 @@ target_compile_options(DenseEngine PRIVATE
 )
 
 set_target_properties(DenseEngine PROPERTIES
+    WIN32_EXECUTABLE TRUE
     INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
     VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>"
 )
+target_link_options(DenseEngine PRIVATE /ENTRY:mainCRTStartup)
 
 target_link_libraries(DenseEngine PRIVATE
     imgui
